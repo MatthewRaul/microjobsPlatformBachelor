@@ -5,12 +5,12 @@ Aceasta aplicatie reprezinta tema lucrarii mele de licenta si consta intr-o plat
 
 Ideea principala:
 - utilizatorii isi pot crea cont
-- un client poate posta microjoburi
-- un worker poate vedea joburile si poate aplica la ele
-- clientul poate accepta sau respinge aplicanti
+- un utilizator poate posta microjoburi
+- un utilizator poate vedea joburile si poate aplica la ele
+- utilizatorul care a postat jobul poate accepta sau respinge aplicanti
 - ulterior se poate adauga sistem de review/rating
 
-Aplicatia este inspirata ca flux general dintr-o schema initiala bazata pe pagini de tip home, login/register, listare, detalii si adaugare continut, adaptata pentru microjoburi [file:1].
+Aplicatia este inspirata ca flux general dintr-o schema initiala bazata pe pagini de tip home, login/register, listare, detalii si adaugare continut, adaptata pentru microjoburi [file:28].
 
 ## Tehnologii folosite
 - Backend: Spring Boot 3.5.12
@@ -30,6 +30,23 @@ Pana acum am realizat:
 - initializarea repository-ului Git
 - crearea unui repository privat pe GitHub
 - primul push al proiectului
+- crearea structurii de baza a backend-ului pe pachete
+- crearea entitatii `User`
+- definirea enum-ului `Role`
+- alegerea modelului de roluri `USER` si `ADMIN`
+- crearea `UserRepository`
+- crearea `UserService`
+- crearea `UserController`
+- implementarea endpoint-ului de register
+- implementarea validarii pentru email si numar de telefon deja existente
+- testarea register-ului in Postman
+- configurarea unui `PasswordEncoder` cu BCrypt
+- hash-uirea parolei la inregistrare
+- implementarea unui login simplu pe baza de email + parola
+- crearea DTO-urilor `LoginRequest` si `LoginResponse`
+- modificarea login-ului astfel incat sa nu mai returneze parola
+- configurarea temporara Spring Security pentru testare fara JWT
+- tratarea duplicate-urilor la register cu raspuns `409 Conflict`
 
 ## Configurare backend
 Fisier principal configurare:
@@ -38,28 +55,44 @@ Fisier principal configurare:
 Configurare actuala:
 - aplicatia ruleaza pe portul 8080
 - backend-ul este conectat la MongoDB Atlas
-- pentru moment exista configurarea implicita oferita de Spring Security
-- autentificarea proprie cu JWT urmeaza sa fie implementata
+- exista configurare Spring Security personalizata, temporara, pentru dezvoltare si testare
+- endpoint-urile de `register` si `login` sunt functionale
+- parolele sunt salvate hash-uit cu BCrypt
+- autentificarea cu JWT urmeaza sa fie implementata
 
 ## Structura curenta backend
-Structura actuala generata de Spring:
-- `src/main/java/com/licenta/microjobsPlatform`
+Structura curenta folosita:
+- `src/main/java/com/licenta/microjobsPlatform/controller`
+- `src/main/java/com/licenta/microjobsPlatform/service`
+- `src/main/java/com/licenta/microjobsPlatform/repository`
+- `src/main/java/com/licenta/microjobsPlatform/model`
+- `src/main/java/com/licenta/microjobsPlatform/dto`
+- `src/main/java/com/licenta/microjobsPlatform/config`
+- `src/main/java/com/licenta/microjobsPlatform/security`
 - `src/main/resources`
 - `pom.xml`
 
-Structura planificata:
-- `controller`
-- `service`
-- `repository`
-- `model`
-- `dto`
-- `config`
-- `security`
+Clase / fisiere create pana acum:
+- `model/User.java`
+- `model/Role.java`
+- `repository/UserRepository.java`
+- `service/UserService.java`
+- `controller/UserController.java`
+- `dto/LoginRequest.java`
+- `dto/LoginResponse.java`
+- `security/SecurityConfig.java`
+
+## Functionalitati implementate pana acum
+- register utilizator
+- login utilizator
+- roluri: `USER` si `ADMIN`
+- validare pentru email unic
+- validare pentru numar de telefon unic
+- criptarea parolei cu BCrypt
+- raspuns corect de tip `409 Conflict` pentru cont duplicat
 
 ## Functionalitati planificate
 MVP pentru licenta:
-- register / login
-- roluri: CLIENT si WORKER
 - profil utilizator
 - creare job
 - editare / stergere job
@@ -67,26 +100,35 @@ MVP pentru licenta:
 - pagina detalii job
 - aplicare la job
 - acceptare / respingere aplicant
-- status job: OPEN / IN_PROGRESS / COMPLETED
+- status job: `OPEN` / `IN_PROGRESS` / `COMPLETED`
 - review simplu dupa finalizare
+- autentificare cu JWT
+- protejarea endpoint-urilor care necesita utilizator logat
 
 ## Flux general aplicatie
 1. Utilizatorul intra in aplicatie.
 2. Isi creeaza cont sau se logheaza.
-3. Clientul posteaza un microjob.
-4. Workerul vede lista de joburi si aplica.
-5. Clientul accepta sau respinge aplicantul.
+3. Utilizatorul poate posta un microjob.
+4. Alt utilizator vede lista de joburi si aplica.
+5. Utilizatorul care a postat jobul accepta sau respinge aplicantul.
 6. Jobul este marcat ulterior ca finalizat.
 7. Se poate adauga review.
 
+Acest flux respecta logica de baza din schema initiala, in care utilizatorul logat poate fie sa listeze propriul continut, fie sa se inscrie la continutul altuia [file:28].
+
 ## Ce urmeaza
 Urmatorii pasi planificati:
-1. securizarea configurarii MongoDB (mutarea URI-ului in variabila de mediu)
-2. crearea structurii backend
-3. crearea entitatii `User`
-4. definirea rolurilor
-5. crearea repository-ului pentru user
-6. implementarea autentificarii
+1. securizarea configurarii MongoDB (mutarea URI-ului in variabila de mediu, daca nu este deja facut complet)
+2. adaugarea dependintelor JWT in `pom.xml`
+3. crearea clasei utilitare pentru generarea si validarea tokenului JWT
+4. modificarea login-ului pentru a returna token JWT
+5. crearea filtrului JWT
+6. protejarea endpoint-urilor private
+7. implementarea entitatii `Job`
+8. crearea structurii pentru joburi: model, repository, service, controller
+9. implementarea functionalitatilor de creare, listare si detalii job
+10. implementarea aplicarii la job
+11. implementarea acceptarii / respingerii aplicantilor
 
 ## Context pentru thread urmator
 Daca acest proiect este continuat intr-un alt thread, contextul de pornire este:
@@ -96,6 +138,16 @@ Daca acest proiect este continuat intr-un alt thread, contextul de pornire este:
 - MongoDB Atlas deja conectat si functional
 - Git si GitHub deja configurate
 - repository privat deja creat
-- vrem sa continuam cu backend-ul, in special structura proiectului, entitatea `User` si autentificarea
+- structura backend este deja facuta
+- entitatea `User` este deja creata
+- enum-ul `Role` este deja creat, cu valorile `USER` si `ADMIN`
+- `UserRepository`, `UserService` si `UserController` sunt deja create
+- endpoint-ul de `register` functioneaza
+- endpoint-ul de `login` functioneaza
+- parolele sunt salvate hash-uit cu BCrypt
+- exista DTO-urile `LoginRequest` si `LoginResponse`
+- configurarea actuala de securitate este temporara, pentru dezvoltare
+- urmatorul pas dorit este implementarea autentificarii cu JWT
+- dupa JWT vrem sa continuam cu backend-ul pentru joburi
 
-Te rog sa continui din acest punct, fara sa reiei configurarea initiala. --Update facut in 21 martie 2026.
+Te rog sa continui din acest punct, fara sa reiei configurarea initiala. --Update facut in 22 martie 2026.
