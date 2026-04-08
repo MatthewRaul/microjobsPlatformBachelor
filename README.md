@@ -29,7 +29,8 @@ Version control: Git + GitHub, repository privat
 Editor: Visual Studio Code
 
 Stadiu curent al proiectului
-Realizat până acum (inclusiv sesiunea din 24 martie 2026):
+Realizat până acum:
+
 crearea proiectului backend cu Spring Initializr
 
 configurarea Spring Boot pe versiunea 3.5.12
@@ -39,8 +40,6 @@ conectarea cu MongoDB Atlas
 rezolvarea problemei de conectare la Atlas cauzată de schimbarea IP-ului public și whitelist-ul din Network Access
 
 rezolvarea problemei cu URI-ul MongoDB Atlas (lipsea numele bazei de date din connection string)
-
-rezolvarea problemei cu variabilele de mediu (JWT_SECRET și MONGODB_URI mutate în application.properties pentru dezvoltare locală)
 
 pornirea cu succes a backend-ului
 
@@ -78,7 +77,7 @@ conectarea login-ului la AuthenticationManager și generarea tokenului JWT în U
 
 modificarea LoginResponse pentru a include token, firstName, email și role
 
-finalizarea SecurityConfig în forma finală stateless:
+finalizarea SecurityConfig în formă stateless:
 
 register, login și GET /api/jobs/** pe permitAll()
 
@@ -92,23 +91,53 @@ authenticationProvider configurat corect cu DaoAuthenticationProvider
 
 implementarea și testarea completă a endpoint-ului privat /me:
 
-GET /api/users/me cu token valid → 200 + firstName, email, role
+GET /api/users/me cu token valid -> 200 + firstName, email, role
 
-GET /api/users/me fără token → 401 Unauthorized
+GET /api/users/me fără token -> 401 Unauthorized
 
 testarea completă a fluxului JWT în Postman:
 
-register → 201 Created
+register -> 201 Created
 
-login → 200 + token JWT
+login -> 200 + token JWT
 
-login greșit → 401
+login greșit -> 401
 
-register duplicat → 409 Conflict
+register duplicat -> 409 Conflict
 
-/me cu token → 200
+/me cu token -> 200
 
-/me fără token → 401
+/me fără token -> 401
+
+mutarea cheilor sensibile în fișier .env pentru dezvoltare locală
+
+configurarea aplicației pentru citirea variabilelor din .env
+
+rezolvarea erorii de parsing din .env cauzată de o intrare scrisă greșit
+
+implementarea entității Job
+
+crearea enum-ului JobStatus
+
+crearea DTO-ului CreateJobRequest
+
+crearea JobRepository, JobService, JobController
+
+implementarea endpoint-ului POST /api/jobs pentru creare job
+
+implementarea endpoint-ului GET /api/jobs pentru listare publică joburi
+
+implementarea endpoint-ului GET /api/jobs/{id} pentru detalii job
+
+implementarea endpoint-ului PATCH /api/jobs/{id}/cancel
+
+implementarea endpoint-ului PATCH /api/jobs/{id}/complete
+
+implementarea logicii de ownership: doar utilizatorul care a postat jobul poate da cancel sau complete
+
+filtrarea listării publice astfel încât joburile CANCELED și COMPLETED să nu mai apară în lista activă
+
+testarea completă în Postman pentru create, get all, get by id, cancel și complete
 
 Configurare backend
 Fișier principal: src/main/resources/application.properties
@@ -123,7 +152,7 @@ JWT: generare token, validare token, filtru JWT — toate funcționale și testa
 
 parole salvate hash-uit cu BCrypt
 
-pentru dezvoltare locală: JWT_SECRET și MONGODB_URI sunt în application.properties (nu în variabile de mediu)
+pentru dezvoltare locală: variabilele sensibile sunt mutate în .env și folosite în configurația aplicației
 
 Structura curentă backend
 text
@@ -135,7 +164,9 @@ src/main/java/com/licenta/microjobsPlatform/dto
 src/main/java/com/licenta/microjobsPlatform/security
 src/main/resources
 pom.xml
-Clase create:
+.env
+Clase create
+Auth / user
 model/User.java
 
 model/Role.java
@@ -158,7 +189,21 @@ security/JwtService.java
 
 security/JwtAuthenticationFilter.java
 
+Job
+model/Job.java
+
+model/JobStatus.java
+
+repository/JobRepository.java
+
+service/JobService.java
+
+controller/JobController.java
+
+dto/CreateJobRequest.java
+
 Funcționalități implementate și testate
+Autentificare și user
 register utilizator cu validare email unic și telefon unic
 
 login utilizator cu generare token JWT
@@ -175,78 +220,88 @@ validare token JWT pe endpoint-uri protejate
 
 endpoint privat /me funcțional și testat
 
-endpoint-uri publice: register, login, GET /api/jobs/**
+Joburi
+creare job cu utilizator autentificat
 
-endpoint-uri protejate: orice altceva necesită token JWT valid
+listare publică joburi
+
+detalii job după id
+
+anulare job (cancel) de către owner
+
+finalizare job (complete) de către owner
+
+control de ownership pentru acțiuni sensibile
+
+ascunderea joburilor CANCELED și COMPLETED din listarea publică
+
+Endpoint-uri disponibile în acest moment
+Publice
+POST /api/users/register
+
+POST /api/users/login
+
+GET /api/jobs
+
+GET /api/jobs/{id}
+
+Protejate
+GET /api/users/me
+
+POST /api/jobs
+
+PATCH /api/jobs/{id}/cancel
+
+PATCH /api/jobs/{id}/complete
 
 Probleme identificate și rezolvate
-problemă de conectare la MongoDB Atlas din cauza schimbării IP-ului public → rezolvată prin whitelist în Network Access
+problemă de conectare la MongoDB Atlas din cauza schimbării IP-ului public -> rezolvată prin whitelist în Network Access
 
-useri vechi salvați neuniform în baza de date → baza curățată pentru retestare
+useri vechi salvați neuniform în baza de date -> baza curățată pentru retestare
 
-URI MongoDB Atlas fără numele bazei de date → adăugat numele bazei în connection string
+URI MongoDB Atlas fără numele bazei de date -> adăugat numele bazei în connection string
 
-variabile de mediu JWT_SECRET și MONGODB_URI necitite automat din .env de Spring Boot → mutate în application.properties pentru dezvoltare locală
+variabile de mediu JWT_SECRET și MONGODB_URI necitite automat din .env de Spring Boot -> integrată soluția pentru citirea .env
 
-eroare DNS/SRV la conectarea Atlas → rezolvată prin corectarea URI-ului complet
+eroare de parsing în .env (Malformed entry) -> rezolvată prin corectarea formatului KEY=VALUE
 
-metodă duplicată isTokenValid în JwtService → eliminată
+eroare DNS/SRV la conectarea Atlas -> rezolvată prin corectarea URI-ului complet
 
-import greșit JwtService în UserController după refactor → corectat spre pachetul security
+metodă duplicată isTokenValid în JwtService -> eliminată
 
-apel static în loc de instanță pe jwtService în UserController → corectat
+import greșit JwtService în UserController după refactor -> corectat spre pachetul security
+
+apel static în loc de instanță pe jwtService în UserController -> corectat
+
+request greșit în Postman pentru GET /api/jobs/{id} -> corectat prin folosirea id-ului direct în URL, nu în body
 
 Funcționalități planificate — MVP licență
 profil utilizator
 
-creare job
-
-editare / ștergere job
-
-listare joburi
-
-pagină detalii job
+editare job
 
 aplicare la job
 
 acceptare / respingere aplicant
 
-status job: OPEN / IN_PROGRESS / COMPLETED
+status job automat în funcție de aplicanți
 
 review simplu după finalizare
 
-după stabilizarea backend-ului → începerea frontend-ului în React
+după stabilizarea backend-ului -> începerea frontend-ului în React
 
 Ce urmează — următorii pași concreți
-Implementarea entității Job:
-
-model/JobStatus.java — enum cu OPEN, IN_PROGRESS, COMPLETED
-
-model/Job.java — cu câmpuri: title, description, postedBy (referință la User), status, createdAt
-
-repository/JobRepository.java
-
-service/JobService.java
-
-controller/JobController.java
-
-Endpoint-uri Job (în ordine):
-
-POST /api/jobs — creare job (necesită token JWT)
-
-GET /api/jobs — listare joburi (public)
-
-GET /api/jobs/{id} — detalii job (public)
-
-Implementarea aplicării la job:
+Următorul pas este implementarea fluxului de aplicare la job:
 
 un user poate aplica la un job postat de alt user
 
-poster-ul poate accepta sau respinge aplicanții
+poster-ul poate vedea lista aplicanților
 
-statusul jobului se schimbă automat la acceptare
+poster-ul poate accepta sau respinge aplicanți
 
-Frontend React — după stabilizarea backend-ului
+statusul jobului se poate actualiza automat în funcție de locurile disponibile
+
+după stabilizarea backend-ului pe partea de apply flow -> începerea frontend-ului în React
 
 Context pentru thread următor
 Dacă acest proiect este continuat într-un alt thread, contextul de pornire este:
@@ -277,12 +332,20 @@ JwtService, JwtAuthenticationFilter create și funcționale
 
 SecurityConfig este în forma finală stateless, complet configurată
 
-fluxul JWT este complet testat: register → login → token → /me → 200, fără token → 401
+fluxul JWT este complet testat: register -> login -> token -> /me -> 200, fără token -> 401
 
 endpoint-ul /me există în UserController și funcționează corect
 
-pentru dezvoltare locală: JWT_SECRET și MONGODB_URI sunt în application.properties
+variabilele sensibile sunt mutate în .env pentru dezvoltare locală
 
-următorul pas: implementarea entității Job și a endpoint-urilor de creare, listare și detalii job
+entitatea Job este implementată
 
-Update făcut în 24 martie 2026.
+JobStatus, CreateJobRequest, JobRepository, JobService, JobController sunt create și funcționale
+
+endpoint-urile POST /api/jobs, GET /api/jobs, GET /api/jobs/{id}, PATCH /api/jobs/{id}/cancel, PATCH /api/jobs/{id}/complete sunt implementate și testate în Postman
+
+logica de ownership pentru joburi este implementată
+
+următorul pas este implementarea aplicării la job și a gestionării aplicanților
+
+Update făcut în 9 aprilie 2026
