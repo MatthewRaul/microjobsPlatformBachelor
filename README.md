@@ -1,158 +1,158 @@
-Această aplicație reprezintă tema lucrării mele de licență și constă într-o platformă web de microjoburi. Fluxul general rămâne inspirat din schema inițială bazată pe home, login/register, listare, detalii și adăugare conținut, adaptată pentru microjoburi și interacțiuni între utilizatori care postează joburi și utilizatori care aplică la ele.
+Această aplicație reprezintă tema lucrării mele de licență și constă într-o platformă web de microjoburi. Fluxul general păstrează logica unei aplicații cu home, autentificare, listare, detalii și adăugare de conținut, dar este adaptat pentru interacțiuni între utilizatori care postează joburi și utilizatori care aplică la acestea.
 
-Ideea principală
-Utilizatorii își pot crea cont.
+Ideea principală a aplicației este următoarea:
 
-Un utilizator poate posta microjoburi.
+utilizatorii își pot crea cont și se pot autentifica;
 
-Un utilizator poate vedea joburile și poate aplica la ele.
+un utilizator autentificat poate posta microjoburi;
 
-Utilizatorul care a postat jobul poate accepta sau respinge aplicanți.
+un utilizator poate vedea joburile disponibile și poate aplica la ele;
 
-Ulterior se poate adăuga sistem de review/rating.
+utilizatorul care a postat jobul poate vedea aplicanții și îi poate accepta sau respinge;
 
-Aplicația păstrează logica inițială în care utilizatorul logat poate adăuga conținut propriu sau poate interacționa cu conținutul altor utilizatori.
+ulterior poate fi adăugat un sistem de review/rating după finalizarea colaborării.
 
 Tehnologii folosite
-Backend: Spring Boot 3.5.12
+Backend: Spring Boot 3.5.12.
 
-Frontend: React, urmează să fie creat
+Frontend: React, urmează să fie dezvoltat.
 
-Baza de date: MongoDB Atlas
+Baza de date: MongoDB Atlas.
 
-Securitate: Spring Security + JWT complet implementat și testat
+Securitate: Spring Security + JWT, configurare stateless.
 
-Build tool: Maven
+Build tool: Maven.
 
-Version control: Git + GitHub, repository privat
+Version control: Git + GitHub, repository privat.
 
-Editor: Visual Studio Code
+Editor: Visual Studio Code.
 
-Stadiu curent al proiectului
-Realizat până acum:
+Stadiul curent al proiectului
+Realizat până acum
+Până în acest moment au fost implementate și testate următoarele componente și funcționalități:
 
-crearea proiectului backend cu Spring Initializr
+Inițializare și configurare proiect
+crearea proiectului backend cu Spring Initializr;
 
-configurarea Spring Boot pe versiunea 3.5.12
+configurarea aplicației Spring Boot pe versiunea 3.5.12;
 
-conectarea cu MongoDB Atlas
+conectarea backend-ului la MongoDB Atlas;
 
-rezolvarea problemei de conectare la Atlas cauzată de schimbarea IP-ului public și whitelist-ul din Network Access
+rezolvarea problemelor de conectare la Atlas, inclusiv whitelist-ul de IP și corectarea connection string-ului cu numele bazei de date;
 
-rezolvarea problemei cu URI-ul MongoDB Atlas (lipsea numele bazei de date din connection string)
+pornirea cu succes a backend-ului;
 
-pornirea cu succes a backend-ului
+inițializarea repository-ului Git și conectarea la un repository privat GitHub.
 
-inițializarea repository-ului Git
+Structura backend
+organizarea proiectului pe pachete: controller, service, repository, model, dto, security, exception;
 
-crearea unui repository privat pe GitHub
+definirea structurii de bază pentru dezvoltarea modulară a backend-ului.
 
-primul push al proiectului
+Modul utilizatori și autentificare
+crearea entității User;
 
-crearea structurii de bază a backend-ului pe pachete
+definirea enum-ului Role cu valorile USER și ADMIN;
 
-crearea entității User
+implementarea claselor UserRepository, UserService, UserController, CustomUserDetailsService;
 
-definirea enum-ului Role cu valorile USER și ADMIN
+implementarea endpoint-ului de register cu validare pentru email unic și telefon unic;
 
-crearea UserRepository, UserService, UserController, CustomUserDetailsService
+implementarea criptării parolelor cu BCrypt;
 
-implementarea endpoint-ului de register cu validare email unic și telefon unic
+implementarea login-ului pe bază de email și parolă;
 
-testarea register-ului în Postman
+crearea DTO-urilor LoginRequest și LoginResponse;
 
-configurarea PasswordEncoder cu BCrypt și hash-uirea parolei la înregistrare
+generarea tokenului JWT la autentificare;
 
-implementarea login-ului pe bază de email + parolă
+implementarea endpoint-ului privat GET /api/users/me;
 
-crearea DTO-urilor LoginRequest și LoginResponse (fără parolă în răspuns)
+testarea completă în Postman pentru fluxul register -> login -> token -> /me.
 
-tratarea duplicatelor la register cu răspuns 409 Conflict
+Securitate
+implementarea SecurityConfig în mod stateless;
 
-curățarea colecției users din MongoDB pentru retestare corectă
+configurarea regulilor de acces astfel încât register, login și GET /api/jobs/** să fie publice, iar restul endpoint-urilor să necesite autentificare;
 
-adăugarea structurii JWT: JwtService, JwtAuthenticationFilter, CustomUserDetailsService
+configurarea AuthenticationProvider cu DaoAuthenticationProvider;
 
-conectarea login-ului la AuthenticationManager și generarea tokenului JWT în UserService
+implementarea filtrului JwtAuthenticationFilter pentru extragerea și validarea tokenului din header-ul Authorization;
 
-modificarea LoginResponse pentru a include token, firstName, email și role
+validarea tokenului JWT pe endpoint-urile protejate.
 
-finalizarea SecurityConfig în formă stateless:
+Gestionarea variabilelor sensibile
+mutarea variabilelor sensibile în .env pentru dezvoltare locală;
 
-register, login și GET /api/jobs/** pe permitAll()
+configurarea aplicației pentru citirea acestora;
 
-restul endpoint-urilor pe authenticated()
+rezolvarea erorilor de parsing și de configurare a valorilor sensibile.
 
-sessionCreationPolicy(STATELESS)
+Modul joburi
+implementarea entității Job;
 
-addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+definirea enum-ului JobStatus;
 
-authenticationProvider configurat corect cu DaoAuthenticationProvider
+crearea DTO-ului CreateJobRequest;
 
-implementarea și testarea completă a endpoint-ului privat /me:
+implementarea claselor JobRepository, JobService, JobController;
 
-GET /api/users/me cu token valid -> 200 + firstName, email, role
+implementarea endpoint-ului POST /api/jobs pentru creare job;
 
-GET /api/users/me fără token -> 401 Unauthorized
+implementarea endpoint-ului GET /api/jobs pentru listare publică a joburilor vizibile;
 
-testarea completă a fluxului JWT în Postman:
+implementarea endpoint-ului GET /api/jobs/{id} pentru detalii job;
 
-register -> 201 Created
+implementarea endpoint-urilor PATCH /api/jobs/{id}/cancel și PATCH /api/jobs/{id}/complete;
 
-login -> 200 + token JWT
+implementarea logicii de ownership, astfel încât doar utilizatorul care a postat jobul poate modifica starea acestuia;
 
-login greșit -> 401
+filtrarea listării publice astfel încât joburile vizibile să fie doar cele cu status OPEN și FILLED;
 
-register duplicat -> 409 Conflict
+testarea completă în Postman pentru create, get all, get by id, cancel și complete.
 
-/me cu token -> 200
+Modul aplicări
+implementarea entității Aplicare;
 
-/me fără token -> 401
+definirea enum-ului AplicareStatus;
 
-mutarea cheilor sensibile în fișier .env pentru dezvoltare locală
+crearea AplicareRepository;
 
-configurarea aplicației pentru citirea variabilelor din .env
+implementarea AplicareService;
 
-rezolvarea erorii de parsing din .env cauzată de o intrare scrisă greșit
+crearea AplicareController;
 
-implementarea entității Job
+implementarea endpoint-ului POST /api/jobs/{jobId}/apply pentru trimiterea unei aplicări la un job;
 
-crearea enum-ului JobStatus
+implementarea endpoint-ului GET /api/jobs/{jobId}/aplicari pentru vizualizarea aplicanților unui job;
 
-crearea DTO-ului CreateJobRequest
+implementarea fluxului prin care owner-ul jobului poate accepta sau respinge aplicanți;
 
-crearea JobRepository, JobService, JobController
+implementarea endpoint-ului pentru vizualizarea propriilor aplicări de către utilizatorul autentificat;
 
-implementarea endpoint-ului POST /api/jobs pentru creare job
+testarea completă în Postman pentru flow-ul de aplicare, listare aplicări, acceptare și respingere.
 
-implementarea endpoint-ului GET /api/jobs pentru listare publică joburi
+Tratarea erorilor
+adăugarea clasei ApiError;
 
-implementarea endpoint-ului GET /api/jobs/{id} pentru detalii job
+crearea excepțiilor custom BadRequest, ForbiddenAction, ResourceNotFound;
 
-implementarea endpoint-ului PATCH /api/jobs/{id}/cancel
-
-implementarea endpoint-ului PATCH /api/jobs/{id}/complete
-
-implementarea logicii de ownership: doar utilizatorul care a postat jobul poate da cancel sau complete
-
-filtrarea listării publice astfel încât joburile CANCELED și COMPLETED să nu mai apară în lista activă
-
-testarea completă în Postman pentru create, get all, get by id, cancel și complete
+implementarea unui GlobalExceptionHandler pentru răspunsuri de eroare mai clare și mai controlate;
 
 Configurare backend
-Fișier principal: src/main/resources/application.properties
+fișier principal de configurare: src/main/resources/application.properties;
 
-aplicația rulează pe portul 8080
+aplicația rulează pe portul 8080;
 
-backend-ul este conectat la MongoDB Atlas (connection string complet cu nume bază de date)
+backend-ul este conectat la MongoDB Atlas cu connection string complet;
 
-Spring Security configurat final, stateless, cu JWT
+Spring Security este configurat stateless, cu JWT;
 
-JWT: generare token, validare token, filtru JWT — toate funcționale și testate
+tokenul JWT este generat și validat corect;
 
-parole salvate hash-uit cu BCrypt
+parolele sunt salvate hash-uit cu BCrypt;
 
-pentru dezvoltare locală: variabilele sensibile sunt mutate în .env și folosite în configurația aplicației
+variabilele sensibile sunt folosite din .env în mediul local.
 
 Structura curentă backend
 text
@@ -162,6 +162,7 @@ src/main/java/com/licenta/microjobsPlatform/repository
 src/main/java/com/licenta/microjobsPlatform/model
 src/main/java/com/licenta/microjobsPlatform/dto
 src/main/java/com/licenta/microjobsPlatform/security
+src/main/java/com/licenta/microjobsPlatform/exception
 src/main/resources
 pom.xml
 .env
@@ -202,38 +203,69 @@ controller/JobController.java
 
 dto/CreateJobRequest.java
 
+Aplicări
+model/Aplicare.java
+
+model/AplicareStatus.java
+
+repository/AplicareRepository.java
+
+service/AplicareService.java
+
+controller/AplicareController.java
+
+Erori
+dto/ApiError.java
+
+exception/BadRequest.java
+
+exception/ForbiddenAction.java
+
+exception/ResourceNotFound.java
+
+exception/GlobalExceptionHandler.java
+
 Funcționalități implementate și testate
-Autentificare și user
-register utilizator cu validare email unic și telefon unic
+Autentificare și utilizatori
+register utilizator cu validare email unic și telefon unic;
 
-login utilizator cu generare token JWT
+login utilizator cu generare token JWT;
 
-roluri: USER și ADMIN
+roluri USER și ADMIN;
 
-criptarea parolei cu BCrypt
+criptarea parolei cu BCrypt;
 
-răspuns 409 Conflict pentru cont duplicat
+răspuns 409 Conflict pentru cont duplicat;
 
-generare token JWT la login
+validare token JWT pe endpoint-uri protejate;
 
-validare token JWT pe endpoint-uri protejate
-
-endpoint privat /me funcțional și testat
+endpoint privat /me funcțional și testat.
 
 Joburi
-creare job cu utilizator autentificat
+creare job cu utilizator autentificat;
 
-listare publică joburi
+listare publică joburi;
 
-detalii job după id
+detalii job după ID;
 
-anulare job (cancel) de către owner
+anulare job de către owner;
 
-finalizare job (complete) de către owner
+finalizare job de către owner;
 
-control de ownership pentru acțiuni sensibile
+control de ownership pentru acțiuni sensibile;
 
-ascunderea joburilor CANCELED și COMPLETED din listarea publică
+ascunderea joburilor neactive din listarea publică.
+
+Aplicări
+aplicare la job de către utilizator autentificat;
+
+listarea aplicărilor pentru un job;
+
+acceptarea sau respingerea aplicanților de către owner;
+
+vizualizarea propriilor aplicări;
+
+testarea completă a flow-ului în Postman.
 
 Endpoint-uri disponibile în acest moment
 Publice
@@ -254,98 +286,48 @@ PATCH /api/jobs/{id}/cancel
 
 PATCH /api/jobs/{id}/complete
 
+POST /api/jobs/{jobId}/apply
+
+endpoint-urile pentru acceptarea și respingerea aplicărilor;
+
+endpoint-ul pentru vizualizarea propriilor aplicări.
+
 Probleme identificate și rezolvate
-problemă de conectare la MongoDB Atlas din cauza schimbării IP-ului public -> rezolvată prin whitelist în Network Access
+problemă de conectare la MongoDB Atlas din cauza schimbării IP-ului public, rezolvată prin whitelist în Network Access;
 
-useri vechi salvați neuniform în baza de date -> baza curățată pentru retestare
+URI MongoDB Atlas incomplet, rezolvat prin adăugarea numelui bazei de date;
 
-URI MongoDB Atlas fără numele bazei de date -> adăugat numele bazei în connection string
+variabile de mediu necitite corect din .env, rezolvate prin configurarea explicită a citirii lor;
 
-variabile de mediu JWT_SECRET și MONGODB_URI necitite automat din .env de Spring Boot -> integrată soluția pentru citirea .env
+eroare de parsing în .env, rezolvată prin corectarea formatului KEY=VALUE;
 
-eroare de parsing în .env (Malformed entry) -> rezolvată prin corectarea formatului KEY=VALUE
+eroare DNS/SRV la conectarea către Atlas, rezolvată prin corectarea URI-ului;
 
-eroare DNS/SRV la conectarea Atlas -> rezolvată prin corectarea URI-ului complet
+metodă duplicată isTokenValid în JwtService, eliminată;
 
-metodă duplicată isTokenValid în JwtService -> eliminată
+import greșit pentru JwtService, corectat;
 
-import greșit JwtService în UserController după refactor -> corectat spre pachetul security
+apel greșit static pe jwtService, corectat;
 
-apel static în loc de instanță pe jwtService în UserController -> corectat
+request greșit în Postman pentru GET /api/jobs/{id}, corectat prin folosirea ID-ului direct în URL;
 
-request greșit în Postman pentru GET /api/jobs/{id} -> corectat prin folosirea id-ului direct în URL, nu în body
+eroare JWT de tip MalformedJwtException apărută în testare, identificată ca fiind cauzată de token trimis greșit în request și rezolvată prin folosirea unui token valid;
 
-Funcționalități planificate — MVP licență
-profil utilizator
+Ce urmează să fie făcut
+Următorii pași logici pentru continuarea proiectului sunt:
 
-editare job
+stabilizarea finală a backend-ului pentru flow-ul de aplicări și revizuirea regulilor de securitate pentru endpoint-urile de tip GET care momentan sunt permise prin regula generală GET /api/jobs/**;
 
-aplicare la job
+îmbunătățirea filtrului JWT prin tratarea mai robustă a excepțiilor generate de tokenuri invalide;
 
-acceptare / respingere aplicant
+implementarea profilului de utilizator;
 
-status job automat în funcție de aplicanți
+editarea joburilor existente;
 
-review simplu după finalizare
+actualizarea automată a statusului jobului în funcție de numărul de aplicanți acceptați;
 
-după stabilizarea backend-ului -> începerea frontend-ului în React
+implementarea unui sistem simplu de review/rating după finalizarea unui job;
 
-Ce urmează — următorii pași concreți
-Următorul pas este implementarea fluxului de aplicare la job:
+dezvoltarea frontend-ului în React;
 
-un user poate aplica la un job postat de alt user
-
-poster-ul poate vedea lista aplicanților
-
-poster-ul poate accepta sau respinge aplicanți
-
-statusul jobului se poate actualiza automat în funcție de locurile disponibile
-
-după stabilizarea backend-ului pe partea de apply flow -> începerea frontend-ului în React
-
-Context pentru thread următor
-Dacă acest proiect este continuat într-un alt thread, contextul de pornire este:
-
-proiect licență: platformă web de microjoburi
-
-backend creat în Spring Boot 3.5.12, funcțional și pornit cu succes
-
-MongoDB Atlas conectat și funcțional, connection string complet cu numele bazei de date
-
-problema de whitelist IP pentru Atlas rezolvată
-
-Git și GitHub configurate, repository privat existent
-
-structura backend completă pe pachete
-
-entitatea User creată, enum Role cu USER și ADMIN
-
-UserRepository, UserService, UserController, CustomUserDetailsService create și funcționale
-
-register și login funcționează și au fost testate în Postman
-
-parolele sunt salvate hash-uit cu BCrypt
-
-DTO-urile LoginRequest și LoginResponse există
-
-JwtService, JwtAuthenticationFilter create și funcționale
-
-SecurityConfig este în forma finală stateless, complet configurată
-
-fluxul JWT este complet testat: register -> login -> token -> /me -> 200, fără token -> 401
-
-endpoint-ul /me există în UserController și funcționează corect
-
-variabilele sensibile sunt mutate în .env pentru dezvoltare locală
-
-entitatea Job este implementată
-
-JobStatus, CreateJobRequest, JobRepository, JobService, JobController sunt create și funcționale
-
-endpoint-urile POST /api/jobs, GET /api/jobs, GET /api/jobs/{id}, PATCH /api/jobs/{id}/cancel, PATCH /api/jobs/{id}/complete sunt implementate și testate în Postman
-
-logica de ownership pentru joburi este implementată
-
-următorul pas este implementarea aplicării la job și a gestionării aplicanților
-
-Update făcut în 9 aprilie 2026
+conectarea frontend-ului cu backend-ul și testarea completă end-to-end.
