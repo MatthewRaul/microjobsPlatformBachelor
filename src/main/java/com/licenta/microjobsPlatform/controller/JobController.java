@@ -1,5 +1,6 @@
 package com.licenta.microjobsPlatform.controller;
 
+import com.licenta.microjobsPlatform.service.AplicareService;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.security.core.Authentication;
 
 import com.licenta.microjobsPlatform.dto.CreateJobRequest;
+import com.licenta.microjobsPlatform.model.Aplicare;
 import com.licenta.microjobsPlatform.model.Job;
 import com.licenta.microjobsPlatform.service.JobService;
 
@@ -24,9 +26,11 @@ import com.licenta.microjobsPlatform.service.JobService;
 @RestController
 @RequestMapping("/api/jobs")
 public class JobController {
+    private final AplicareService aplicareService;
     private final JobService jobService;
-    public JobController(JobService jobService){
+    public JobController(JobService jobService, AplicareService aplicareService){
         this.jobService=jobService;
+        this.aplicareService = aplicareService;
     }
 
     @PostMapping
@@ -60,5 +64,17 @@ public class JobController {
         Job completedJob = jobService.completeJob(id, userEmail);
         return ResponseEntity.ok(completedJob);
     }
+
+    @PostMapping("/{jobId}/apply")
+    public ResponseEntity<Aplicare> applyToJob(@PathVariable String jobId){
+        return ResponseEntity.status(HttpStatus.CREATED).body(aplicareService.applyToJob(jobId));
+    }
+
+    @GetMapping("/{jobId}/aplicari")
+    public ResponseEntity<List<Aplicare>> getAplicariForJob(@PathVariable String jobId){
+        return ResponseEntity.ok(aplicareService.getAplicariForJob(jobId));
+    }
+    
+    
     
 }

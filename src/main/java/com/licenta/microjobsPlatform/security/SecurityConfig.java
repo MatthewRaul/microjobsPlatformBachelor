@@ -35,6 +35,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth->
                                 auth.requestMatchers("/api/users/register"
                                     ,"/api/users/login").permitAll().
+                                    requestMatchers("/error").permitAll().
                                     requestMatchers(HttpMethod.GET,"/api/jobs/**").permitAll()//register si login sunt publice
                                     .anyRequest().authenticated()
                                  )
