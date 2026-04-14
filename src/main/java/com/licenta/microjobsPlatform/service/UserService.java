@@ -1,5 +1,6 @@
 package com.licenta.microjobsPlatform.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.licenta.microjobsPlatform.dto.LoginRequest;
 import com.licenta.microjobsPlatform.dto.LoginResponse;
+import com.licenta.microjobsPlatform.dto.UpdateProfileRequest;
+import com.licenta.microjobsPlatform.dto.UserResponse;
 import com.licenta.microjobsPlatform.model.Role;
 import com.licenta.microjobsPlatform.model.User;
 import com.licenta.microjobsPlatform.repository.UserRepository;
@@ -40,11 +43,14 @@ public class UserService {
         }
 
         if (userRepository.existsByPhoneNumber(user.getPhoneNumber())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Exista deja un user cu acest numar de telefon");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Exista deja un utilizator cu acest numar de telefon");
         }
 
+        user.setCreatedAt(LocalDateTime.now());
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(Role.USER);
+        if(user.getBio()==null) user.setBio("");
+        if(user.getProfilePictureUrl()==null) user.setProfilePictureUrl("");
         return userRepository.save(user);
     }
 
@@ -82,4 +88,65 @@ public class UserService {
                 user.getRole()
         );
     }
+
+    public UserResponse getUserProfileById(String id){
+        User user = userRepository.findById(id)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Utilizator negasit"));
+        
+        UserResponse response= new UserResponse();
+        response.setId(user.getId());
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        response.setEmail(user.getEmail());
+        response.setBio(user.getBio());
+        response.setProfilePictureUrl(user.getProfilePictureUrl());
+        response.setCreatedAt(user.getCreatedAt());
+
+        return response;
+
+    }
+
+    public UserResponse updateProfile(String email,UpdateProfileRequest request){
+        User user= userRepository.findByEmail(email)
+                .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"Utilizator negasit"));
+
+        if(request.getFirstName()!=null){
+                user.setFirstName(request.getFirstName());
+        }
+
+        if(request.getLastName()!=null){
+                user.setLastName(request.getLastName());
+        }
+
+        if(request.getPhoneNumber()!=null){
+                boolean phoneUsedAlready=userRepository.existsByPhoneNumber(request.getPhoneNumber())&&
+                !request.getPhoneNumber().equals(user.getPhoneNumber());
+                if(phoneUsedAlready){
+                        throw new ResponseStatusException(HttpStatus.CONFLICT,"Exista deja un utilizator cu acest numar de telefon");
+                }
+
+        user.setPhoneNumber(request.getPhoneNumber());
+        }
+        if(request.getBio()!=null){
+                user.setBio(request.getBio());
+        }
+
+        if(request.getProfilePictureUrl()!=null){
+                user.setProfilePictureUrl(request.getProfilePictureUrl());
+        }
+
+        userRepository.save(user);
+
+        UserResponse response=new UserResponse();
+        response.setId(user.getId());
+        response.setFirstName(user.getFirstName());
+        response.setLastName(user.getLastName());
+        response.setEmail(user.getEmail());
+        response.setBio(user.getBio());
+        response.setProfilePictureUrl(user.getProfilePictureUrl());
+        response.setCreatedAt(user.getCreatedAt());
+
+        return response;
+    }
+   
 }

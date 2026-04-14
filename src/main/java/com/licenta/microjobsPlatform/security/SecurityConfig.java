@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
     private final CustomUserDetailsService customUserDetailsService;//serviciul care stie gasi userul dupa email
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
 
     @Bean
@@ -32,11 +33,12 @@ public class SecurityConfig {
         http
             .csrf(csrf-> csrf.disable())//Cross-Site Request Forgery - un site rau intentionat pacaleste browserul unui user deja autentificat sa trimita o cerere pe alt site in numele lui
             //trebuie dezactivat pentru teste, in special in Postman
+            .exceptionHandling(exception->exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
             .authorizeHttpRequests(auth->
-                                auth.requestMatchers("/api/users/register"
-                                    ,"/api/users/login").permitAll().
+                                auth.requestMatchers("/api/users/register","/api/users/login").permitAll().
                                     requestMatchers("/error").permitAll().
-                                    requestMatchers(HttpMethod.GET,"/api/jobs/**").permitAll()//register si login sunt publice
+                                    requestMatchers(HttpMethod.GET,"/api/jobs/**").permitAll().//register si login sunt publice
+                                    requestMatchers(HttpMethod.GET,"/api/users/profile/**").permitAll()
                                     .anyRequest().authenticated()
                                  )
                                 .sessionManagement(session->
