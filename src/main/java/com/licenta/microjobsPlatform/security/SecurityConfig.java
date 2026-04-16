@@ -1,5 +1,7 @@
 package com.licenta.microjobsPlatform.security;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,6 +16,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.licenta.microjobsPlatform.service.CustomUserDetailsService;
 
@@ -46,7 +51,8 @@ public class SecurityConfig {
                                 //serverul nu tine minte sesiuni pentru useri
                                 //doar verifica tokenul de fiecare data
                                 ).authenticationProvider(authenticationProvider())
-                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);//specifici ce provider de autentificare trebuie folosit
+                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)//specifici ce provider de autentificare trebuie folosit
+                                .cors(cors->{});//autroizare pentru frontend
             return http.build();//se termina configuratia si se transforma intr un obiect de tip
             //SecurityFilterChain gata de folosit
     }
@@ -71,6 +77,26 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(){
+        CorsConfiguration configuration=new CorsConfiguration();
+
+        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+
+        configuration.setAllowedMethods(List.of("GET","POST","PATCH","PUT","DELETE","OPTIONS"));
+
+         // Header-ele permise
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+
+        // Dacă vrei să permiți și trimiterea de credențiale/cookies
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 }
     
