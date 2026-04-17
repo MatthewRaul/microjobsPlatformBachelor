@@ -10,6 +10,7 @@ public class CreateJobRequest {
     private Integer acceptedWorkers;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
+    private Integer salary;
 
     public CreateJobRequest(){
     }
@@ -60,6 +61,14 @@ public class CreateJobRequest {
 
     public void setEndDate(LocalDateTime endDate) {
         this.endDate = endDate;
+    }
+
+    public Integer getSalary() {
+        return salary;
+    }
+
+    public void setSalary(Integer salary) {
+        this.salary = salary;
     }
 
     

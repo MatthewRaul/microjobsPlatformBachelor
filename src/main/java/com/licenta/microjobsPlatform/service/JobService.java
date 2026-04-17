@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.licenta.microjobsPlatform.dto.CreateJobRequest;
+import com.licenta.microjobsPlatform.exception.BadRequest;
 import com.licenta.microjobsPlatform.model.Job;
 import com.licenta.microjobsPlatform.model.JobStatus;
 import com.licenta.microjobsPlatform.repository.JobRepository;
@@ -29,6 +30,11 @@ public class JobService {
         job.setEndDate(request.getEndDate());
         job.setStatus(JobStatus.OPEN);
         job.setCreatedAt(LocalDateTime.now());
+        
+        if(request.getSalary()==null || request.getSalary()<0){
+            throw new BadRequest("Salariul trebuie sa fie minim 0 RON");
+        }
+        job.setSalary(request.getSalary());
         return jobRepository.save(job);
 
     }

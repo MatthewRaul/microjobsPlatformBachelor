@@ -1,6 +1,5 @@
 package com.licenta.microjobsPlatform.model;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;
@@ -20,6 +19,7 @@ public class Job {
     private LocalDateTime endDate;
     private JobStatus status;
     private LocalDateTime createdAt;
+    private Integer salary;
 
     public Job(){
 
@@ -27,7 +27,7 @@ public class Job {
 
     public Job(String id, String title, String description, String postedBy, Integer neededWorkers,
             Integer acceptedWorkers, LocalDateTime startDate, LocalDateTime endDate, JobStatus status,
-            LocalDateTime createdAt) {
+            LocalDateTime createdAt,Integer salary) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -38,6 +38,7 @@ public class Job {
         this.endDate = endDate;
         this.status = status;
         this.createdAt = createdAt;
+        this.salary=salary;
     }
 
     public String getId() {
@@ -120,6 +121,15 @@ public class Job {
         this.createdAt = createdAt;
     }
 
+    public Integer getSalary() {
+        return salary;
+    }
+
+    public void setSalary(Integer salary) {
+        this.salary = salary;
+    }
+
     
+
     
 }
