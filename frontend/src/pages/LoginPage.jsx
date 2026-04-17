@@ -4,12 +4,16 @@ import { useState } from "react";
 import { loginUser } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useLocation} from "react-router-dom";
 
 function LoginPage() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+
+  const location=useLocation();
+  const successMessage= location.state?.successMessage || "";
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -63,6 +67,8 @@ function LoginPage() {
   return (
     <section className="page auth-page">
       <h1>Login</h1>
+
+      {successMessage && <p className="form-success">{successMessage}</p>}
 
       <form className="auth-form" onSubmit={handleSubmit}>
         <label htmlFor="email">Email</label>

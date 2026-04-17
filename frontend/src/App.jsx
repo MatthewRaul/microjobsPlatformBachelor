@@ -10,6 +10,7 @@ import Navbar from "./components/Navbar";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import AddJobPage from "./pages/AddJobPage";
 
 function App() {
   return (
@@ -28,6 +29,9 @@ function App() {
 
           {/* Ruta /register va afișa pagina de înregistrare */}
           <Route path="/register" element={<RegisterPage />} />
+
+          {/*Ruta /add-job va afisa pagina de adaugare job uri */}
+          <Route path="/add-job" element={<AddJobPage />} />
         </Routes>
       </main>
     </div>
