@@ -5,21 +5,23 @@ Fluxul general al aplicației este următorul:
 •	utilizatorii pot vizualiza joburile disponibile și pot aplica la ele;
 •	utilizatorul care a postat jobul poate vedea aplicanții și îi poate accepta sau respinge;
 •	utilizatorul autentificat își poate vizualiza propriile aplicări;
+•	atunci când capacitatea unui job este atinsă, jobul este marcat ca plin și nu mai poate primi aplicări noi;
 •	ulterior poate fi adăugat un sistem de review/rating după finalizarea colaborării.
 ________________________________________
 Tehnologii folosite
 •	Backend: Spring Boot 3.5.12.
-•	Frontend: React, cu structură de proiect separată și integrare în curs cu backend-ul existent.
+•	Frontend: React, cu proiect separat și integrare funcțională cu backend-ul.
 •	Baza de date: MongoDB Atlas.
-•	Securitate: Spring Security + JWT, în mod stateless, adică fără sesiuni server-side.
+•	Securitate: Spring Security + JWT, în mod stateless, fără sesiuni server-side.
 •	HTTP client frontend: Axios, pentru conectarea React la API-ul backend.
 •	Build tool: Maven.
 •	Version control: Git + GitHub, repository privat.
 •	Editor folosit: Visual Studio Code.
 ________________________________________
 Stadiul curent al proiectului
-În acest moment, partea de backend este implementată în proporție mare la nivelul funcționalităților principale și a fost testată în Postman pentru fluxurile esențiale. Proiectul are deja o structură modulară clară, bazată pe separarea responsabilităților între controller, service, repository, model, DTO, security și exception, ceea ce reprezintă o abordare corectă pentru un backend Spring Boot de tip REST API.
-Frontend-ul în React nu mai este doar la nivel de inițializare, ci a început să fie conectat efectiv la backend-ul existent. Au fost deja implementate primele pagini și fluxuri funcționale, inclusiv autentificarea în frontend, listarea joburilor, crearea de joburi și aplicarea la joburi prin consumul endpoint-urilor reale din backend. Această abordare confirmă integrarea full-stack a proiectului și permite dezvoltarea incrementală a interfeței peste API-uri deja testate.
+În acest moment, backend-ul acoperă fluxurile principale ale aplicației și a fost testat pentru operațiile esențiale de autentificare, joburi și aplicări. Proiectul este organizat modular, pe straturi separate de controller, service, repository, model, DTO, security și exception, ceea ce reprezintă o structură corectă pentru un REST API dezvoltat cu Spring Boot.
+Frontend-ul în React nu mai este doar inițializat, ci este conectat efectiv la backend-ul existent. Sunt deja funcționale paginile de autentificare, listarea joburilor, crearea unui job, pagina de detalii pentru job și principalele acțiuni din fluxul de aplicare, inclusiv diferențierea dintre owner și applicant.
+În momentul actual, accentul a fost pus pe funcționalitate, nu pe design final. Interfața urmează să fie rafinată ulterior, după stabilizarea completă a fluxurilor principale și a tuturor scenariilor de utilizare.
 ________________________________________
 Realizat până acum
 Inițializare și configurare proiect
@@ -32,7 +34,6 @@ Până în acest moment au fost realizate următoarele:
 •	inițializarea repository-ului Git și conectarea la un repository privat GitHub;
 •	inițializarea separată a proiectului frontend în React;
 •	organizarea structurii frontend pe foldere dedicate pentru pagini, context, apeluri API și componente.
-________________________________________
 Structura backend
 Proiectul backend a fost organizat pe pachete separate:
 •	controller
@@ -55,28 +56,25 @@ A fost implementat modulul de utilizatori și autentificare, incluzând:
 •	DTO-urile LoginRequest și LoginResponse;
 •	generarea tokenului JWT la autentificare;
 •	endpoint-ul privat GET /api/users/me;
-•	testarea completă în Postman pentru fluxul register → login → token → /me.
-În plus, a fost început și modulul de profil, astfel încât utilizatorul autentificat să își poată vedea propriile date și să existe bază pentru extinderea ulterioară a profilului public și a editării profilului. Endpoint-ul GET /api/users/me întoarce în prezent datele utilizatorului logat, inclusiv firstName, email și role.
+•	integrarea autentificării în frontend prin AuthContext;
+•	salvarea tokenului JWT în frontend și reutilizarea lui pentru endpoint-urile protejate.
+Fluxul de login este funcțional atât în backend, cât și în frontend. După autentificare, utilizatorul logat este reîncărcat în interfață pe baza tokenului, iar datele sale sunt folosite pentru diferențierea comportamentului în pagini precum Home și Job Details.
+În plus, a fost început și modulul de profil, astfel încât utilizatorul autentificat să își poată vedea propriile date și să existe bază pentru extinderea ulterioară a profilului public și a editării profilului. Endpoint-ul GET /api/users/me este funcțional și returnează în prezent datele utilizatorului logat.
 ________________________________________
 Securitate
 Partea de securitate a fost implementată în mod stateless, folosind JWT și Spring Security. Au fost realizate:
 •	configurarea clasei SecurityConfig;
 •	definirea regulilor de acces pentru endpoint-urile publice și protejate;
-•	configurarea AuthenticationProvider cu DaoAuthenticationProvider;
-•	implementarea filtrului JwtAuthenticationFilter pentru extragerea și validarea tokenului din header-ul Authorization;
+•	configurarea autentificării bazate pe CustomUserDetailsService;
+•	implementarea filtrului JWT pentru extragerea și validarea tokenului din header-ul Authorization;
 •	validarea tokenului pe endpoint-urile protejate;
-•	integrarea autentificării bazate pe CustomUserDetailsService.
+•	integrarea autentificării în frontend prin Axios.
 În forma actuală:
-•	register, login și endpoint-urile publice de listare/detaliu job sunt accesibile fără autentificare;
-•	restul endpoint-urilor relevante pentru acțiuni sensibile necesită token JWT valid;
-•	în frontend, tokenul JWT este salvat după autentificare și este trimis către endpoint-urile protejate prin instanța Axios configurată pentru aplicație.
+•	register, login, GET /api/jobs și GET /api/jobs/{id} sunt accesibile public;
+•	endpoint-urile pentru creare job, aplicare, acceptare, respingere, anulare, finalizare și vizualizarea datelor proprii necesită token JWT valid.
 ________________________________________
 Gestionarea variabilelor sensibile
-Pentru dezvoltarea locală, variabilele sensibile au fost mutate în .env, iar aplicația a fost configurată pentru a le citi corect. Au fost rezolvate:
-•	erori de parsing în fișierul .env;
-•	probleme de configurare a valorilor sensibile;
-•	situații în care variabilele nu erau interpretate corect de aplicație.
-Această separare între cod și configurație sensibilă este o practică bună pentru dezvoltare și întreținere.
+Pentru dezvoltarea locală, variabilele sensibile au fost mutate în .env, iar aplicația a fost configurată pentru a le citi corect. Au fost rezolvate probleme legate de parsing, configurare și interpretare a valorilor sensibile. Această separare între cod și configurație reprezintă o practică bună pentru dezvoltare și întreținere.
 ________________________________________
 Modul joburi
 A fost implementat modulul de joburi, incluzând:
@@ -88,10 +86,13 @@ A fost implementat modulul de joburi, incluzând:
 •	endpoint-ul GET /api/jobs pentru listare publică;
 •	endpoint-ul GET /api/jobs/{id} pentru detalii job;
 •	endpoint-urile PATCH /api/jobs/{id}/cancel și PATCH /api/jobs/{id}/complete;
-•	logica de ownership, astfel încât doar utilizatorul care a postat jobul să poată modifica starea acestuia;
-•	filtrarea listării publice astfel încât să fie afișate doar joburile relevante și vizibile;
-•	testarea completă în Postman pentru create, get all, get by id, cancel și complete.
-Acest modul acoperă deja fluxul principal prin care un utilizator autentificat publică un microjob, iar ceilalți utilizatori îl pot vedea public. În frontend, listarea publică a joburilor este deja conectată la backend, iar formularul de creare job funcționează pentru utilizatorul autentificat.
+•	logica de ownership, astfel încât doar utilizatorul care a postat jobul să poată modifica starea acestuia.
+În acest modul a fost introdus și mecanismul de capacitate:
+•	fiecare job are un număr de locuri necesare (neededWorkers);
+•	a fost adăugat și contorul de locuri ocupate (acceptedWorkers);
+•	în interfață se afișează acum raportul dintre locurile ocupate și capacitatea totală;
+•	atunci când numărul de aplicanți acceptați ajunge la capacitatea setată, jobul este marcat ca FILLED.
+În frontend, listarea publică a joburilor este deja conectată la backend, iar formularul de creare job funcționează pentru utilizatorul autentificat. De asemenea, pagina de detalii pentru job este implementată și consumă endpoint-ul real de detaliu.
 ________________________________________
 Modul aplicări
 A fost implementat și modulul de aplicări, incluzând:
@@ -102,17 +103,28 @@ A fost implementat și modulul de aplicări, incluzând:
 •	AplicareController;
 •	endpoint-ul POST /api/jobs/{jobId}/apply pentru trimiterea unei aplicări la un job;
 •	endpoint-ul GET /api/jobs/{jobId}/aplicari pentru vizualizarea aplicanților unui job;
-•	fluxul prin care owner-ul jobului poate accepta sau respinge aplicanți;
-•	endpoint-ul GET /api/aplicari/me pentru vizualizarea propriilor aplicări de către utilizatorul autentificat;
-•	testarea completă a flow-ului în Postman.
-Prin acest modul, aplicația acoperă deja interacțiunea de bază dintre cele două roluri funcționale din sistem: cel care postează jobul și cel care aplică. În frontend, aplicarea la job a fost deja conectată la backend pentru joburile care nu aparțin utilizatorului curent, iar interfața diferențiază între joburile proprii și joburile altor utilizatori.
+•	endpoint-urile PATCH /api/aplicari/{aplicareId}/accept și PATCH /api/aplicari/{aplicareId}/reject;
+•	endpoint-ul GET /api/aplicari/me pentru vizualizarea propriilor aplicări.
+Prin acest modul, aplicația acoperă interacțiunea principală dintre cele două tipuri de utilizatori:
+•	utilizatorul care postează jobul;
+•	utilizatorul care aplică la job.
+În frontend au fost deja integrate următoarele:
+•	aplicarea la job din Home și din pagina de detalii;
+•	diferențierea dintre joburile proprii și joburile altor utilizatori;
+•	afișarea aplicanților în pagina de detalii pentru owner;
+•	acțiuni de acceptare și respingere din interfață pentru aplicările aflate în PENDING;
+•	verificarea faptului că un utilizator nu poate aplica de două ori la același job, pe baza endpoint-ului GET /api/aplicari/me și a verificărilor din backend.
+De asemenea, au fost clarificate și testate scenariile în care:
+•	owner-ul nu poate aplica la propriul job;
+•	un utilizator nu poate aplica din nou dacă are deja o aplicare la acel job;
+•	un job plin nu mai poate primi aplicări noi;
 ________________________________________
 Tratarea erorilor
-Pentru a avea răspunsuri mai clare și mai controlate din backend, a fost implementată o zonă dedicată tratării erorilor:
+Pentru a avea răspunsuri mai clare și controlate din backend, a fost implementată o zonă dedicată tratării erorilor:
 •	clasa ApiError;
 •	excepțiile custom BadRequest, ForbiddenAction, ResourceNotFound;
 •	GlobalExceptionHandler pentru centralizarea răspunsurilor de eroare.
-Această abordare face API-ul mai predictibil și mai ușor de consumat din frontend, deoarece erorile nu mai apar ca răspunsuri generice, ci într-un format coerent.
+Această abordare face API-ul mai predictibil și mai ușor de consumat din frontend, deoarece erorile apar într-un format coerent și pot fi tratate mai ușor în interfață.
 ________________________________________
 Structura curentă backend
 Structura actuală a proiectului backend este următoarea:
@@ -169,6 +181,7 @@ Frontend
 •	pages/LoginPage.jsx
 •	pages/RegisterPage.jsx
 •	pages/AddJobPage.jsx
+•	pages/JobDetailsPage.jsx
 ________________________________________
 Funcționalități implementate și testate
 Autentificare și utilizatori
@@ -176,9 +189,8 @@ Autentificare și utilizatori
 •	login utilizator cu generare token JWT;
 •	roluri USER și ADMIN;
 •	criptarea parolei cu BCrypt;
-•	răspuns 409 Conflict pentru cont duplicat;
 •	validare token JWT pe endpoint-uri protejate;
-•	endpoint privat /api/users/me funcțional și testat;
+•	endpoint privat /api/users/me funcțional;
 •	integrarea login-ului în frontend prin React și salvarea tokenului JWT;
 •	reîncărcarea utilizatorului logat în frontend pe baza tokenului salvat.
 Joburi
@@ -188,19 +200,21 @@ Joburi
 •	anulare job de către owner;
 •	finalizare job de către owner;
 •	control de ownership pentru acțiuni sensibile;
-•	ascunderea joburilor neactive din listarea publică;
 •	afișarea joburilor în frontend;
-•	afișarea detaliilor principale în cardurile din interfață, inclusiv descriere, status, capacitate, salariu și interval temporal;
+•	afișarea detaliilor principale în cardurile din interfață, inclusiv descriere, status, capacitate, locuri ocupate, salariu și interval temporal;
 •	diferențiere în interfață între joburile proprii și cele ale altor utilizatori;
-•	afișarea unui meniu contextual pentru joburile proprii.
+•	afișarea unui meniu contextual pentru joburile proprii în pagina principală;
+•	afișarea mesajului specific atunci când un job este plin.
 Aplicări
 •	aplicare la job de către utilizator autentificat;
+•	blocarea aplicării la propriul job;
+•	blocarea dublei aplicări la același job;
 •	listarea aplicărilor pentru un job;
 •	acceptarea sau respingerea aplicanților de către owner;
-•	vizualizarea propriilor aplicări;
-•	testarea completă a flow-ului în Postman;
-•	integrarea butonului de aplicare în frontend pentru joburile altor utilizatori;
-•	confirmarea cu succes a fluxului de aplicare din interfață către backend.
+•	actualizarea numărului de locuri ocupate după acceptare;
+•	trecerea jobului în FILLED atunci când se atinge capacitatea;
+•	vizualizarea propriilor aplicări prin endpoint-ul /api/aplicari/me;
+•	integrarea fluxului de aplicare în frontend atât în Home, cât și în pagina de detalii.
 ________________________________________
 Endpoint-uri disponibile în acest moment
 Publice
@@ -215,6 +229,7 @@ Protejate
 •	PATCH /api/jobs/{id}/complete
 •	POST /api/jobs/{jobId}/apply
 •	GET /api/aplicari/me
+•	GET /api/jobs/{jobId}/aplicari
 •	PATCH /api/aplicari/{aplicareId}/accept
 •	PATCH /api/aplicari/{aplicareId}/reject
 ________________________________________
@@ -224,14 +239,12 @@ Până acum au fost identificate și rezolvate mai multe probleme tehnice:
 •	URI MongoDB incomplet, rezolvat prin adăugarea numelui bazei de date;
 •	variabile de mediu necitite corect din .env, rezolvate prin configurarea explicită a citirii lor;
 •	erori de parsing în .env, rezolvate prin corectarea formatului KEY=VALUE;
-•	eroare DNS/SRV la conectarea către Atlas, rezolvată prin corectarea URI-ului;
-•	metodă duplicată isTokenValid în JwtService, eliminată;
-•	import greșit pentru JwtService, corectat;
-•	apel greșit static pe jwtService, corectat;
-•	request greșit în Postman pentru GET /api/jobs/{id}, corectat prin folosirea ID-ului direct în URL;
-•	eroare MalformedJwtException apărută în testare, identificată ca fiind cauzată de token trimis greșit și rezolvată prin utilizarea unui token valid;
+•	probleme de conectare și configurare la backend în faza inițială;
 •	probleme de integrare frontend-backend cauzate de lipsa header-ului Authorization în request-urile protejate, rezolvate prin configurarea corectă a instanței Axios;
-•	erori de frontend legate de apeluri greșite și variabile nedefinite în logica de aplicare la job, corectate în procesul de integrare.
+•	erori în fluxul de login și reîncărcare a utilizatorului logat în frontend, corectate în procesul de integrare;
+•	erori de frontend legate de apeluri greșite și variabile nedefinite în logica de aplicare la job, corectate pe parcurs;
+•	clarificarea și corectarea logicii pentru acceptedWorkers și pentru corelarea dintre capacitatea jobului și statusul FILLED;
+•	clarificarea modului în care frontend-ul verifică dacă utilizatorul a aplicat deja, folosind GET /api/aplicari/me și câmpul jobId.
 ________________________________________
 Ce s-a început între timp
 Pe lângă backend, a fost inițializată și partea de frontend în React, într-un proiect separat, cu structură de bază pentru:
@@ -240,28 +253,31 @@ Pe lângă backend, a fost inițializată și partea de frontend în React, înt
 •	context
 •	pages
 •	styles
-Această organizare este potrivită pentru continuarea dezvoltării frontend-ului peste API-ul existent și permite o separare clară între pagini, componente reutilizabile, logică de autentificare și apeluri către backend. În plus, au fost deja începute și conectate paginile principale necesare fluxului de bază: Home, Login, Register și Add Job.
+Au fost deja începute și conectate paginile principale necesare fluxului de bază:
+•	Home;
+•	Login;
+•	Register;
+•	Add Job;
+•	Job Details.
+În acest moment, aceste pagini nu sunt încă finisate din punct de vedere vizual, dar sunt folosite activ pentru testarea și stabilizarea fluxurilor funcționale.
 ________________________________________
 Ce urmează să fie făcut
 Backend
+•	verificarea finală și stabilizarea logicii din AplicareService, astfel încât fluxul de acceptare să rămână consistent în toate scenariile-limită;
+•	revizuirea finală a regulilor de securitate pentru endpoint-urile care sunt momentan mai permisive decât ar trebui;
 •	finalizarea completă a modulului de profil utilizator;
-•	definirea clară a răspunsului pentru profil public vs. profil propriu;
-•	revizuirea finală a regulilor de securitate pentru endpoint-urile GET permise public;
-•	tratarea mai robustă a excepțiilor generate de tokenuri invalide în filtrul JWT;
 •	implementarea editării joburilor existente;
-•	actualizarea automată a statusului jobului în funcție de deciziile asupra aplicanților;
-•	pregătirea backend-ului pentru integrare completă cu frontend-ul.
+•	eventual separarea mai clară între profil propriu și profil public.
 Frontend
-•	configurarea completă a routing-ului în React;
-•	implementarea paginii de detalii pentru job;
+•	finalizarea logicii din Home pentru ascunderea/dezactivarea corectă a acțiunii de aplicare atunci când utilizatorul a aplicat deja sau când jobul este plin;
+•	finalizarea aceleiași logici în pagina de detalii pentru job;
 •	implementarea paginii pentru aplicările proprii;
 •	implementarea paginii pentru joburile proprii;
-•	permiterea navigării din lista aplicărilor către anunțul corespunzător;
-•	implementarea acțiunilor complete pentru owner în interfață, inclusiv anulare, informații și ulterior editare;
-•	rafinarea protejării rutelor care necesită autentificare;
-•	testarea completă end-to-end între React și Spring Boot.
+•	completarea acțiunilor owner-ului din interfață;
+•	testarea completă end-to-end între React și Spring Boot pentru toate fluxurile importante;
+•	după stabilizarea completă a funcționalității, rafinarea interfeței și a designului.
 Extensii ulterioare
 •	sistem simplu de review/rating după finalizarea unui job;
-•	eventuale îmbunătățiri de UI/UX și validări suplimentare în frontend;
-•	rafinarea controlului de acces pe anumite endpoint-uri și scenarii limită.
+•	validări suplimentare în frontend;
+•	îmbunătățiri de UI/UX după încheierea părții funcționale.
 
