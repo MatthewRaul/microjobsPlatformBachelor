@@ -12,8 +12,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.licenta.microjobsPlatform.dto.LoginRequest;
 import com.licenta.microjobsPlatform.dto.LoginResponse;
+import com.licenta.microjobsPlatform.dto.PublicUserProfileResponse;
 import com.licenta.microjobsPlatform.dto.UpdateProfileRequest;
 import com.licenta.microjobsPlatform.dto.UserResponse;
+import com.licenta.microjobsPlatform.exception.ResourceNotFound;
 import com.licenta.microjobsPlatform.model.Role;
 import com.licenta.microjobsPlatform.model.User;
 import com.licenta.microjobsPlatform.repository.UserRepository;
@@ -151,6 +153,21 @@ public class UserService {
         response.setRole(user.getRole().name());
 
         return response;
+    }
+
+    public PublicUserProfileResponse getPublicUserProfile(String email) {
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new ResourceNotFound("Utilizatorul nu exista."));
+
+    return new PublicUserProfileResponse(
+            user.getId(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getBio(),
+            user.getProfilePictureUrl(),
+            user.getPhoneNumber(),
+            user.getEmail()
+    );
     }
    
 }

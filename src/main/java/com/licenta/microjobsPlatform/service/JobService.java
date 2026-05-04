@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.licenta.microjobsPlatform.dto.CreateJobRequest;
+import com.licenta.microjobsPlatform.dto.UpdateJobRequest;
 import com.licenta.microjobsPlatform.exception.BadRequest;
 import com.licenta.microjobsPlatform.model.Job;
 import com.licenta.microjobsPlatform.model.JobStatus;
@@ -107,5 +108,94 @@ public class JobService {
         }
 
         return jobs;
+    }
+
+    public Job updateJob(String id, UpdateJobRequest request, String userEmail) {
+    Job job = jobRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Job not found"));
+
+    if (!job.getPostedBy().equals(userEmail)) {
+        throw new RuntimeException("You are not allowed to edit this job");
+    }
+
+    if (job.getStatus() == JobStatus.CANCELED || job.getStatus() == JobStatus.COMPLETED) {
+        throw new BadRequest("Nu poti edita un job inchis.");
+    }
+
+    if (job.getAcceptedWorkers() == null) {
+        job.setAcceptedWorkers(0);
+    }
+
+    String title = request.getTitle() != null ? request.getTitle().trim() : "";
+    String description = request.getDescription() != null ? request.getDescription().trim() : "";
+    String location = request.getLocation() != null ? request.getLocation().trim() : "";
+
+    Integer neededWorkers = request.getNeededWorkers();
+    Integer salary = request.getSalary();
+    LocalDateTime startDate = request.getStartDate();
+    LocalDateTime endDate = request.getEndDate();
+
+    if (title.isBlank()) {
+        throw new BadRequest("Titlul este obligatoriu.");
+    }
+
+    if (description.isBlank()) {
+        throw new BadRequest("Descrierea este obligatorie.");
+    }
+
+    if (location.isBlank()) {
+        throw new BadRequest("Locatia este obligatorie.");
+    }
+
+    if (salary == null || salary < 0) {
+        throw new BadRequest("Salariul trebuie sa fie minim 0 RON");
+    }
+
+    if (neededWorkers == null || neededWorkers <= 0) {
+        throw new BadRequest("Numarul de locuri trebuie sa fie mai mare decat 0.");
+    }
+
+    if (neededWorkers < job.getAcceptedWorkers()) {
+        throw new BadRequest("Numarul de locuri nu poate fi mai mic decat numarul de aplicanti acceptati.");
+    }
+
+    if (startDate == null) {
+        throw new BadRequest("Data de inceput este obligatorie.");
+    }
+
+    if (endDate == null) {
+        throw new BadRequest("Data de sfarsit este obligatorie.");
+    }
+
+    if (endDate.isBefore(startDate)) {
+        throw new BadRequest("Data de sfarsit trebuie sa fie dupa data de inceput.");
+    }
+
+    job.setTitle(title);
+    job.setDescription(description);
+    job.setNeededWorkers(neededWorkers);
+    job.setStartDate(startDate);
+    job.setEndDate(endDate);
+    job.setSalary(salary);
+    job.setLocation(location);
+
+    if (job.getAcceptedWorkers() >= job.getNeededWorkers()) {
+        job.setStatus(JobStatus.FILLED);
+    } else {
+        job.setStatus(JobStatus.OPEN);
+    }
+
+    return jobRepository.save(job);
+    }
+
+    public void deleteJob(String id, String userEmail) {
+    Job job = jobRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Job not found"));
+
+    if (!job.getPostedBy().equals(userEmail)) {
+        throw new RuntimeException("You are not allowed to delete this job");
+    }
+
+    jobRepository.delete(job);
     }
 }

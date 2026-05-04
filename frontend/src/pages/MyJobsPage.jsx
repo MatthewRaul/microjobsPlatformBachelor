@@ -13,10 +13,12 @@ export default function MyJobsPage() {
 
   const fetchMyJobs = async () => {
     try {
+      setError("");
       setLoading(true);
-      const data= await getMyJobs();
+      const data = await getMyJobs();
       setMyJobs(data);
     } catch (err) {
+      console.log("EROARE MY JOBS", err);
       setError("Nu am putut încărca joburile tale.");
     } finally {
       setLoading(false);
@@ -33,7 +35,7 @@ export default function MyJobsPage() {
     try {
       await cancelJob(jobId);
       setMessage("Jobul a fost anulat.");
-      fetchMyJobs();
+      await fetchMyJobs();
     } catch (err) {
       setMessage("Nu s-a putut anula jobul.");
     }
@@ -43,64 +45,91 @@ export default function MyJobsPage() {
     try {
       await completeJob(jobId);
       setMessage("Jobul a fost marcat ca finalizat.");
-      fetchMyJobs();
+      await fetchMyJobs();
     } catch (err) {
       setMessage("Nu s-a putut finaliza jobul.");
     }
   };
 
+  const getStatusColor = (status) => {
+    if (status === "OPEN") return "green";
+    if (status === "FILLED") return "#b8860b";
+    if (status === "COMPLETED") return "#1e3a8a";
+    if (status === "CANCELED") return "red";
+    return "#333";
+  };
+
   if (loading) {
-    return <div>Se încarcă joburile tale...</div>;
+    return <div style={{ padding: "20px" }}>Se încarcă joburile tale...</div>;
   }
 
   if (error) {
-    return <div>{error}</div>;
+    return <div style={{ padding: "20px" }}>{error}</div>;
   }
 
   return (
     <div style={{ padding: "20px" }}>
       <h1>Joburile mele</h1>
 
-      {message && <p>{message}</p>}
+      {message && <p style={{ marginTop: "10px" }}>{message}</p>}
 
       {myJobs.length === 0 ? (
         <p>Nu ai postat încă niciun job.</p>
       ) : (
-        myJobs.map((job) => {
-          const jobId = job.id || job._id;
+        <div style={{ marginTop: "20px" }}>
+          {myJobs.map((job) => {
+            const jobId = job.id || job._id;
+            const isClosed =
+              job.status === "CANCELED" || job.status === "COMPLETED";
 
-          return (
-            <div
-              key={jobId}
-              style={{
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                padding: "16px",
-                marginBottom: "12px",
-              }}
-            >
-              <h3>{job.title}</h3>
+            return (
+              <div
+                key={jobId}
+                style={{
+                  border: "1px solid #ccc",
+                  borderRadius: "8px",
+                  padding: "16px",
+                  marginBottom: "12px",
+                }}
+              >
+                <h3>{job.title}</h3>
 
-              <p><strong>Descriere:</strong> {job.description || "Fără descriere"}</p>
-              <p><strong>Status:</strong> {job.status}</p>
-              <p><strong>Capacitate:</strong> {job.neededWorkers ?? "Nespecificat"}</p>
-              <p><strong>Salariu:</strong> {job.salary ?? "0"}</p>
-              <p><strong>Locație:</strong> {job.location || "Nespecificată"}</p>
+                <p><strong>Descriere:</strong> {job.description || "Fără descriere"}</p>
 
-              <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
-                <Link to={`/jobs/${jobId}`}>Vezi detalii</Link>
+                <p>
+                  <strong>Status:</strong>{" "}
+                  <span style={{ color: getStatusColor(job.status), fontWeight: "bold" }}>
+                    {job.status}
+                  </span>
+                </p>
 
-                <button onClick={() => handleCancel(jobId)}>
-                  Anulează
-                </button>
+                <p><strong>Capacitate:</strong> {job.neededWorkers ?? "Nespecificat"}</p>
+                <p>
+                  <strong>Locuri ocupate:</strong>{" "}
+                  {job.acceptedWorkers ?? 0} / {job.neededWorkers ?? "Nespecificat"}
+                </p>
+                <p><strong>Salariu:</strong> {job.salary ?? "0"}</p>
+                <p><strong>Locație:</strong> {job.location || "Nespecificată"}</p>
 
-                <button onClick={() => handleComplete(jobId)}>
-                  Marchează finalizat
-                </button>
+                <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+                  <Link to={`/jobs/${jobId}`}>Vezi detalii</Link>
+
+                  {!isClosed && (
+                    <>
+                      <button onClick={() => handleCancel(jobId)}>
+                        Anulează
+                      </button>
+
+                      <button onClick={() => handleComplete(jobId)}>
+                        Marchează finalizat
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })
+            );
+          })}
+        </div>
       )}
     </div>
   );

@@ -116,12 +116,22 @@ public class AplicareService {
         throw new BadRequest("Doar aplicarile PENDING pot fi acceptate");
     }
 
-    if (job.getStatus() == JobStatus.FILLED) {
-        throw new BadRequest("Jobul este deja plin.");
+    if (job.getStatus() == JobStatus.CANCELED || job.getStatus() == JobStatus.COMPLETED) {
+        throw new BadRequest("Nu poti accepta aplicari pentru un job inchis.");
     }
 
     if (job.getAcceptedWorkers() == null) {
         job.setAcceptedWorkers(0);
+    }
+
+    if (job.getNeededWorkers() == null || job.getNeededWorkers() <= 0) {
+        throw new BadRequest("Capacitatea jobului este invalida.");
+    }
+
+    if (job.getAcceptedWorkers() >= job.getNeededWorkers()) {
+        job.setStatus(JobStatus.FILLED);
+        jobRepository.save(job);
+        throw new BadRequest("Jobul este deja plin.");
     }
 
     aplicare.setStatus(AplicareStatus.ACCEPTED);
@@ -129,11 +139,20 @@ public class AplicareService {
 
     job.setAcceptedWorkers(job.getAcceptedWorkers() + 1);
 
-    if (job.getNeededWorkers() != null && job.getAcceptedWorkers() >= job.getNeededWorkers()) {
+    if (job.getAcceptedWorkers() >= job.getNeededWorkers()) {
         job.setStatus(JobStatus.FILLED);
-    }
+        jobRepository.save(job);
 
-    jobRepository.save(job);
+        List<Aplicare> aplicari = aplicareRepository.findByJobId(job.getId());
+        for (Aplicare a : aplicari) {
+            if (a.getStatus() == AplicareStatus.PENDING) {
+                a.setStatus(AplicareStatus.REJECTED);
+                aplicareRepository.save(a);
+            }
+        }
+    } else {
+        jobRepository.save(job);
+    }
 
     return savedAplicare;
     }

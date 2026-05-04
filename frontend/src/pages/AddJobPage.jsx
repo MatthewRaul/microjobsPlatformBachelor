@@ -1,6 +1,6 @@
-import {useState} from "react";
-import {createJob} from "../api/jobApi";
-import { useNavigate } from "react-router-dom";
+import {useState, useEffect} from "react";
+import {createJob, updateJob, getJobById} from "../api/jobApi";
+import { useNavigate,useParams } from "react-router-dom";
 
 
 function AddJobPage() {

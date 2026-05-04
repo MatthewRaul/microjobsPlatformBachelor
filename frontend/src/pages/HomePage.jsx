@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getAllJobs, applyToJob, getMyApplications } from "../api/jobApi";
+import { getAllJobs, applyToJob, getMyApplications, deleteJob } from "../api/jobApi";
 import { useNavigate, Link } from "react-router-dom";
 
 function HomePage() {
@@ -12,9 +12,7 @@ function HomePage() {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
-
   const [openMenuId, setOpenMenuId] = useState(null);
-  const menuRef = useRef(null);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -27,13 +25,13 @@ function HomePage() {
 
         if (isAuthenticated) {
           const myApplications = await getMyApplications();
-
           const ids = myApplications.map((application) => application.jobId);
           setAppliedJobIds(ids);
         } else {
           setAppliedJobIds([]);
         }
       } catch (err) {
+        console.log("EROARE HOME PAGE", err);
         setError("Nu am putut încărca joburile.");
       } finally {
         setLoadingJobs(false);
@@ -44,7 +42,6 @@ function HomePage() {
 
     const handleClickOutside = (event) => {
       const clickedInsideMenu = event.target.closest(".job-owner-menu");
-
       if (!clickedInsideMenu) {
         setOpenMenuId(null);
       }
@@ -66,11 +63,16 @@ function HomePage() {
     }
   };
 
-  const handleApply = async (jobId) => {
+  const handleApply = async (jobId, job) => {
     if (!isAuthenticated) {
       navigate("/login", {
         state: { redirectTo: "/" },
       });
+      return;
+    }
+
+    if (user?.email === job.postedBy) {
+      alert("Nu poți aplica la propriul job.");
       return;
     }
 
@@ -79,14 +81,51 @@ function HomePage() {
       return;
     }
 
+    const isFilled =
+      job.status === "FILLED" ||
+      (
+        job.neededWorkers != null &&
+        job.acceptedWorkers != null &&
+        job.acceptedWorkers >= job.neededWorkers
+      );
+
+    const isClosed =
+      job.status === "CANCELED" || job.status === "COMPLETED";
+
+    if (isClosed) {
+      alert("Nu poți aplica la un job închis.");
+      return;
+    }
+
+    if (isFilled) {
+      alert("Locurile pentru acest job s-au ocupat.");
+      return;
+    }
+
     try {
       await applyToJob(jobId);
-      alert("Ai aplicat cu succes la acest job");
-
+      alert("Ai aplicat cu succes la acest job.");
       setAppliedJobIds((prev) => [...prev, jobId]);
     } catch (err) {
-      console.error("Eroare la aplicare: ", err);
-      alert("Nu s-a putut trimite aplicarea");
+      console.error("Eroare la aplicare:", err);
+      alert("Nu s-a putut trimite aplicarea.");
+    }
+  };
+
+  const handleDeleteJob = async (jobId) => {
+    const confirmDelete = window.confirm("Sigur vrei să ștergi acest job?");
+    if (!confirmDelete) return;
+
+    try {
+      await deleteJob(jobId);
+
+      setJobs((prevJobs) => prevJobs.filter((job) => (job.id || job._id) !== jobId));
+      setOpenMenuId(null);
+
+      alert("Jobul a fost șters.");
+    } catch (err) {
+      console.error("Eroare la ștergerea jobului:", err);
+      alert("Nu s-a putut șterge jobul.");
     }
   };
 
@@ -122,6 +161,7 @@ function HomePage() {
               const jobId = job.id || job._id;
               const isOwner = isAuthenticated && user?.email === job.postedBy;
               const hasApplied = appliedJobIds.includes(jobId);
+
               const isFilled =
                 job.status === "FILLED" ||
                 (
@@ -129,6 +169,9 @@ function HomePage() {
                   job.acceptedWorkers != null &&
                   job.acceptedWorkers >= job.neededWorkers
                 );
+
+              const isClosed =
+                job.status === "CANCELED" || job.status === "COMPLETED";
 
               return (
                 <div key={jobId} className="card">
@@ -174,10 +217,7 @@ function HomePage() {
                     </Link>
 
                     {isOwner ? (
-                      <div
-                        className="job-owner-menu"
-                        ref={openMenuId === jobId ? menuRef : null}
-                      >
+                      <div className="job-owner-menu">
                         <button
                           className="menu-button"
                           onClick={() =>
@@ -189,8 +229,17 @@ function HomePage() {
 
                         {openMenuId === jobId && (
                           <div className="dropdown-menu">
-                            <button className="primary-button">Editează</button>
-                            <button className="primary-button">Șterge</button>
+                            <Link to={`/jobs/${jobId}/edit`} className="primary-button">
+                              Editează
+                            </Link>
+
+                            <button
+                              className="primary-button"
+                              onClick={() => handleDeleteJob(jobId)}
+                            >
+                              Șterge
+                            </button>
+
                             <button className="primary-button">Informații</button>
                           </div>
                         )}
@@ -199,6 +248,10 @@ function HomePage() {
                       <div className="status-box applied-box">
                         Ai aplicat deja
                       </div>
+                    ) : isClosed ? (
+                      <div className="status-box filled-box">
+                        Jobul nu mai este disponibil
+                      </div>
                     ) : isFilled ? (
                       <div className="status-box filled-box">
                         Locurile pentru acest job s-au ocupat
@@ -206,7 +259,7 @@ function HomePage() {
                     ) : (
                       <button
                         className="primary-button"
-                        onClick={() => handleApply(jobId)}
+                        onClick={() => handleApply(jobId, job)}
                       >
                         Aplică la job
                       </button>

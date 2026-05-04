@@ -18,6 +18,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.licenta.microjobsPlatform.dto.LoginRequest;
 import com.licenta.microjobsPlatform.dto.LoginResponse;
+import com.licenta.microjobsPlatform.dto.PublicUserProfileResponse;
 import com.licenta.microjobsPlatform.dto.UpdateProfileRequest;
 import com.licenta.microjobsPlatform.dto.UserResponse;
 import com.licenta.microjobsPlatform.model.User;
@@ -87,7 +88,7 @@ public class UserController {
     return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/me")
+    @PatchMapping("/me")//actualizeaza profilul propriu
     public ResponseEntity<UserResponse> updateProfile(
         @RequestHeader("Authorization") String authHeader,
         @RequestBody UpdateProfileRequest request){
@@ -99,13 +100,10 @@ public class UserController {
         return ResponseEntity.ok(userService.updateProfile(email, request));
     }
 
-    @GetMapping("/profile/{id}")
-    public ResponseEntity<UserResponse> getUserProfile(@PathVariable String id) {
-        return ResponseEntity.ok(userService.getUserProfileById(id));
+    @GetMapping("/public/{id}")//intri pe profilul altui user
+    public ResponseEntity<PublicUserProfileResponse> getPublicUserProfile(@PathVariable("id") String email) {
+        return ResponseEntity.ok(userService.getPublicUserProfile(email));
     }
+    
 
-
-    
-    
-    
 }

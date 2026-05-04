@@ -16,6 +16,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import JobDetailsPage from "./pages/JobDetailsPage";
 import MyJobsPage from "./pages/MyJobsPage";
 import ProfilePage from "./pages/ProfilePage";
+import PublicProfilePage from "./pages/PublicProfilePage";
+import EditJobPage from "./pages/EditJobPage";
 
 function App() {
   return (
@@ -37,6 +39,8 @@ function App() {
 
           <Route path="/jobs/:id" element={<JobDetailsPage />} />
 
+          <Route path="/users/public/:id" element={<PublicProfilePage/>}/>
+
           
 
           <Route element={<ProtectedRoute />}>
@@ -44,6 +48,7 @@ function App() {
               <Route path="/add-job" element={<AddJobPage />} />
               <Route path="/my-jobs" element={<MyJobsPage/>} />
               <Route path="/profile" element={<ProfilePage/>} />
+              <Route path="/jobs/:id/edit" element={<EditJobPage/>}/>
               
           </Route>
         </Routes>

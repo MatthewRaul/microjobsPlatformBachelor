@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   getJobById,
   applyToJob,
@@ -8,6 +8,7 @@ import {
   rejectApplication,
   cancelJob,
   completeJob,
+  deleteJob,
   getMyApplications,
 } from "../api/jobApi";
 import { useAuth } from "../context/AuthContext";
@@ -16,6 +17,7 @@ export default function JobDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+
   const [hasApplied, setHasApplied] = useState(false);
   const [job, setJob] = useState(null);
   const [applications, setApplications] = useState([]);
@@ -47,14 +49,12 @@ export default function JobDetailsPage() {
       if (isAuthenticated && user && !owner) {
         const myApplications = await getMyApplications();
         const alreadyApplied = myApplications.some(
-          (application)=>application.jobId=== id
+          (application) => application.jobId === id
         );
-        
         setHasApplied(alreadyApplied);
       } else {
         setHasApplied(false);
       }
-        
     } catch (err) {
       console.log("EROARE fetchJobDetails", err);
       setError("Nu am putut încărca jobul.");
@@ -110,7 +110,7 @@ export default function JobDetailsPage() {
     try {
       await rejectApplication(applicationId);
       setMessage("Aplicarea a fost respinsă.");
-      fetchJobDetails();
+      await fetchJobDetails();
     } catch (err) {
       setMessage("Nu s-a putut respinge aplicarea.");
     }
@@ -120,7 +120,7 @@ export default function JobDetailsPage() {
     try {
       await cancelJob(id);
       setMessage("Jobul a fost anulat.");
-      fetchJobDetails();
+      await fetchJobDetails();
     } catch (err) {
       setMessage("Nu s-a putut anula jobul.");
     }
@@ -130,9 +130,22 @@ export default function JobDetailsPage() {
     try {
       await completeJob(id);
       setMessage("Jobul a fost marcat ca finalizat.");
-      fetchJobDetails();
+      await fetchJobDetails();
     } catch (err) {
       setMessage("Nu s-a putut finaliza jobul.");
+    }
+  };
+
+  const handleDeleteJob = async () => {
+    const confirmDelete = window.confirm("Sigur vrei să ștergi acest job?");
+    if (!confirmDelete) return;
+
+    try {
+      await deleteJob(id);
+      navigate("/");
+    } catch (err) {
+      console.error("EROARE DELETE JOB", err);
+      setMessage("Nu s-a putut șterge jobul.");
     }
   };
 
@@ -172,21 +185,33 @@ export default function JobDetailsPage() {
         {job.endDate ? new Date(job.endDate).toLocaleString("ro-RO") : "Nespecificat"}
       </p>
 
+      {isOwner && (
+        <div style={{ display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap" }}>
+          <Link to={`/jobs/${job.id || job._id}/edit`} className="primary-button">
+            Editează jobul
+          </Link>
+
+          <button onClick={handleDeleteJob} className="primary-button">
+            Șterge jobul
+          </button>
+        </div>
+      )}
+
       {!isOwner && (
-  <div style={{ marginTop: "20px" }}>
-    {hasApplied ? (
-      <p style={{ color: "green", fontWeight: "bold" }}>
-        Ai aplicat deja la acest job.
-      </p>
-    ) : isFilled ? (
-      <p style={{ color: "red", fontWeight: "bold" }}>
-        Locurile pentru acest job s-au ocupat.
-      </p>
-    ) : (
-      <button onClick={handleApply}>Aplică la job</button>
-    )}
-  </div>
-)}
+        <div style={{ marginTop: "20px" }}>
+          {hasApplied ? (
+            <p style={{ color: "green", fontWeight: "bold" }}>
+              Ai aplicat deja la acest job.
+            </p>
+          ) : isFilled ? (
+            <p style={{ color: "red", fontWeight: "bold" }}>
+              Locurile pentru acest job s-au ocupat.
+            </p>
+          ) : (
+            <button onClick={handleApply}>Aplică la job</button>
+          )}
+        </div>
+      )}
 
       {message && <p style={{ marginTop: "12px" }}>{message}</p>}
 
@@ -209,36 +234,67 @@ export default function JobDetailsPage() {
           {applications.length === 0 ? (
             <p>Nu există aplicări pentru acest job.</p>
           ) : (
-            applications.map((application) => (
-              <div
-                key={application.id || application._id}
-                style={{
-                  border: "1px solid #ccc",
-                  borderRadius: "8px",
-                  padding: "12px",
-                  marginBottom: "10px",
-                }}
-              >
-                <p><strong>ID aplicare:</strong> {application.id || application._id}</p>
-                <p><strong>Status:</strong> {application.status}</p>
-                <p><strong>Email aplicant:</strong> {application.applicantEmail || application.email || "-"}</p>
+            applications.map((application) => {
+              const applicantEmail =
+                application.applicantEmail || application.email || "";
 
-                {application.status === "PENDING" ? (
-                  <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
-                    <button onClick={() => handleAccept(application.id || application._id)}>
-                      Acceptă
-                    </button>
-                    <button onClick={() => handleReject(application.id || application._id)}>
-                      Respinge
-                    </button>
-                  </div>
-                ) : (
-                  <p style={{ marginTop: "10px" }}>
-                    Aplicarea a fost deja procesată.
+              const applicantName =
+                application.applicantFirstName && application.applicantLastName
+                  ? `${application.applicantFirstName} ${application.applicantLastName}`
+                  : applicantEmail || "Utilizator";
+
+              return (
+                <div
+                  key={application.id || application._id}
+                  style={{
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    padding: "12px",
+                    marginBottom: "10px",
+                  }}
+                >
+                  <p><strong>ID aplicare:</strong> {application.id || application._id}</p>
+                  <p><strong>Status:</strong> {application.status}</p>
+
+                  <p>
+                    <strong>Aplicant:</strong>{" "}
+                    {applicantEmail ? (
+                      <Link to={`/users/public/${encodeURIComponent(applicantEmail)}`}>
+                        {applicantName}
+                      </Link>
+                    ) : (
+                      applicantName
+                    )}
                   </p>
-                )}
-              </div>
-            ))
+
+                  <p>
+                    <strong>Email aplicant:</strong>{" "}
+                    {applicantEmail ? (
+                      <Link to={`/users/public/${encodeURIComponent(applicantEmail)}`}>
+                        {applicantEmail}
+                      </Link>
+                    ) : (
+                      "-"
+                    )}
+                  </p>
+
+                  {application.status === "PENDING" ? (
+                    <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                      <button onClick={() => handleAccept(application.id || application._id)}>
+                        Acceptă
+                      </button>
+                      <button onClick={() => handleReject(application.id || application._id)}>
+                        Respinge
+                      </button>
+                    </div>
+                  ) : (
+                    <p style={{ marginTop: "10px" }}>
+                      Aplicarea a fost deja procesată.
+                    </p>
+                  )}
+                </div>
+              );
+            })
           )}
         </div>
       )}

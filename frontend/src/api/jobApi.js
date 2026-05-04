@@ -48,6 +48,16 @@ export const getMyJobs= async () => {
   return response.data;
 };
 
+export const updateJob = async (jobId, jobData) => {
+  const response = await api.patch(`/api/jobs/${jobId}`, jobData);
+  return response.data;
+};
+
+export const deleteJob= async (jobId) => {
+  const response = await api.delete(`/api/jobs/${jobId}`);
+  return response.data;
+}
+
 export const getApplicationsForJob = async (jobId) => {
   const response = await api.get(`/api/jobs/${jobId}/aplicari`);
   return response.data;
@@ -62,5 +72,7 @@ export const rejectApplication = async (applicationId) => {
   const response = await api.patch(`/api/aplicari/${applicationId}/reject`);
   return response.data;
 };
+
+
 
 
