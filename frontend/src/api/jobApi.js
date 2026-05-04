@@ -24,6 +24,43 @@ export const applyToJob = async (jobId) => {
 };
 
 export const getMyApplications = async()=>{
-  const respons=await api.get("/api/aplicari/me");
+  const response=await api.get("/api/aplicari/me");
   return response.data;
-}
+};
+
+export const getJobById= async (jobId)=> {
+  const response = await api.get(`/api/jobs/${jobId}`);
+  return response.data;
+};
+
+export const cancelJob = async (jobId) => {
+  const response = await api.patch(`/api/jobs/${jobId}/cancel`);
+  return response.data;
+};
+
+export const completeJob = async (jobId) => {
+  const response = await api.patch(`/api/jobs/${jobId}/complete`);
+  return response.data;
+};
+
+export const getMyJobs= async () => {
+  const response = await api.get("/api/jobs/me");
+  return response.data;
+};
+
+export const getApplicationsForJob = async (jobId) => {
+  const response = await api.get(`/api/jobs/${jobId}/aplicari`);
+  return response.data;
+};
+
+export const acceptApplication = async (applicationId) => {
+  const response = await api.patch(`/api/aplicari/${applicationId}/accept`);
+  return response.data;
+};
+
+export const rejectApplication = async (applicationId) => {
+  const response = await api.patch(`/api/aplicari/${applicationId}/reject`);
+  return response.data;
+};
+
+

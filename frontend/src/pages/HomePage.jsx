@@ -1,39 +1,38 @@
-import { useEffect, useState, useRef} from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getAllJobs, applyToJob,getMyApplications } from "../api/jobApi";
-import {useNavigate} from "react-router-dom";
+import { getAllJobs, applyToJob, getMyApplications } from "../api/jobApi";
+import { useNavigate, Link } from "react-router-dom";
 
 function HomePage() {
-
-  // Luăm info despre autentificare din context
   const { user, isAuthenticated, logout } = useAuth();
 
-  // jobs = lista de joburi venită din backend
   const [jobs, setJobs] = useState([]);
-
-  // loadingJobs = ne spune dacă încă se încarcă lista
+  const [appliedJobIds, setAppliedJobIds] = useState([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
-
-  // error = ținem minte dacă apare o problemă la cererea către backend
   const [error, setError] = useState("");
 
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
-  const [openMenuId,setOpenMenuId]=useState(null);
-  const menuRef= useRef(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const menuRef = useRef(null);
 
-  // useEffect rulează automat după ce componenta se afișează.
-  // Aici îl folosim ca să cerem joburile din backend.
   useEffect(() => {
     const fetchJobs = async () => {
       try {
         setLoadingJobs(true);
+        setError("");
 
-        // Cerem lista de joburi
         const data = await getAllJobs();
-
-        // Salvăm joburile în state
         setJobs(data);
+
+        if (isAuthenticated) {
+          const myApplications = await getMyApplications();
+
+          const ids = myApplications.map((application) => application.jobId);
+          setAppliedJobIds(ids);
+        } else {
+          setAppliedJobIds([]);
+        }
       } catch (err) {
         setError("Nu am putut încărca joburile.");
       } finally {
@@ -43,44 +42,50 @@ function HomePage() {
 
     fetchJobs();
 
-    const handleClickOutside=(event) =>{
-      const clickedInsideMenu= event.target.closest(".job-owner-menu");
+    const handleClickOutside = (event) => {
+      const clickedInsideMenu = event.target.closest(".job-owner-menu");
 
-      if(!clickedInsideMenu){
+      if (!clickedInsideMenu) {
         setOpenMenuId(null);
       }
     };
-    document.addEventListener("click",handleClickOutside);
-    return ()=>{
-      document.removeEventListener("click",handleClickOutside);
+
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
     };
-  }, []);
+  }, [isAuthenticated]);
 
-
-  const handleAddJobClick=()=>{
-    if(isAuthenticated){
+  const handleAddJobClick = () => {
+    if (isAuthenticated) {
       navigate("/add-job");
-    }else {
-      navigate("/login",{
-        state: {redirectTo: "/add-job"},
+    } else {
+      navigate("/login", {
+        state: { redirectTo: "/add-job" },
       });
     }
   };
 
-  const handleApply=async (jobId) =>{
-    if(!isAuthenticated){
-      navigate("/login",
-      {
-        state: {redirectTo: "/"},
-
+  const handleApply = async (jobId) => {
+    if (!isAuthenticated) {
+      navigate("/login", {
+        state: { redirectTo: "/" },
       });
       return;
     }
-    try{
+
+    if (appliedJobIds.includes(jobId)) {
+      alert("Ai aplicat deja la acest job.");
+      return;
+    }
+
+    try {
       await applyToJob(jobId);
       alert("Ai aplicat cu succes la acest job");
-    }catch(err){
-      console.error("Eroare la aplicare: ",err);
+
+      setAppliedJobIds((prev) => [...prev, jobId]);
+    } catch (err) {
+      console.error("Eroare la aplicare: ", err);
       alert("Nu s-a putut trimite aplicarea");
     }
   };
@@ -89,11 +94,9 @@ function HomePage() {
     <section className="page">
       <h1>Platformă de microjoburi</h1>
 
-      {/* Afișăm rapid starea userului */}
       {isAuthenticated ? (
         <div className="card">
           <p>Bine ai venit, {user.firstName}!</p>
-          
 
           <button className="primary-button" onClick={logout}>
             Logout
@@ -106,27 +109,31 @@ function HomePage() {
       <div className="jobs-section">
         <h2>Joburi disponibile</h2>
 
-        {/* Dacă încă se încarcă */}
         {loadingJobs && <p>Se încarcă joburile...</p>}
-
-        {/* Dacă a apărut eroare */}
         {error && <p className="error-message">{error}</p>}
 
-        {/* Dacă nu mai încărcăm, nu avem eroare și lista e goală */}
         {!loadingJobs && !error && jobs.length === 0 && (
           <p>Nu există joburi disponibile momentan.</p>
         )}
 
-        {/* Dacă avem joburi, le afișăm */}
         {!loadingJobs && !error && jobs.length > 0 && (
           <div className="jobs-list">
             {jobs.map((job) => {
-              const isOwner=isAuthenticated && user?.email===job.postedBy;
+              const jobId = job.id || job._id;
+              const isOwner = isAuthenticated && user?.email === job.postedBy;
+              const hasApplied = appliedJobIds.includes(jobId);
+              const isFilled =
+                job.status === "FILLED" ||
+                (
+                  job.neededWorkers != null &&
+                  job.acceptedWorkers != null &&
+                  job.acceptedWorkers >= job.neededWorkers
+                );
+
               return (
-                <div key={job.id} className="card">
+                <div key={jobId} className="card">
                   <h3>{job.title}</h3>
 
-              
                   <p>
                     <strong>Descriere:</strong> {job.description || "Fără descriere"}
                   </p>
@@ -136,7 +143,7 @@ function HomePage() {
                   </p>
 
                   <p>
-                    <strong>Capacitate:</strong> {job.neededWorkers ?? "Nespecificat"}
+                    <strong>Locuri ocupate:</strong> {job.acceptedWorkers ?? 0}/{job.neededWorkers ?? 0}
                   </p>
 
                   <p>
@@ -144,50 +151,77 @@ function HomePage() {
                   </p>
 
                   <p>
-                    <strong>Start:</strong> {job.startDate ? new Date(job.startDate).toLocaleString("ro-RO"): "Nespecificat"}
+                    <strong>Locație:</strong> {job.location || "Nespecificată"}
                   </p>
 
                   <p>
-                    <strong>Final:</strong> {job.endDate ? new Date(job.endDate).toLocaleString("ro-RO") : "Nespecificat"}
+                    <strong>Start:</strong>{" "}
+                    {job.startDate
+                      ? new Date(job.startDate).toLocaleString("ro-RO")
+                      : "Nespecificat"}
+                  </p>
+
+                  <p>
+                    <strong>Final:</strong>{" "}
+                    {job.endDate
+                      ? new Date(job.endDate).toLocaleString("ro-RO")
+                      : "Nespecificat"}
                   </p>
 
                   <div className="job-actions">
-                    {isOwner ?(
-                      <div className="job-owner-menu" ref={menuRef===job.id ? menuRef:null}>
+                    <Link to={`/jobs/${jobId}`} className="primary-button">
+                      Vezi detalii
+                    </Link>
+
+                    {isOwner ? (
+                      <div
+                        className="job-owner-menu"
+                        ref={openMenuId === jobId ? menuRef : null}
+                      >
                         <button
                           className="menu-button"
-                          onClick={()=>
-                            setOpenMenuId(openMenuId===job.id ? null :job.id)
-                          }> . . .</button>
-                      {openMenuId===job.id && (
-                        <div className="dropdown-menu">
-                          <button className="primary-button">Editeaza</button>
-                          <button className="primary-button">Sterge</button>
-                          <button className="primary-button">Informatii</button>
-                        </div>
-                      )}
+                          onClick={() =>
+                            setOpenMenuId(openMenuId === jobId ? null : jobId)
+                          }
+                        >
+                          . . .
+                        </button>
+
+                        {openMenuId === jobId && (
+                          <div className="dropdown-menu">
+                            <button className="primary-button">Editează</button>
+                            <button className="primary-button">Șterge</button>
+                            <button className="primary-button">Informații</button>
+                          </div>
+                        )}
                       </div>
-                  ) : (
-                    <button 
-                      className="primary-button"
-                      onClick={()=>handleApply(job.id)}>
-                        Aplica la job
-                    </button>
-                  )
-                }
+                    ) : hasApplied ? (
+                      <div className="status-box applied-box">
+                        Ai aplicat deja
+                      </div>
+                    ) : isFilled ? (
+                      <div className="status-box filled-box">
+                        Locurile pentru acest job s-au ocupat
+                      </div>
+                    ) : (
+                      <button
+                        className="primary-button"
+                        onClick={() => handleApply(jobId)}
+                      >
+                        Aplică la job
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
               );
             })}
           </div>
         )}
       </div>
-      <button
-        className="primary-button"
-        onClick={handleAddJobClick}>
-        Posteaza un job
+
+      <button className="primary-button" onClick={handleAddJobClick}>
+        Postează un job
       </button>
-      
     </section>
   );
 }

@@ -11,6 +11,7 @@ function AddJobPage() {
     const [startDate,setStartDate]=useState("");
     const [endDate,setEndDate]=useState("");
     const [salary,setSalary]=useState("");
+    const [location,setLocation]=useState("");
     const [error,setError]=useState("");
     const [loading,setLoading]=useState(false);
     const [successMessage,setSuccessMessage]=useState("");
@@ -23,7 +24,8 @@ function AddJobPage() {
             !title.trim()||
             !description.trim()||
             !startDate.trim()||
-            !endDate.trim()
+            !endDate.trim()||
+            !location.trim()
         ){
             setError("Completeaza toate campurile obligatorii");
             return;
@@ -53,7 +55,8 @@ function AddJobPage() {
             neededWorkers: Number(neededWorkers),
             startDate,
             endDate,
-            salary: Number(salary)
+            salary: Number(salary),
+            location
         };
 
         try{
@@ -67,6 +70,7 @@ function AddJobPage() {
             setStartDate("");
             setEndDate("");
             setSalary("");
+            setLocation("");
             navigate("/");
         }catch(err){
             console.error(err);
@@ -133,6 +137,12 @@ function AddJobPage() {
                     placeholder="Introdu salariul"
                     value={salary}
                     onChange={(e) => setSalary(e.target.value)}
+                />
+                <input
+                    id="location"
+                    type="text"
+                    value={location}
+                    onChange={(e)=>setLocation(e.target.value)}
                 />
 
             {error && <p className="form-error">{error}</p>}

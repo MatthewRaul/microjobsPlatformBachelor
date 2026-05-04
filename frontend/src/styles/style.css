@@ -187,3 +187,24 @@ a {
 .dropdown-item:hover {
   background: #f5f5f5;
 }
+
+.status-box {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  min-width: 190px;
+}
+
+.applied-box {
+  background-color: #e8f7e8;
+  color: #1f7a1f;
+  border: 1px solid #b7e3b7;
+}
+
+.filled-box {
+  background-color: #fdeaea;
+  color: #b42318;
+  border: 1px solid #f5b5b5;
+}

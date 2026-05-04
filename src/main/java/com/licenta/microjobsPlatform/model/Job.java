@@ -14,31 +14,32 @@ public class Job {
     private String description;
     private String postedBy;
     private Integer neededWorkers;
-    private Integer acceptedWorkers;
+    private Integer acceptedWorkers=0;
     private LocalDateTime startDate;
     private LocalDateTime endDate;
     private JobStatus status;
     private LocalDateTime createdAt;
     private Integer salary;
+    private String location;
 
     public Job(){
 
     }
 
     public Job(String id, String title, String description, String postedBy, Integer neededWorkers,
-            Integer acceptedWorkers, LocalDateTime startDate, LocalDateTime endDate, JobStatus status,
-            LocalDateTime createdAt,Integer salary) {
+            LocalDateTime startDate, LocalDateTime endDate, JobStatus status,
+            LocalDateTime createdAt,Integer salary,String location) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.postedBy = postedBy;
         this.neededWorkers = neededWorkers;
-        this.acceptedWorkers = acceptedWorkers;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
         this.createdAt = createdAt;
         this.salary=salary;
+        this.location=location;
     }
 
     public String getId() {
@@ -128,6 +129,16 @@ public class Job {
     public void setSalary(Integer salary) {
         this.salary = salary;
     }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+
 
     
 

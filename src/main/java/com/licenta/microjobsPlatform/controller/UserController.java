@@ -21,7 +21,6 @@ import com.licenta.microjobsPlatform.dto.LoginResponse;
 import com.licenta.microjobsPlatform.dto.UpdateProfileRequest;
 import com.licenta.microjobsPlatform.dto.UserResponse;
 import com.licenta.microjobsPlatform.model.User;
-import com.licenta.microjobsPlatform.repository.UserRepository;
 import com.licenta.microjobsPlatform.security.JwtService;
 import com.licenta.microjobsPlatform.service.UserService;
 
@@ -51,9 +50,16 @@ public class UserController {
 
 
     @PostMapping("/login")// /api/users/login
-    public LoginResponse loginUser(@RequestBody LoginRequest loginRequest){
-        return userService.loginUser(loginRequest);
+    public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
+    try {
+        LoginResponse response = userService.loginUser(loginRequest);
+        return ResponseEntity.ok(response);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Eroare login: " + e.getMessage());
     }
+}
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@RequestHeader("Authorization") String authHeader) {

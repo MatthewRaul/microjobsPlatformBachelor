@@ -1,33 +1,28 @@
-// Navbar este bara de sus a aplicației.
-// Aici punem linkuri simple către paginile principale.
-
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-function Navbar() {
+export default function Navbar() {
+  const { isAuthenticated } = useAuth();
+
   return (
-    <header className="navbar">
-      <div className="navbar-left">
-        {/* Link în React este ca <a>, dar fără reload complet de pagină */}
-        <Link to="/" className="logo">
-          MicroJobs
-        </Link>
-      </div>
+    <nav
+      style={{
+        display: "flex",
+        gap: "12px",
+        padding: "16px",
+        borderBottom: "1px solid #ccc",
+        marginBottom: "20px",
+      }}
+    >
+      <Link to="/">Home</Link>
 
-      <nav className="navbar-right">
-        <Link to="/" className="nav-link">
-          Home
-        </Link>
+      {isAuthenticated && <Link to="/add-job">Adaugă job</Link>}
+      {isAuthenticated && <Link to="/my-jobs">Joburile mele</Link>}
+      {isAuthenticated && <Link to="/my-applications">Aplicările mele</Link>}
+      {isAuthenticated && <Link to="/profile">Profil</Link>}
 
-        <Link to="/login" className="nav-link">
-          Login
-        </Link>
-
-        <Link to="/register" className="nav-link">
-          Register
-        </Link>
-      </nav>
-    </header>
+      {!isAuthenticated && <Link to="/login">Login</Link>}
+      {!isAuthenticated && <Link to="/register">Register</Link>}
+    </nav>
   );
 }
-
-export default Navbar;

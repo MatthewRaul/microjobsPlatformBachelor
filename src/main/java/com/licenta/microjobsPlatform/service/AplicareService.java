@@ -21,6 +21,7 @@ import com.licenta.microjobsPlatform.repository.UserRepository;
 
 @Service
 public class AplicareService {
+
     private final AplicareRepository aplicareRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
@@ -31,26 +32,31 @@ public class AplicareService {
         this.userRepository = userRepository;
     }
 
-    private void updateJobStatusIfFull(Job job){
-        long acceptedCount= aplicareRepository.countByJobIdAndStatus(job.getId(),AplicareStatus.ACCEPTED);
-        if(acceptedCount>=job.getNeededWorkers()){
-            job.setStatus(JobStatus.COMPLETED);
+    private void updateJobStatusIfFull(Job job) {
+        if (job.getAcceptedWorkers() == null) {
+            job.setAcceptedWorkers(0);
+        }
+
+        if (job.getNeededWorkers() != null && job.getAcceptedWorkers() >= job.getNeededWorkers()) {
+            job.setStatus(JobStatus.FILLED);
             jobRepository.save(job);
         }
     }
 
-    public Aplicare applyToJob(String jobId){
-        Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
-        String applicantEmail= authentication.getName();
+    public Aplicare applyToJob(String jobId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String applicantEmail = authentication.getName();
 
-        Job job=jobRepository.findById(jobId)
-                    .orElseThrow(()->new ResourceNotFound("Job-ul nu exista"));
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFound("Job-ul nu exista"));
 
-        if (job.getStatus() == JobStatus.CANCELED || job.getStatus() == JobStatus.COMPLETED) {
+        if (job.getStatus() == JobStatus.CANCELED
+                || job.getStatus() == JobStatus.COMPLETED
+                || job.getStatus() == JobStatus.FILLED) {
             throw new BadRequest("Nu se poate aplica la un job inchis.");
         }
 
-        if (java.util.Objects.equals(job.getPostedBy(),applicantEmail)) {
+        if (java.util.Objects.equals(job.getPostedBy(), applicantEmail)) {
             throw new BadRequest("Nu poti aplica la propriul job.");//daca una dintre valori este null
         }
 
@@ -74,49 +80,62 @@ public class AplicareService {
         aplicare.setAppliedAt(LocalDateTime.now());
 
         return aplicareRepository.save(aplicare);
-        
+
     }
 
-    public List<Aplicare> getAplicariForJob(String jobId){
-        Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
-        String currentUserEmail= authentication.getName();
+    public List<Aplicare> getAplicariForJob(String jobId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
 
-        Job job=jobRepository.findById(jobId)
-                .orElseThrow(()->new ResourceNotFound("Jobul nu exista"));
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFound("Jobul nu exista"));
 
         if (!java.util.Objects.equals(job.getPostedBy(), currentUserEmail)) {
-        throw new ForbiddenAction("Nu ai voie sa vezi aplicarile acestui job.");
+            throw new ForbiddenAction("Nu ai voie sa vezi aplicarile acestui job.");
         }
 
-         return aplicareRepository.findByJobId(jobId);
+        return aplicareRepository.findByJobId(jobId);
     }
 
-    public Aplicare acceptAplicare(String aplicareId){
-        
-        Authentication authentication= SecurityContextHolder.getContext().getAuthentication();
-        String currentUserEmail=authentication.getName();
-        
+    public Aplicare acceptAplicare(String aplicareId) {
 
-        Aplicare aplicare= aplicareRepository.findById(aplicareId)
-            .orElseThrow(()->new ResourceNotFound("Aplicarea nu exista"));
-    
-        Job job=jobRepository.findById(aplicare.getJobId())
-            .orElseThrow(()-> new ResourceNotFound("Job-ul asociat nu exista"));
-    
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String currentUserEmail = authentication.getName();
 
-        if(!java.util.Objects.equals(job.getPostedBy(),currentUserEmail)){
-            throw new ForbiddenAction("Nu ai voie sa accepti aplicarile acestui job.");
-        }
+    Aplicare aplicare = aplicareRepository.findById(aplicareId)
+            .orElseThrow(() -> new ResourceNotFound("Aplicarea nu exista"));
 
-        if(aplicare.getStatus()!=AplicareStatus.PENDING){
-            throw new BadRequest("Doar aplicarile PENDING pot fi acceptate");
-        }
+    Job job = jobRepository.findById(aplicare.getJobId())
+            .orElseThrow(() -> new ResourceNotFound("Job-ul asociat nu exista"));
 
-        aplicare.setStatus(AplicareStatus.ACCEPTED);
-        Aplicare savedAplicare=aplicareRepository.save(aplicare);
+    if (!java.util.Objects.equals(job.getPostedBy(), currentUserEmail)) {
+        throw new ForbiddenAction("Nu ai voie sa accepti aplicarile acestui job.");
+    }
 
-        updateJobStatusIfFull(job);
-        return savedAplicare;
+    if (aplicare.getStatus() != AplicareStatus.PENDING) {
+        throw new BadRequest("Doar aplicarile PENDING pot fi acceptate");
+    }
+
+    if (job.getStatus() == JobStatus.FILLED) {
+        throw new BadRequest("Jobul este deja plin.");
+    }
+
+    if (job.getAcceptedWorkers() == null) {
+        job.setAcceptedWorkers(0);
+    }
+
+    aplicare.setStatus(AplicareStatus.ACCEPTED);
+    Aplicare savedAplicare = aplicareRepository.save(aplicare);
+
+    job.setAcceptedWorkers(job.getAcceptedWorkers() + 1);
+
+    if (job.getNeededWorkers() != null && job.getAcceptedWorkers() >= job.getNeededWorkers()) {
+        job.setStatus(JobStatus.FILLED);
+    }
+
+    jobRepository.save(job);
+
+    return savedAplicare;
     }
 
     public Aplicare rejectAplicare(String aplicareId) {
@@ -141,11 +160,10 @@ public class AplicareService {
         return aplicareRepository.save(aplicare);
     }
 
-    public List<Aplicare> getMyAplicari(){
-        Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
-        String email= authentication.getName();
+    public List<Aplicare> getMyAplicari() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
         return aplicareRepository.findByApplicantEmail(email);
     }
-    
-    
+
 }

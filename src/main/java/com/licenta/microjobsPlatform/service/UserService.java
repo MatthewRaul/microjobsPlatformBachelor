@@ -101,6 +101,8 @@ public class UserService {
         response.setBio(user.getBio());
         response.setProfilePictureUrl(user.getProfilePictureUrl());
         response.setCreatedAt(user.getCreatedAt());
+        response.setPhoneNumber(user.getPhoneNumber());
+        response.setRole(user.getRole().name());
 
         return response;
 
@@ -145,6 +147,8 @@ public class UserService {
         response.setBio(user.getBio());
         response.setProfilePictureUrl(user.getProfilePictureUrl());
         response.setCreatedAt(user.getCreatedAt());
+        response.setPhoneNumber(user.getPhoneNumber());
+        response.setRole(user.getRole().name());
 
         return response;
     }

@@ -1,6 +1,6 @@
 package com.licenta.microjobsPlatform.dto;
 
-import java.time.LocalDateTime;
+
 
 public class UpdateProfileRequest {
     private String firstName;
@@ -12,12 +12,12 @@ public class UpdateProfileRequest {
     public UpdateProfileRequest() {
     }
 
-    public UpdateProfileRequest(String bio, String firstName, String lastName, String phoneNumber, String profilePictureUrl) {
-        this.bio = bio;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.phoneNumber = phoneNumber;
-        this.profilePictureUrl = profilePictureUrl;
+    public UpdateProfileRequest(String firstName,String lastName,String phoneNumber,String bio, String profilePictureUrl){
+        this.firstName=firstName;
+        this.lastName=lastName;
+        this.phoneNumber=phoneNumber;
+        this.bio=bio;
+        this.profilePictureUrl=profilePictureUrl;
     }
 
     public String getFirstName() {

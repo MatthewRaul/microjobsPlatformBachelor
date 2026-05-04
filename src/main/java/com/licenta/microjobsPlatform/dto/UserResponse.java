@@ -11,11 +11,12 @@ public class UserResponse {
     private String profilePictureUrl;
     private LocalDateTime createdAt;
     private String phoneNumber;
+    private String role;
 
     public UserResponse(){
     }
 
-    public UserResponse(String bio, LocalDateTime createdAt, String email, String firstName, String id, String lastName, String phoneNumber, String profilePictureUrl) {
+    public UserResponse(String bio, LocalDateTime createdAt, String email, String firstName, String id, String lastName, String phoneNumber, String profilePictureUrl, String role) {
         this.bio = bio;
         this.createdAt = createdAt;
         this.email = email;
@@ -24,6 +25,7 @@ public class UserResponse {
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
         this.profilePictureUrl = profilePictureUrl;
+        this.role=role;
     }
 
     public String getId() {
@@ -89,6 +91,16 @@ public class UserResponse {
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
     }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+
 
 
 }

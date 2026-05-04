@@ -11,12 +11,17 @@ import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AddJobPage from "./pages/AddJobPage";
+import MyApplicationsPage from "./pages/MyApplicationsPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import JobDetailsPage from "./pages/JobDetailsPage";
+import MyJobsPage from "./pages/MyJobsPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
     // app-container este "cutia mare" a întregii aplicații.
     <div className="app-container">
-      {/* Navbar va rămâne vizibil sus */}
+      <Navbar/>
 
       {/* main-content este zona care se schimbă în funcție de rută */}
       <main className="main-content">
@@ -30,8 +35,17 @@ function App() {
           {/* Ruta /register va afișa pagina de înregistrare */}
           <Route path="/register" element={<RegisterPage />} />
 
-          {/*Ruta /add-job va afisa pagina de adaugare job uri */}
-          <Route path="/add-job" element={<AddJobPage />} />
+          <Route path="/jobs/:id" element={<JobDetailsPage />} />
+
+          
+
+          <Route element={<ProtectedRoute />}>
+              <Route path="/my-applications" element={<MyApplicationsPage/>}/>
+              <Route path="/add-job" element={<AddJobPage />} />
+              <Route path="/my-jobs" element={<MyJobsPage/>} />
+              <Route path="/profile" element={<ProfilePage/>} />
+              
+          </Route>
         </Routes>
       </main>
     </div>

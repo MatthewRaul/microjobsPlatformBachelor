@@ -71,6 +71,12 @@ public class JobController {
     public ResponseEntity<List<Aplicare>> getAplicariForJob(@PathVariable String jobId){
         return ResponseEntity.ok(aplicareService.getAplicariForJob(jobId));
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<List<Job>> getMyJobs(Authentication authentication){
+        String email=authentication.getName();
+        return ResponseEntity.ok(jobService.getMyJobs(email));
+    }
     
     
     
