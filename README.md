@@ -100,3 +100,4 @@ Ce urmează
 •	eventuală extindere a modulului de profil;
 •	adăugarea unui sistem de review/rating după finalizarea unui job, ca extensie ulterioară.
 
+
