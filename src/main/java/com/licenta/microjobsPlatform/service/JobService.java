@@ -30,7 +30,7 @@ public class JobService {
         }
 
         return authentication.getAuthorities().stream()
-                .anyMatch(authority -> "ROLE_ADMINISTRATOR".equals(authority.getAuthority()));
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
     }
 
     public Job createJob(CreateJobRequest request, String userEmail) {

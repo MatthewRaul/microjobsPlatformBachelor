@@ -171,7 +171,9 @@ function AdminHomePage() {
 
     try {
       await deleteJob(jobId);
-      setJobs((prevJobs) => prevJobs.filter((job) => (job.id || job._id) !== jobId));
+      setJobs((prevJobs) =>
+        prevJobs.filter((job) => (job.id || job._id) !== jobId)
+      );
       setOpenMenuId(null);
       setMessage("Jobul a fost șters.");
     } catch (err) {
@@ -204,23 +206,14 @@ function AdminHomePage() {
     }
   };
 
-  if (!isAuthenticated || user?.role !== "ADMINISTRATOR") {
-    return (
-      <section className="page">
-        <h1>Acces interzis</h1>
-        <p>Doar administratorii pot accesa această pagină.</p>
-      </section>
-    );
-  }
-
   return (
     <section className="page">
       <h1>Panou administrator</h1>
 
       <div className="card">
-        <p>Bine ai venit, {user.firstName}!</p>
+        <p>Bine ai venit, {user?.firstName}!</p>
         <p>
-          <strong>Rol:</strong> {user.role}
+          <strong>Rol:</strong> {user?.role}
         </p>
 
         <button className="primary-button" onClick={logout}>

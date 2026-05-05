@@ -2,7 +2,9 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
+
+  const isAdmin = user?.role === "ADMIN";
 
   return (
     <nav
@@ -12,6 +14,7 @@ export default function Navbar() {
         padding: "16px",
         borderBottom: "1px solid #ccc",
         marginBottom: "20px",
+        flexWrap: "wrap",
       }}
     >
       <Link to="/">Home</Link>
@@ -20,7 +23,7 @@ export default function Navbar() {
       {isAuthenticated && <Link to="/my-jobs">Joburile mele</Link>}
       {isAuthenticated && <Link to="/my-applications">Aplicările mele</Link>}
       {isAuthenticated && <Link to="/profile">Profil</Link>}
-
+      {isAuthenticated && isAdmin && <Link to="/admin">Panou Admin</Link>}
       {!isAuthenticated && <Link to="/login">Login</Link>}
       {!isAuthenticated && <Link to="/register">Register</Link>}
     </nav>

@@ -21,6 +21,7 @@ public class Job {
     private LocalDateTime createdAt;
     private Integer salary;
     private String location;
+    private String county;
 
     public Job(){
 
@@ -28,7 +29,7 @@ public class Job {
 
     public Job(String id, String title, String description, String postedBy, Integer neededWorkers,
             LocalDateTime startDate, LocalDateTime endDate, JobStatus status,
-            LocalDateTime createdAt,Integer salary,String location) {
+            LocalDateTime createdAt,Integer salary,String location,String county) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -40,6 +41,7 @@ public class Job {
         this.createdAt = createdAt;
         this.salary=salary;
         this.location=location;
+        this.county=county;
     }
 
     public String getId() {
@@ -136,6 +138,14 @@ public class Job {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public String getCounty() {
+        return county;
+    }
+
+    public void setCounty(String county) {
+        this.county = county;
     }
 
 

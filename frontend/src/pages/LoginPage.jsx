@@ -64,7 +64,7 @@ function LoginPage() {
         return;
       }
 
-      if (currentUser?.role === "ADMINISTRATOR") {
+      if (currentUser?.role === "ADMIN") {
         navigate("/admin");
       } else {
         navigate("/");

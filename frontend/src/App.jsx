@@ -45,13 +45,17 @@ function App() {
           
 
           <Route element={<ProtectedRoute />}>
-              <Route path="/admin" element={<AdminHomePage/>}/>
+              
               <Route path="/my-applications" element={<MyApplicationsPage/>}/>
               <Route path="/add-job" element={<AddJobPage />} />
               <Route path="/my-jobs" element={<MyJobsPage/>} />
               <Route path="/profile" element={<ProfilePage/>} />
               <Route path="/jobs/:id/edit" element={<EditJobPage/>}/>
               
+          </Route>
+
+          <Route element={<ProtectedRoute requiredRole="ADMIN"/>}>
+            <Route path="/admin" element={<AdminHomePage/>}/>
           </Route>
         </Routes>
       </main>
