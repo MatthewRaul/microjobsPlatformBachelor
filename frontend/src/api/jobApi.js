@@ -7,8 +7,10 @@ import api from "./axios";
 
 
 // Funcția cere toate joburile publice de la backend.
-export const getAllJobs = async () => {
-  const response = await api.get("/api/jobs");
+export const getAllJobs = async (filters={}) => {
+  const response = await api.get("/api/jobs", {
+    params:filters ,
+  });
 
   // response.data este lista de joburi trimisă de backend
   return response.data;

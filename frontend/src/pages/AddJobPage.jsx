@@ -160,7 +160,7 @@ function AddJobPage() {
           }}
           onSelect={(selectedLocation) => {
             console.log("SELECTED IN ADD JOB =", selectedLocation)
-            setLocation(selectedLocation.city);
+            setLocation(selectedLocation.location || "");
             setCounty(selectedLocation.county || "");
           }}
           label="Localitate"

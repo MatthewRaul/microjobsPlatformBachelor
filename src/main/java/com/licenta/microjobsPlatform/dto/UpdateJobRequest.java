@@ -11,6 +11,7 @@ public class UpdateJobRequest {
     private LocalDateTime endDate;
     private Integer salary;
     private String location;
+    private String county;
 
     public UpdateJobRequest() {
     }
@@ -70,4 +71,14 @@ public class UpdateJobRequest {
     public void setLocation(String location) {
         this.location = location;
     }
+
+    public String getCounty() {
+        return county;
+    }
+
+    public void setCounty(String county) {
+        this.county = county;
+    }
+
+
 }

@@ -214,7 +214,10 @@ export default function JobDetailsPage() {
       </p>
 
       <p>
-        <strong>Locație:</strong> {job.location || "Nespecificată"}
+      <strong>Locație:</strong>{" "}
+        {job.location
+          ? `${job.location}${job.county ? `, ${job.county}` : ""}`
+          : "Nespecificată"}
       </p>
 
       <p>

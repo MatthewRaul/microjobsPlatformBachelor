@@ -1,6 +1,7 @@
 package com.licenta.microjobsPlatform.service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.security.core.Authentication;
@@ -16,6 +17,7 @@ import com.licenta.microjobsPlatform.repository.JobRepository;
 
 @Service
 public class JobService {
+
     private final JobRepository jobRepository;
 
     public JobService(JobRepository jobRepository) {
@@ -58,6 +60,7 @@ public class JobService {
         job.setCreatedAt(LocalDateTime.now());
         job.setSalary(request.getSalary());
         job.setLocation(request.getLocation());
+        job.setCounty(request.getCounty());
 
         refreshStatusByTime(job);
 
@@ -88,7 +91,7 @@ public class JobService {
 
     public Job getJobById(String id) {
         Job job = jobRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> new RuntimeException("Job not found"));
 
         if (job.getAcceptedWorkers() == null) {
             job.setAcceptedWorkers(0);
@@ -106,7 +109,7 @@ public class JobService {
 
     public Job cancelJob(String id, String userEmail) {
         Job job = jobRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> new RuntimeException("Job not found"));
 
         boolean isOwner = job.getPostedBy().equals(userEmail);
 
@@ -120,7 +123,7 @@ public class JobService {
 
     public Job completeJob(String id, String userEmail) {
         Job job = jobRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> new RuntimeException("Job not found"));
 
         boolean isOwner = job.getPostedBy().equals(userEmail);
 
@@ -172,7 +175,7 @@ public class JobService {
         String title = request.getTitle() != null ? request.getTitle().trim() : "";
         String description = request.getDescription() != null ? request.getDescription().trim() : "";
         String location = request.getLocation() != null ? request.getLocation().trim() : "";
-
+        String county = request.getCounty() != null ? request.getCounty().trim() : "";
         Integer neededWorkers = request.getNeededWorkers();
         Integer salary = request.getSalary();
         LocalDateTime startDate = request.getStartDate();
@@ -221,6 +224,7 @@ public class JobService {
         job.setEndDate(endDate);
         job.setSalary(salary);
         job.setLocation(location);
+        job.setCounty(county);
 
         refreshStatusByTime(job);
 
@@ -264,4 +268,87 @@ public class JobService {
 
         return job;
     }
+
+    public List<Job> getVisibleJobsFiltered(LocalDateTime startDate, LocalDateTime endDate, String location, Integer participants) {
+        List<JobStatus> visibleStatuses = Arrays.asList(JobStatus.OPEN, JobStatus.FILLED);
+
+        String normalizedLocation = location != null ? location.trim() : null;
+        boolean hasStartDate = startDate != null;
+        boolean hasEndDate = endDate != null;
+        boolean hasLocation = normalizedLocation != null && !normalizedLocation.isBlank();
+        boolean hasParticipants = participants != null;
+
+        if (hasStartDate && hasEndDate && endDate.isBefore(startDate)) {
+            throw new BadRequest("Data de sfarsit trebuie sa fie dupa sau egala cu data de inceput.");
+        }
+
+
+        if (hasParticipants && participants < 1) {
+            throw new BadRequest("Numarul de participanti trebuie sa fie cel putin 1.");
+        }
+
+        // Doar startDate
+        if (hasStartDate && !hasEndDate && !hasLocation && !hasParticipants) {
+            return jobRepository.findByStatusInAndStartDateGreaterThanEqual(visibleStatuses, startDate);
+        }
+
+        // Doar endDate
+        if (!hasStartDate && hasEndDate && !hasLocation && !hasParticipants) {
+            return jobRepository.findByStatusInAndEndDateLessThanEqual(visibleStatuses, endDate);
+        }
+
+        // Doar location
+        if (!hasStartDate && !hasEndDate && hasLocation && !hasParticipants) {
+            return jobRepository.findByStatusInAndLocationIgnoreCase(visibleStatuses, normalizedLocation);
+        }
+
+        // Doar participants
+        if (!hasStartDate && !hasEndDate && !hasLocation && hasParticipants) {
+            return jobRepository.findByStatusInAndNeededWorkersGreaterThanEqual(
+                    visibleStatuses,
+                    participants
+            );
+        }
+
+        // startDate + endDate
+        if (hasStartDate && hasEndDate && !hasLocation && !hasParticipants) {
+            return jobRepository.findByStatusInAndStartDateGreaterThanEqualAndEndDateLessThanEqual(
+                    visibleStatuses,
+                    startDate,
+                    endDate
+            );
+        }
+
+        // startDate + location
+        if (hasStartDate && !hasEndDate && hasLocation && !hasParticipants) {
+            return jobRepository.findByStatusInAndStartDateGreaterThanEqualAndLocationIgnoreCase(
+                    visibleStatuses,
+                    startDate,
+                    normalizedLocation
+            );
+        }
+
+        // endDate + location
+        if (!hasStartDate && hasEndDate && hasLocation && !hasParticipants) {
+            return jobRepository.findByStatusInAndEndDateLessThanEqualAndLocationIgnoreCase(
+                    visibleStatuses,
+                    endDate,
+                    normalizedLocation
+            );
+        }
+
+        // toate cele 3 filtre
+        if (hasStartDate && hasEndDate && hasLocation && !hasParticipants) {
+            return jobRepository.findByStatusInAndStartDateGreaterThanEqualAndEndDateLessThanEqualAndLocationIgnoreCase(
+                    visibleStatuses,
+                    startDate,
+                    endDate,
+                    normalizedLocation
+            );
+        }
+
+        // daca nu exista niciun filtru, folosim metoda deja existenta
+        return getVisibleJobs();
+    }
+
 }

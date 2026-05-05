@@ -20,14 +20,22 @@ function HomePage() {
   const [isApplying, setIsApplying] = useState(false);
   const [openMenuId, setOpenMenuId] = useState(null);
 
+  // State-uri pentru filtre
+  const [filterStartDate, setFilterStartDate] = useState("");
+  const [filterEndDate, setFilterEndDate] = useState("");
+  const [filterLocation, setFilterLocation] = useState("");
+  const [filterParticipants, setFilterParticipants] = useState("");
+
   const navigate = useNavigate();
 
-  const fetchJobs = async () => {
+  const fetchJobs = async (customFilters = null) => {
     try {
       setLoadingJobs(true);
       setError("");
 
-      const data = await getAllJobs();
+      const filters = customFilters || {};
+
+      const data = await getAllJobs(filters);
       setJobs(data);
 
       if (isAuthenticated) {
@@ -72,6 +80,36 @@ function HomePage() {
     }
   };
 
+  const handleApplyFilters = async () => {
+    const filters = {};
+
+    if (filterStartDate) {
+      filters.startDate = new Date(filterStartDate).toISOString().slice(0, 19);
+    }
+
+    if (filterEndDate) {
+      filters.endDate = new Date(filterEndDate).toISOString().slice(0, 19);
+    }
+
+    if (filterLocation.trim()) {
+      filters.location = filterLocation.trim();
+    }
+
+    if (filterParticipants) {
+      filters.participants = Number(filterParticipants);
+    }
+
+    await fetchJobs(filters);
+  };
+
+  const handleResetFilters = async () => {
+    setFilterStartDate("");
+    setFilterEndDate("");
+    setFilterLocation("");
+    setFilterParticipants("");
+    await fetchJobs();
+  };
+
   const handleApplyClick = (job) => {
     if (!isAuthenticated) {
       navigate("/login", {
@@ -82,14 +120,12 @@ function HomePage() {
 
     const jobId = job.id || job._id;
 
-    const isAdmin= user?.role === "ADMINISTRATOR";
     const isOwner =
       isAuthenticated &&
-      (user?.email===job.postedBy ||
-        user?.email===job.ownerEmail ||
-        user?.id===job.ownerId);
+      (user?.email === job.postedBy ||
+        user?.email === job.ownerEmail ||
+        user?.id === job.ownerId);
 
-      const canManageJob=isOwner || isAdmin;
     const isFilled =
       job.status === "FILLED" ||
       (job.neededWorkers != null &&
@@ -167,7 +203,9 @@ function HomePage() {
     try {
       await deleteJob(jobId);
 
-      setJobs((prevJobs) => prevJobs.filter((job) => (job.id || job._id) !== jobId));
+      setJobs((prevJobs) =>
+        prevJobs.filter((job) => (job.id || job._id) !== jobId)
+      );
       setOpenMenuId(null);
 
       alert("Jobul a fost șters.");
@@ -195,6 +233,59 @@ function HomePage() {
 
       <div className="jobs-section">
         <h2>Joburi disponibile</h2>
+
+        <div className="card" style={{ marginBottom: "20px" }}>
+          <h3>Filtre</h3>
+
+          <p>
+            <strong>Locație:</strong>
+          </p>
+          <input
+            type="text"
+            value={filterLocation}
+            onChange={(e) => setFilterLocation(e.target.value)}
+            placeholder="Ex: Cluj-Napoca"
+          />
+
+          <p>
+            <strong>Data de start minimă:</strong>
+          </p>
+          <input
+            type="datetime-local"
+            value={filterStartDate}
+            onChange={(e) => setFilterStartDate(e.target.value)}
+          />
+
+          <p>
+            <strong>Data de final maximă:</strong>
+          </p>
+          <input
+            type="datetime-local"
+            value={filterEndDate}
+            onChange={(e) => setFilterEndDate(e.target.value)}
+          />
+
+          <p>
+            <strong>Număr minim participanți:</strong>
+          </p>
+          <input
+            type="number"
+            min="1"
+            value={filterParticipants}
+            onChange={(e) => setFilterParticipants(e.target.value)}
+            placeholder="Ex: 3"
+          />
+
+          <div style={{ marginTop: "12px", display: "flex", gap: "10px" }}>
+            <button className="primary-button" onClick={handleApplyFilters}>
+              Aplică filtrele
+            </button>
+
+            <button className="primary-button" onClick={handleResetFilters}>
+              Resetează
+            </button>
+          </div>
+        </div>
 
         {loadingJobs && <p>Se încarcă joburile...</p>}
         {error && <p className="error-message">{error}</p>}
@@ -240,7 +331,8 @@ function HomePage() {
                   </p>
 
                   <p>
-                    <strong>Locuri ocupate:</strong> {job.acceptedWorkers ?? 0}/{job.neededWorkers ?? 0}
+                    <strong>Locuri ocupate:</strong> {job.acceptedWorkers ?? 0}/
+                    {job.neededWorkers ?? 0}
                   </p>
 
                   <p>
@@ -248,7 +340,10 @@ function HomePage() {
                   </p>
 
                   <p>
-                    <strong>Locație:</strong> {job.location || "Nespecificată"}
+                    <strong>Locație:</strong>{" "}
+                    {job.location
+                      ? `${job.location}${job.county ? `, ${job.county}` : ""}`
+                      : "Nespecificat"}
                   </p>
 
                   <p>
@@ -283,7 +378,10 @@ function HomePage() {
 
                         {openMenuId === jobId && (
                           <div className="dropdown-menu">
-                            <Link to={`/jobs/${jobId}/edit`} className="primary-button">
+                            <Link
+                              to={`/jobs/${jobId}/edit`}
+                              className="primary-button"
+                            >
                               Editează
                             </Link>
 
