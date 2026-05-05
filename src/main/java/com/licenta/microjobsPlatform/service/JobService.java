@@ -3,6 +3,8 @@ package com.licenta.microjobsPlatform.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.licenta.microjobsPlatform.dto.CreateJobRequest;
@@ -18,6 +20,17 @@ public class JobService {
 
     public JobService(JobRepository jobRepository) {
         this.jobRepository = jobRepository;
+    }
+
+    private boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getAuthorities() == null) {
+            return false;
+        }
+
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMINISTRATOR".equals(authority.getAuthority()));
     }
 
     public Job createJob(CreateJobRequest request, String userEmail) {
@@ -46,20 +59,31 @@ public class JobService {
         job.setSalary(request.getSalary());
         job.setLocation(request.getLocation());
 
+        refreshStatusByTime(job);
+
         return jobRepository.save(job);
     }
 
     public List<Job> getVisibleJobs() {
-        List<Job> jobs = jobRepository.findByStatusIn(List.of(JobStatus.OPEN, JobStatus.FILLED));
+        List<Job> jobs = jobRepository.findAll();
 
         for (Job job : jobs) {
             if (job.getAcceptedWorkers() == null) {
                 job.setAcceptedWorkers(0);
+            }
+
+            JobStatus oldStatus = job.getStatus();
+            refreshStatusByTime(job);
+
+            if (oldStatus != job.getStatus()) {
                 jobRepository.save(job);
             }
         }
 
-        return jobs;
+        return jobs.stream()
+                .filter(job -> job.getStatus() != JobStatus.COMPLETED)
+                .filter(job -> job.getStatus() != JobStatus.CANCELED)
+                .toList();
     }
 
     public Job getJobById(String id) {
@@ -68,6 +92,12 @@ public class JobService {
 
         if (job.getAcceptedWorkers() == null) {
             job.setAcceptedWorkers(0);
+        }
+
+        JobStatus oldStatus = job.getStatus();
+        refreshStatusByTime(job);
+
+        if (oldStatus != job.getStatus()) {
             jobRepository.save(job);
         }
 
@@ -78,7 +108,9 @@ public class JobService {
         Job job = jobRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Job not found"));
 
-        if (!job.getPostedBy().equals(userEmail)) {
+        boolean isOwner = job.getPostedBy().equals(userEmail);
+
+        if (!isOwner && !isAdmin()) {
             throw new RuntimeException("You are not allowed to cancel this job");
         }
 
@@ -90,7 +122,9 @@ public class JobService {
         Job job = jobRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Job not found"));
 
-        if (!job.getPostedBy().equals(userEmail)) {
+        boolean isOwner = job.getPostedBy().equals(userEmail);
+
+        if (!isOwner && !isAdmin()) {
             throw new RuntimeException("You are not allowed to complete this job");
         }
 
@@ -105,97 +139,129 @@ public class JobService {
             if (job.getAcceptedWorkers() == null) {
                 job.setAcceptedWorkers(0);
             }
+
+            JobStatus oldStatus = job.getStatus();
+            refreshStatusByTime(job);
+
+            if (oldStatus != job.getStatus()) {
+                jobRepository.save(job);
+            }
         }
 
         return jobs;
     }
 
     public Job updateJob(String id, UpdateJobRequest request, String userEmail) {
-    Job job = jobRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Job not found"));
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
 
-    if (!job.getPostedBy().equals(userEmail)) {
-        throw new RuntimeException("You are not allowed to edit this job");
-    }
+        boolean isOwner = job.getPostedBy().equals(userEmail);
 
-    if (job.getStatus() == JobStatus.CANCELED || job.getStatus() == JobStatus.COMPLETED) {
-        throw new BadRequest("Nu poti edita un job inchis.");
-    }
+        if (!isOwner && !isAdmin()) {
+            throw new RuntimeException("You are not allowed to edit this job");
+        }
 
-    if (job.getAcceptedWorkers() == null) {
-        job.setAcceptedWorkers(0);
-    }
+        if (job.getStatus() == JobStatus.CANCELED || job.getStatus() == JobStatus.COMPLETED) {
+            throw new BadRequest("Nu poti edita un job inchis.");
+        }
 
-    String title = request.getTitle() != null ? request.getTitle().trim() : "";
-    String description = request.getDescription() != null ? request.getDescription().trim() : "";
-    String location = request.getLocation() != null ? request.getLocation().trim() : "";
+        if (job.getAcceptedWorkers() == null) {
+            job.setAcceptedWorkers(0);
+        }
 
-    Integer neededWorkers = request.getNeededWorkers();
-    Integer salary = request.getSalary();
-    LocalDateTime startDate = request.getStartDate();
-    LocalDateTime endDate = request.getEndDate();
+        String title = request.getTitle() != null ? request.getTitle().trim() : "";
+        String description = request.getDescription() != null ? request.getDescription().trim() : "";
+        String location = request.getLocation() != null ? request.getLocation().trim() : "";
 
-    if (title.isBlank()) {
-        throw new BadRequest("Titlul este obligatoriu.");
-    }
+        Integer neededWorkers = request.getNeededWorkers();
+        Integer salary = request.getSalary();
+        LocalDateTime startDate = request.getStartDate();
+        LocalDateTime endDate = request.getEndDate();
 
-    if (description.isBlank()) {
-        throw new BadRequest("Descrierea este obligatorie.");
-    }
+        if (title.isBlank()) {
+            throw new BadRequest("Titlul este obligatoriu.");
+        }
 
-    if (location.isBlank()) {
-        throw new BadRequest("Locatia este obligatorie.");
-    }
+        if (description.isBlank()) {
+            throw new BadRequest("Descrierea este obligatorie.");
+        }
 
-    if (salary == null || salary < 0) {
-        throw new BadRequest("Salariul trebuie sa fie minim 0 RON");
-    }
+        if (location.isBlank()) {
+            throw new BadRequest("Locatia este obligatorie.");
+        }
 
-    if (neededWorkers == null || neededWorkers <= 0) {
-        throw new BadRequest("Numarul de locuri trebuie sa fie mai mare decat 0.");
-    }
+        if (salary == null || salary < 0) {
+            throw new BadRequest("Salariul trebuie sa fie minim 0 RON");
+        }
 
-    if (neededWorkers < job.getAcceptedWorkers()) {
-        throw new BadRequest("Numarul de locuri nu poate fi mai mic decat numarul de aplicanti acceptati.");
-    }
+        if (neededWorkers == null || neededWorkers <= 0) {
+            throw new BadRequest("Numarul de locuri trebuie sa fie mai mare decat 0.");
+        }
 
-    if (startDate == null) {
-        throw new BadRequest("Data de inceput este obligatorie.");
-    }
+        if (neededWorkers < job.getAcceptedWorkers()) {
+            throw new BadRequest("Numarul de locuri nu poate fi mai mic decat numarul de aplicanti acceptati.");
+        }
 
-    if (endDate == null) {
-        throw new BadRequest("Data de sfarsit este obligatorie.");
-    }
+        if (startDate == null) {
+            throw new BadRequest("Data de inceput este obligatorie.");
+        }
 
-    if (endDate.isBefore(startDate)) {
-        throw new BadRequest("Data de sfarsit trebuie sa fie dupa data de inceput.");
-    }
+        if (endDate == null) {
+            throw new BadRequest("Data de sfarsit este obligatorie.");
+        }
 
-    job.setTitle(title);
-    job.setDescription(description);
-    job.setNeededWorkers(neededWorkers);
-    job.setStartDate(startDate);
-    job.setEndDate(endDate);
-    job.setSalary(salary);
-    job.setLocation(location);
+        if (endDate.isBefore(startDate)) {
+            throw new BadRequest("Data de sfarsit trebuie sa fie dupa data de inceput.");
+        }
 
-    if (job.getAcceptedWorkers() >= job.getNeededWorkers()) {
-        job.setStatus(JobStatus.FILLED);
-    } else {
-        job.setStatus(JobStatus.OPEN);
-    }
+        job.setTitle(title);
+        job.setDescription(description);
+        job.setNeededWorkers(neededWorkers);
+        job.setStartDate(startDate);
+        job.setEndDate(endDate);
+        job.setSalary(salary);
+        job.setLocation(location);
 
-    return jobRepository.save(job);
+        refreshStatusByTime(job);
+
+        return jobRepository.save(job);
     }
 
     public void deleteJob(String id, String userEmail) {
-    Job job = jobRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Job not found"));
+        Job job = jobRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Job not found"));
 
-    if (!job.getPostedBy().equals(userEmail)) {
-        throw new RuntimeException("You are not allowed to delete this job");
+        boolean isOwner = job.getPostedBy().equals(userEmail);
+
+        if (!isOwner && !isAdmin()) {
+            throw new RuntimeException("You are not allowed to delete this job");
+        }
+
+        jobRepository.delete(job);
     }
 
-    jobRepository.delete(job);
+    private Job refreshStatusByTime(Job job) {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (job.getAcceptedWorkers() == null) {
+            job.setAcceptedWorkers(0);
+        }
+
+        if (job.getStatus() == JobStatus.CANCELED) {
+            return job;
+        }
+
+        if (job.getEndDate() != null && !now.isBefore(job.getEndDate())) {
+            job.setStatus(JobStatus.COMPLETED);
+        } else if (job.getStartDate() != null && !now.isBefore(job.getStartDate())) {
+            job.setStatus(JobStatus.IN_PROGRESS);
+        } else if (job.getAcceptedWorkers() != null && job.getNeededWorkers() != null
+                && job.getAcceptedWorkers() >= job.getNeededWorkers()) {
+            job.setStatus(JobStatus.FILLED);
+        } else {
+            job.setStatus(JobStatus.OPEN);
+        }
+
+        return job;
     }
 }

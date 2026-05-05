@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { getMyJobs, cancelJob, completeJob } from "../api/jobApi";
+import { getMyJobs, cancelJob, completeJob, deleteJob } from "../api/jobApi";
 
 export default function MyJobsPage() {
   const { user } = useAuth();
@@ -10,6 +10,8 @@ export default function MyJobsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+
+  const isAdmin = user?.role === "ADMINISTRATOR";
 
   const fetchMyJobs = async () => {
     try {
@@ -51,9 +53,23 @@ export default function MyJobsPage() {
     }
   };
 
+  const handleDelete = async (jobId) => {
+    const confirmDelete = window.confirm("Sigur vrei să ștergi acest job?");
+    if (!confirmDelete) return;
+
+    try {
+      await deleteJob(jobId);
+      setMessage("Jobul a fost șters.");
+      await fetchMyJobs();
+    } catch (err) {
+      setMessage("Nu s-a putut șterge jobul.");
+    }
+  };
+
   const getStatusColor = (status) => {
     if (status === "OPEN") return "green";
     if (status === "FILLED") return "#b8860b";
+    if (status === "IN_PROGRESS") return "#2563eb";
     if (status === "COMPLETED") return "#1e3a8a";
     if (status === "CANCELED") return "red";
     return "#333";
@@ -69,12 +85,24 @@ export default function MyJobsPage() {
 
   return (
     <div style={{ padding: "20px" }}>
-      <h1>Joburile mele</h1>
+      <h1>{isAdmin ? "Administrare joburi" : "Joburile mele"}</h1>
+
+      <p>
+        <strong>Cont curent:</strong> {user?.email}
+      </p>
+
+      <p>
+        <strong>Rol:</strong> {user?.role}
+      </p>
 
       {message && <p style={{ marginTop: "10px" }}>{message}</p>}
 
       {myJobs.length === 0 ? (
-        <p>Nu ai postat încă niciun job.</p>
+        <p>
+          {isAdmin
+            ? "Nu există joburi postate de acest cont administrator."
+            : "Nu ai postat încă niciun job."}
+        </p>
       ) : (
         <div style={{ marginTop: "20px" }}>
           {myJobs.map((job) => {
@@ -104,14 +132,17 @@ export default function MyJobsPage() {
                 </p>
 
                 <p><strong>Capacitate:</strong> {job.neededWorkers ?? "Nespecificat"}</p>
+
                 <p>
                   <strong>Locuri ocupate:</strong>{" "}
                   {job.acceptedWorkers ?? 0} / {job.neededWorkers ?? "Nespecificat"}
                 </p>
+
                 <p><strong>Salariu:</strong> {job.salary ?? "0"}</p>
                 <p><strong>Locație:</strong> {job.location || "Nespecificată"}</p>
+                <p><strong>Postat de:</strong> {job.postedBy}</p>
 
-                <div style={{ display: "flex", gap: "10px", marginTop: "12px" }}>
+                <div style={{ display: "flex", gap: "10px", marginTop: "12px", flexWrap: "wrap" }}>
                   <Link to={`/jobs/${jobId}`}>Vezi detalii</Link>
 
                   {!isClosed && (
@@ -125,6 +156,10 @@ export default function MyJobsPage() {
                       </button>
                     </>
                   )}
+
+                  <button onClick={() => handleDelete(jobId)}>
+                    Șterge
+                  </button>
                 </div>
               </div>
             );

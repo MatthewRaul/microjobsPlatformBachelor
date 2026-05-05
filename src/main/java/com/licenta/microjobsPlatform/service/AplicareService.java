@@ -50,14 +50,33 @@ public class AplicareService {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFound("Job-ul nu exista"));
 
+        if (job.getAcceptedWorkers() == null) {
+            job.setAcceptedWorkers(0);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        if (job.getEndDate() != null && !job.getEndDate().isAfter(now)) {
+            job.setStatus(JobStatus.COMPLETED);
+            jobRepository.save(job);
+            throw new BadRequest("Jobul s-a incheiat.");
+        }
+
+        if (job.getStartDate() != null && !job.getStartDate().isAfter(now)) {
+            job.setStatus(JobStatus.IN_PROGRESS);
+            jobRepository.save(job);
+            throw new BadRequest("Jobul este in desfasurare.");
+        }
+
         if (job.getStatus() == JobStatus.CANCELED
                 || job.getStatus() == JobStatus.COMPLETED
-                || job.getStatus() == JobStatus.FILLED) {
+                || job.getStatus() == JobStatus.FILLED
+                || job.getStatus() == JobStatus.IN_PROGRESS) {
             throw new BadRequest("Nu se poate aplica la un job inchis.");
         }
 
         if (java.util.Objects.equals(job.getPostedBy(), applicantEmail)) {
-            throw new BadRequest("Nu poti aplica la propriul job.");//daca una dintre valori este null
+            throw new BadRequest("Nu poti aplica la propriul job.");
         }
 
         boolean alreadyApplied = aplicareRepository
@@ -80,7 +99,6 @@ public class AplicareService {
         aplicare.setAppliedAt(LocalDateTime.now());
 
         return aplicareRepository.save(aplicare);
-
     }
 
     public List<Aplicare> getAplicariForJob(String jobId) {
@@ -99,62 +117,62 @@ public class AplicareService {
 
     public Aplicare acceptAplicare(String aplicareId) {
 
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    String currentUserEmail = authentication.getName();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = authentication.getName();
 
-    Aplicare aplicare = aplicareRepository.findById(aplicareId)
-            .orElseThrow(() -> new ResourceNotFound("Aplicarea nu exista"));
+        Aplicare aplicare = aplicareRepository.findById(aplicareId)
+                .orElseThrow(() -> new ResourceNotFound("Aplicarea nu exista"));
 
-    Job job = jobRepository.findById(aplicare.getJobId())
-            .orElseThrow(() -> new ResourceNotFound("Job-ul asociat nu exista"));
+        Job job = jobRepository.findById(aplicare.getJobId())
+                .orElseThrow(() -> new ResourceNotFound("Job-ul asociat nu exista"));
 
-    if (!java.util.Objects.equals(job.getPostedBy(), currentUserEmail)) {
-        throw new ForbiddenAction("Nu ai voie sa accepti aplicarile acestui job.");
-    }
-
-    if (aplicare.getStatus() != AplicareStatus.PENDING) {
-        throw new BadRequest("Doar aplicarile PENDING pot fi acceptate");
-    }
-
-    if (job.getStatus() == JobStatus.CANCELED || job.getStatus() == JobStatus.COMPLETED) {
-        throw new BadRequest("Nu poti accepta aplicari pentru un job inchis.");
-    }
-
-    if (job.getAcceptedWorkers() == null) {
-        job.setAcceptedWorkers(0);
-    }
-
-    if (job.getNeededWorkers() == null || job.getNeededWorkers() <= 0) {
-        throw new BadRequest("Capacitatea jobului este invalida.");
-    }
-
-    if (job.getAcceptedWorkers() >= job.getNeededWorkers()) {
-        job.setStatus(JobStatus.FILLED);
-        jobRepository.save(job);
-        throw new BadRequest("Jobul este deja plin.");
-    }
-
-    aplicare.setStatus(AplicareStatus.ACCEPTED);
-    Aplicare savedAplicare = aplicareRepository.save(aplicare);
-
-    job.setAcceptedWorkers(job.getAcceptedWorkers() + 1);
-
-    if (job.getAcceptedWorkers() >= job.getNeededWorkers()) {
-        job.setStatus(JobStatus.FILLED);
-        jobRepository.save(job);
-
-        List<Aplicare> aplicari = aplicareRepository.findByJobId(job.getId());
-        for (Aplicare a : aplicari) {
-            if (a.getStatus() == AplicareStatus.PENDING) {
-                a.setStatus(AplicareStatus.REJECTED);
-                aplicareRepository.save(a);
-            }
+        if (!java.util.Objects.equals(job.getPostedBy(), currentUserEmail)) {
+            throw new ForbiddenAction("Nu ai voie sa accepti aplicarile acestui job.");
         }
-    } else {
-        jobRepository.save(job);
-    }
 
-    return savedAplicare;
+        if (aplicare.getStatus() != AplicareStatus.PENDING) {
+            throw new BadRequest("Doar aplicarile PENDING pot fi acceptate");
+        }
+
+        if (job.getStatus() == JobStatus.CANCELED || job.getStatus() == JobStatus.COMPLETED) {
+            throw new BadRequest("Nu poti accepta aplicari pentru un job inchis.");
+        }
+
+        if (job.getAcceptedWorkers() == null) {
+            job.setAcceptedWorkers(0);
+        }
+
+        if (job.getNeededWorkers() == null || job.getNeededWorkers() <= 0) {
+            throw new BadRequest("Capacitatea jobului este invalida.");
+        }
+
+        if (job.getAcceptedWorkers() >= job.getNeededWorkers()) {
+            job.setStatus(JobStatus.FILLED);
+            jobRepository.save(job);
+            throw new BadRequest("Jobul este deja plin.");
+        }
+
+        aplicare.setStatus(AplicareStatus.ACCEPTED);
+        Aplicare savedAplicare = aplicareRepository.save(aplicare);
+
+        job.setAcceptedWorkers(job.getAcceptedWorkers() + 1);
+
+        if (job.getAcceptedWorkers() >= job.getNeededWorkers()) {
+            job.setStatus(JobStatus.FILLED);
+            jobRepository.save(job);
+
+            List<Aplicare> aplicari = aplicareRepository.findByJobId(job.getId());
+            for (Aplicare a : aplicari) {
+                if (a.getStatus() == AplicareStatus.PENDING) {
+                    a.setStatus(AplicareStatus.REJECTED);
+                    aplicareRepository.save(a);
+                }
+            }
+        } else {
+            jobRepository.save(job);
+        }
+
+        return savedAplicare;
     }
 
     public Aplicare rejectAplicare(String aplicareId) {
@@ -184,5 +202,4 @@ public class AplicareService {
         String email = authentication.getName();
         return aplicareRepository.findByApplicantEmail(email);
     }
-
 }

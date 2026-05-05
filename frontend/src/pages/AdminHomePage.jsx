@@ -5,16 +5,19 @@ import {
   applyToJob,
   getMyApplications,
   deleteJob,
+  cancelJob,
+  completeJob,
 } from "../api/jobApi";
 import { useNavigate, Link } from "react-router-dom";
 
-function HomePage() {
+function AdminHomePage() {
   const { user, isAuthenticated, logout } = useAuth();
 
   const [jobs, setJobs] = useState([]);
   const [appliedJobIds, setAppliedJobIds] = useState([]);
   const [loadingJobs, setLoadingJobs] = useState(true);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [isApplying, setIsApplying] = useState(false);
@@ -26,6 +29,7 @@ function HomePage() {
     try {
       setLoadingJobs(true);
       setError("");
+      setMessage("");
 
       const data = await getAllJobs();
       setJobs(data);
@@ -38,7 +42,7 @@ function HomePage() {
         setAppliedJobIds([]);
       }
     } catch (err) {
-      console.log("EROARE HOME PAGE", err);
+      console.log("EROARE ADMIN HOME PAGE", err);
       setError("Nu am putut încărca joburile.");
     } finally {
       setLoadingJobs(false);
@@ -75,21 +79,21 @@ function HomePage() {
   const handleApplyClick = (job) => {
     if (!isAuthenticated) {
       navigate("/login", {
-        state: { redirectTo: "/" },
+        state: { redirectTo: "/admin" },
       });
       return;
     }
 
     const jobId = job.id || job._id;
 
-    const isAdmin= user?.role === "ADMINISTRATOR";
     const isOwner =
-      isAuthenticated &&
-      (user?.email===job.postedBy ||
-        user?.email===job.ownerEmail ||
-        user?.id===job.ownerId);
+      user &&
+      (user.email === job.postedBy ||
+        user.email === job.ownerEmail ||
+        user.id === job.ownerId);
 
-      const canManageJob=isOwner || isAdmin;
+    const hasApplied = appliedJobIds.includes(jobId);
+
     const isFilled =
       job.status === "FILLED" ||
       (job.neededWorkers != null &&
@@ -102,31 +106,31 @@ function HomePage() {
     const isInProgress = job.status === "IN_PROGRESS";
 
     if (isOwner) {
-      setError("Nu poți aplica la propriul job.");
+      setMessage("Nu poți aplica la propriul job.");
       return;
     }
 
-    if (appliedJobIds.includes(jobId)) {
-      setError("Ai aplicat deja la acest job.");
+    if (hasApplied) {
+      setMessage("Ai aplicat deja la acest job.");
       return;
     }
 
     if (isClosed) {
-      setError("Nu poți aplica la un job închis.");
+      setMessage("Nu poți aplica la un job închis.");
       return;
     }
 
     if (isInProgress) {
-      setError("Jobul este deja în desfășurare.");
+      setMessage("Jobul este deja în desfășurare.");
       return;
     }
 
     if (isFilled) {
-      setError("Locurile pentru acest job s-au ocupat.");
+      setMessage("Locurile pentru acest job s-au ocupat.");
       return;
     }
 
-    setError("");
+    setMessage("");
     setSelectedJob(job);
     setShowApplyModal(true);
   };
@@ -138,7 +142,7 @@ function HomePage() {
 
     try {
       setIsApplying(true);
-      setError("");
+      setMessage("");
 
       await applyToJob(jobId);
 
@@ -147,9 +151,10 @@ function HomePage() {
       setSelectedJob(null);
 
       await fetchJobs();
+      setMessage("Aplicarea a fost trimisă cu succes.");
     } catch (err) {
-      console.log("EROARE APPLY", err);
-      setError("Nu s-a putut trimite aplicarea.");
+      console.log("EROARE APPLY ADMIN", err);
+      setMessage("Nu s-a putut trimite aplicarea.");
     } finally {
       setIsApplying(false);
     }
@@ -166,38 +171,69 @@ function HomePage() {
 
     try {
       await deleteJob(jobId);
-
       setJobs((prevJobs) => prevJobs.filter((job) => (job.id || job._id) !== jobId));
       setOpenMenuId(null);
-
-      alert("Jobul a fost șters.");
+      setMessage("Jobul a fost șters.");
     } catch (err) {
       console.error("Eroare la ștergerea jobului:", err);
-      alert("Nu s-a putut șterge jobul.");
+      setMessage("Nu s-a putut șterge jobul.");
     }
   };
 
+  const handleCancelJob = async (jobId) => {
+    try {
+      await cancelJob(jobId);
+      setMessage("Jobul a fost anulat.");
+      setOpenMenuId(null);
+      await fetchJobs();
+    } catch (err) {
+      console.error("EROARE CANCEL JOB", err);
+      setMessage("Nu s-a putut anula jobul.");
+    }
+  };
+
+  const handleCompleteJob = async (jobId) => {
+    try {
+      await completeJob(jobId);
+      setMessage("Jobul a fost marcat ca finalizat.");
+      setOpenMenuId(null);
+      await fetchJobs();
+    } catch (err) {
+      console.error("EROARE COMPLETE JOB", err);
+      setMessage("Nu s-a putut finaliza jobul.");
+    }
+  };
+
+  if (!isAuthenticated || user?.role !== "ADMINISTRATOR") {
+    return (
+      <section className="page">
+        <h1>Acces interzis</h1>
+        <p>Doar administratorii pot accesa această pagină.</p>
+      </section>
+    );
+  }
+
   return (
     <section className="page">
-      <h1>Platformă de microjoburi</h1>
+      <h1>Panou administrator</h1>
 
-      {isAuthenticated ? (
-        <div className="card">
-          <p>Bine ai venit, {user.firstName}!</p>
+      <div className="card">
+        <p>Bine ai venit, {user.firstName}!</p>
+        <p>
+          <strong>Rol:</strong> {user.role}
+        </p>
 
-          <button className="primary-button" onClick={logout}>
-            Logout
-          </button>
-        </div>
-      ) : (
-        <p>Nu ești logat.</p>
-      )}
+        <button className="primary-button" onClick={logout}>
+          Logout
+        </button>
+      </div>
 
       <div className="jobs-section">
-        <h2>Joburi disponibile</h2>
+        <h2>Toate joburile vizibile</h2>
 
         {loadingJobs && <p>Se încarcă joburile...</p>}
         {error && <p className="error-message">{error}</p>}
+        {message && <p>{message}</p>}
 
         {!loadingJobs && !error && jobs.length === 0 && (
           <p>Nu există joburi disponibile momentan.</p>
@@ -209,10 +245,10 @@ function HomePage() {
               const jobId = job.id || job._id;
 
               const isOwner =
-                isAuthenticated &&
-                (user?.email === job.postedBy ||
-                  user?.email === job.ownerEmail ||
-                  user?.id === job.ownerId);
+                user &&
+                (user.email === job.postedBy ||
+                  user.email === job.ownerEmail ||
+                  user.id === job.ownerId);
 
               const hasApplied = appliedJobIds.includes(jobId);
 
@@ -252,6 +288,10 @@ function HomePage() {
                   </p>
 
                   <p>
+                    <strong>Postat de:</strong> {job.postedBy || "Necunoscut"}
+                  </p>
+
+                  <p>
                     <strong>Start:</strong>{" "}
                     {job.startDate
                       ? new Date(job.startDate).toLocaleString("ro-RO")
@@ -265,63 +305,83 @@ function HomePage() {
                       : "Nespecificat"}
                   </p>
 
+                  {!isOwner && (
+                    <div style={{ marginBottom: "10px" }}>
+                      {hasApplied ? (
+                        <div className="status-box applied-box">
+                          Ai aplicat deja
+                        </div>
+                      ) : isClosed ? (
+                        <div className="status-box filled-box">
+                          Jobul nu mai este disponibil
+                        </div>
+                      ) : isInProgress ? (
+                        <div className="status-box filled-box">
+                          Job în desfășurare
+                        </div>
+                      ) : isFilled ? (
+                        <div className="status-box filled-box">
+                          Locurile pentru acest job s-au ocupat
+                        </div>
+                      ) : (
+                        <button
+                          className="primary-button"
+                          onClick={() => handleApplyClick(job)}
+                        >
+                          Aplică la job
+                        </button>
+                      )}
+                    </div>
+                  )}
+
                   <div className="job-actions">
                     <Link to={`/jobs/${jobId}`} className="primary-button">
                       Vezi detalii
                     </Link>
 
-                    {isOwner ? (
-                      <div className="job-owner-menu">
-                        <button
-                          className="menu-button"
-                          onClick={() =>
-                            setOpenMenuId(openMenuId === jobId ? null : jobId)
-                          }
-                        >
-                          . . .
-                        </button>
-
-                        {openMenuId === jobId && (
-                          <div className="dropdown-menu">
-                            <Link to={`/jobs/${jobId}/edit`} className="primary-button">
-                              Editează
-                            </Link>
-
-                            <button
-                              className="primary-button"
-                              onClick={() => handleDeleteJob(jobId)}
-                            >
-                              Șterge
-                            </button>
-
-                            <button className="primary-button">Informații</button>
-                          </div>
-                        )}
-                      </div>
-                    ) : hasApplied ? (
-                      <div className="status-box applied-box">
-                        Ai aplicat deja
-                      </div>
-                    ) : isClosed ? (
-                      <div className="status-box filled-box">
-                        Jobul nu mai este disponibil
-                      </div>
-                    ) : isInProgress ? (
-                      <div className="status-box filled-box">
-                        Job în desfășurare
-                      </div>
-                    ) : isFilled ? (
-                      <div className="status-box filled-box">
-                        Locurile pentru acest job s-au ocupat
-                      </div>
-                    ) : (
+                    <div className="job-owner-menu">
                       <button
-                        className="primary-button"
-                        onClick={() => handleApplyClick(job)}
+                        className="menu-button"
+                        onClick={() =>
+                          setOpenMenuId(openMenuId === jobId ? null : jobId)
+                        }
                       >
-                        Aplică la job
+                        . . .
                       </button>
-                    )}
+
+                      {openMenuId === jobId && (
+                        <div className="dropdown-menu">
+                          <Link to={`/jobs/${jobId}/edit`} className="primary-button">
+                            Editează
+                          </Link>
+
+                          {!isClosed && (
+                            <>
+                              <button
+                                className="primary-button"
+                                onClick={() => handleCancelJob(jobId)}
+                              >
+                                Anulează
+                              </button>
+
+                              <button
+                                className="primary-button"
+                                onClick={() => handleCompleteJob(jobId)}
+                              >
+                                Marchează finalizat
+                              </button>
+                            </>
+                          )}
+
+                          <button
+                            className="primary-button"
+                            onClick={() => handleDeleteJob(jobId)}
+                          >
+                            Șterge
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               );
@@ -381,4 +441,4 @@ function HomePage() {
   );
 }
 
-export default HomePage;
+export default AdminHomePage;

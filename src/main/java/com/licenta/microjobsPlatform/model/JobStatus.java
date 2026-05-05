@@ -4,5 +4,6 @@ public enum JobStatus {
     OPEN,
     FILLED,
     COMPLETED,
-    CANCELED
+    CANCELED,
+    IN_PROGRESS
 }

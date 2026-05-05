@@ -1,10 +1,8 @@
-// LoginPage.jsx
-
 import { useState } from "react";
 import { loginUser } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { useLocation} from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import api from "../api/axios";
 
 function LoginPage() {
   const [formData, setFormData] = useState({
@@ -12,8 +10,9 @@ function LoginPage() {
     password: "",
   });
 
-  const location=useLocation();
-  const successMessage= location.state?.successMessage || "";
+  const location = useLocation();
+  const successMessage = location.state?.successMessage || "";
+  const redirectTo = location.state?.redirectTo || null;
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -43,8 +42,6 @@ function LoginPage() {
       setLoading(true);
 
       const data = await loginUser(formData);
-
-      // Dacă la tine tokenul are alt nume, schimbi aici
       const token = data.token;
 
       if (!token) {
@@ -53,7 +50,25 @@ function LoginPage() {
       }
 
       await login(token);
-      navigate("/");
+
+      const currentUserResponse = await api.get("/api/users/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const currentUser = currentUserResponse.data;
+
+      if (redirectTo) {
+        navigate(redirectTo);
+        return;
+      }
+
+      if (currentUser?.role === "ADMINISTRATOR") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
       const backendMessage =
         err.response?.data?.message || "Email sau parolă greșită.";

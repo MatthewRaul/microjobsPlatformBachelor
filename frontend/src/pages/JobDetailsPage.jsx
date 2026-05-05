@@ -24,13 +24,14 @@ export default function JobDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
 
   const fetchJobDetails = async () => {
     try {
       setError("");
 
       const jobData = await getJobById(id);
-      console.log("JOB DATA DUPA GET", jobData);
       setJob(jobData);
 
       const owner =
@@ -67,7 +68,25 @@ export default function JobDetailsPage() {
     fetchJobDetails();
   }, [id, user]);
 
-  const handleApply = async () => {
+  const isOwner =
+    job &&
+    user &&
+    (job.postedBy === user.email ||
+      job.ownerEmail === user.email ||
+      job.ownerId === user.id);
+
+  const isFilled =
+    job &&
+    (job.status === "FILLED" ||
+      ((job.acceptedWorkers ?? 0) >= (job.neededWorkers ?? 0) &&
+        (job.neededWorkers ?? 0) > 0));
+
+  const isClosed =
+    job && (job.status === "CANCELED" || job.status === "COMPLETED");
+
+  const isInProgress = job && job.status === "IN_PROGRESS";
+
+  const handleApplyClick = () => {
     if (!isAuthenticated) {
       navigate("/login");
       return;
@@ -78,26 +97,43 @@ export default function JobDetailsPage() {
       return;
     }
 
+    if (isInProgress) {
+      setMessage("Jobul este deja în desfășurare.");
+      return;
+    }
+
     if (isFilled) {
       setMessage("Locurile pentru acest job s-au ocupat.");
       return;
     }
 
+    if (isClosed) {
+      setMessage("Jobul nu mai este disponibil.");
+      return;
+    }
+
+    setShowApplyModal(true);
+  };
+
+  const confirmApply = async () => {
     try {
+      setIsApplying(true);
       await applyToJob(id);
       setMessage("Aplicarea a fost trimisă cu succes.");
       setHasApplied(true);
-      fetchJobDetails();
+      setShowApplyModal(false);
+      await fetchJobDetails();
     } catch (err) {
       console.log("EROARE APPLY", err);
       setMessage("Nu s-a putut trimite aplicarea.");
+    } finally {
+      setIsApplying(false);
     }
   };
 
   const handleAccept = async (applicationId) => {
     try {
-      const result = await acceptApplication(applicationId);
-      console.log("ACCEPT RESULT", result);
+      await acceptApplication(applicationId);
       setMessage("Aplicarea a fost acceptată.");
       await fetchJobDetails();
     } catch (err) {
@@ -149,119 +185,105 @@ export default function JobDetailsPage() {
     }
   };
 
-  if (loading) return <div>Se încarcă jobul...</div>;
-  if (error) return <div>{error}</div>;
-  if (!job) return <div>Jobul nu există.</div>;
-
-  const isOwner =
-    user &&
-    (job.postedBy === user.email ||
-      job.ownerEmail === user.email ||
-      job.ownerId === user.id);
-
-  const isFilled =
-    job?.status === "FILLED" ||
-    (
-      job?.neededWorkers != null &&
-      job?.acceptedWorkers != null &&
-      job.acceptedWorkers >= job.neededWorkers
-    );
+  if (loading) return <p>Se încarcă jobul...</p>;
+  if (error) return <p>{error}</p>;
+  if (!job) return <p>Jobul nu există.</p>;
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="page">
       <h1>{job.title}</h1>
-      <p><strong>Descriere:</strong> {job.description || "Fără descriere"}</p>
-      <p><strong>Status:</strong> {job.status}</p>
-      <p><strong>Capacitate:</strong> {job.neededWorkers ?? "Nespecificat"}</p>
-      <p><strong>Locuri ocupate:</strong> {job.acceptedWorkers ?? 0} / {job.neededWorkers ?? "Nespecificat"}</p>
-      <p><strong>Salariu:</strong> {job.salary ?? "0"}</p>
-      <p><strong>Locație:</strong> {job.location || "Nespecificată"}</p>
+
+      <p>
+        <strong>Descriere:</strong> {job.description || "Fără descriere"}
+      </p>
+
+      <p>
+        <strong>Status:</strong> {job.status}
+      </p>
+
+      <p>
+        <strong>Capacitate:</strong> {job.neededWorkers ?? "Nespecificat"}
+      </p>
+
+      <p>
+        <strong>Locuri ocupate:</strong> {job.acceptedWorkers ?? 0} / {job.neededWorkers ?? "Nespecificat"}
+      </p>
+
+      <p>
+        <strong>Salariu:</strong> {job.salary ?? "0"}
+      </p>
+
+      <p>
+        <strong>Locație:</strong> {job.location || "Nespecificată"}
+      </p>
+
       <p>
         <strong>Start:</strong>{" "}
-        {job.startDate ? new Date(job.startDate).toLocaleString("ro-RO") : "Nespecificat"}
+        {job.startDate
+          ? new Date(job.startDate).toLocaleString("ro-RO")
+          : "Nespecificat"}
       </p>
+
       <p>
         <strong>Final:</strong>{" "}
-        {job.endDate ? new Date(job.endDate).toLocaleString("ro-RO") : "Nespecificat"}
+        {job.endDate
+          ? new Date(job.endDate).toLocaleString("ro-RO")
+          : "Nespecificat"}
       </p>
 
-      {isOwner && (
-        <div style={{ display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap" }}>
-          <Link to={`/jobs/${job.id || job._id}/edit`} className="primary-button">
-            Editează jobul
-          </Link>
-
-          <button onClick={handleDeleteJob} className="primary-button">
-            Șterge jobul
-          </button>
-        </div>
-      )}
-
       {!isOwner && (
-        <div style={{ marginTop: "20px" }}>
+        <>
           {hasApplied ? (
-            <p style={{ color: "green", fontWeight: "bold" }}>
-              Ai aplicat deja la acest job.
-            </p>
+            <p>Ai aplicat deja la acest job.</p>
+          ) : isClosed ? (
+            <p>Jobul nu mai este disponibil.</p>
+          ) : isInProgress ? (
+            <p>Job în desfășurare.</p>
           ) : isFilled ? (
-            <p style={{ color: "red", fontWeight: "bold" }}>
-              Locurile pentru acest job s-au ocupat.
-            </p>
+            <p>Locurile pentru acest job s-au ocupat.</p>
           ) : (
-            <button onClick={handleApply}>Aplică la job</button>
+            <button onClick={handleApplyClick}>Aplică</button>
           )}
-        </div>
+        </>
       )}
 
-      {message && <p style={{ marginTop: "12px" }}>{message}</p>}
+      {message && <p>{message}</p>}
 
       {isOwner && (
-        <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
-          {job.status !== "CANCELED" && job.status !== "COMPLETED" && (
-            <button onClick={handleCancelJob}>Anulează jobul</button>
-          )}
+        <div>
+          <h2>Acțiuni owner</h2>
 
-          {job.status !== "COMPLETED" && job.status !== "CANCELED" && (
-            <button onClick={handleCompleteJob}>Finalizează jobul</button>
-          )}
-        </div>
-      )}
+          <Link to={`/jobs/${id}/edit`}>Editează jobul</Link>
+          <button onClick={handleCancelJob}>Anulează jobul</button>
+          <button onClick={handleCompleteJob}>Finalizează jobul</button>
+          <button onClick={handleDeleteJob}>Șterge jobul</button>
 
-      {isOwner && (
-        <div style={{ marginTop: "24px" }}>
           <h2>Aplicanți</h2>
 
           {applications.length === 0 ? (
             <p>Nu există aplicări pentru acest job.</p>
           ) : (
             applications.map((application) => {
-              const applicantEmail =
-                application.applicantEmail || application.email || "";
-
+              const applicantEmail = application.applicantEmail || application.email || "";
               const applicantName =
                 application.applicantFirstName && application.applicantLastName
                   ? `${application.applicantFirstName} ${application.applicantLastName}`
                   : applicantEmail || "Utilizator";
 
               return (
-                <div
-                  key={application.id || application._id}
-                  style={{
-                    border: "1px solid #ccc",
-                    borderRadius: "8px",
-                    padding: "12px",
-                    marginBottom: "10px",
-                  }}
-                >
-                  <p><strong>ID aplicare:</strong> {application.id || application._id}</p>
-                  <p><strong>Status:</strong> {application.status}</p>
+                <div key={application.id || application._id}>
+                  <p>
+                    <strong>ID aplicare:</strong> {application.id || application._id}
+                  </p>
+
+                  <p>
+                    <strong>Status:</strong> {application.status}
+                  </p>
 
                   <p>
                     <strong>Aplicant:</strong>{" "}
                     {applicantEmail ? (
-                      <Link to={`/users/public/${encodeURIComponent(applicantEmail)}`}>
-                        {applicantName}
-                      </Link>
+                      <Link to={`/profile/${applicantEmail}`}>{applicantName}</Link>
                     ) : (
                       applicantName
                     )}
@@ -270,16 +292,14 @@ export default function JobDetailsPage() {
                   <p>
                     <strong>Email aplicant:</strong>{" "}
                     {applicantEmail ? (
-                      <Link to={`/users/public/${encodeURIComponent(applicantEmail)}`}>
-                        {applicantEmail}
-                      </Link>
+                      <Link to={`/profile/${applicantEmail}`}>{applicantEmail}</Link>
                     ) : (
                       "-"
                     )}
                   </p>
 
                   {application.status === "PENDING" ? (
-                    <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                    <div>
                       <button onClick={() => handleAccept(application.id || application._id)}>
                         Acceptă
                       </button>
@@ -288,14 +308,58 @@ export default function JobDetailsPage() {
                       </button>
                     </div>
                   ) : (
-                    <p style={{ marginTop: "10px" }}>
-                      Aplicarea a fost deja procesată.
-                    </p>
+                    <p>Aplicarea a fost deja procesată.</p>
                   )}
                 </div>
               );
             })
           )}
+        </div>
+      )}
+
+      {showApplyModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="apply-modal-title"
+            aria-describedby="apply-modal-description"
+            style={{
+              backgroundColor: "white",
+              padding: "20px",
+              borderRadius: "8px",
+              minWidth: "300px",
+            }}
+          >
+            <h3 id="apply-modal-title">Confirmare aplicare</h3>
+            <p id="apply-modal-description">
+              Sigur vrei să aplici la acest job?
+            </p>
+
+            <button onClick={confirmApply} disabled={isApplying}>
+              {isApplying ? "Se trimite..." : "Da"}
+            </button>
+
+            <button
+              onClick={() => setShowApplyModal(false)}
+              disabled={isApplying}
+            >
+              Nu
+            </button>
+          </div>
         </div>
       )}
     </div>

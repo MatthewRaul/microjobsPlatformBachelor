@@ -77,6 +77,7 @@ public class JobController {
     @GetMapping("/me")
     public ResponseEntity<List<Job>> getMyJobs(Authentication authentication){
         String email=authentication.getName();
+        System.out.println("Email din token" + email);
         return ResponseEntity.ok(jobService.getMyJobs(email));
     }
     

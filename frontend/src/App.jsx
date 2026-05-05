@@ -18,6 +18,7 @@ import MyJobsPage from "./pages/MyJobsPage";
 import ProfilePage from "./pages/ProfilePage";
 import PublicProfilePage from "./pages/PublicProfilePage";
 import EditJobPage from "./pages/EditJobPage";
+import AdminHomePage from "./pages/AdminHomePage";
 
 function App() {
   return (
@@ -44,6 +45,7 @@ function App() {
           
 
           <Route element={<ProtectedRoute />}>
+              <Route path="/admin" element={<AdminHomePage/>}/>
               <Route path="/my-applications" element={<MyApplicationsPage/>}/>
               <Route path="/add-job" element={<AddJobPage />} />
               <Route path="/my-jobs" element={<MyJobsPage/>} />
