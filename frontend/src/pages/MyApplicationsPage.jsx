@@ -63,13 +63,15 @@ export default function MyApplicationsPage() {
                 </span>
               </p>
 
-              {app.jobTitle && (
-                <p><strong>Job:</strong> {app.jobTitle}</p>
+              {app.Title && (
+                <p><strong>Job:</strong> {app.Title}</p>
               )}
 
               {app.applicantEmail && (
                 <p><strong>Email aplicant:</strong> {app.applicantEmail}</p>
               )}
+
+              {app.applied}
 
               {app.jobId && (
                 <p style={{ marginTop: "10px" }}>

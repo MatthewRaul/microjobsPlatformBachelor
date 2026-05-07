@@ -1,8 +1,3 @@
-// authApi.js
-// Aici ținem funcțiile legate de autentificare.
-// Ideea este să nu punem request-urile direct amestecate în pagini,
-// ci să le separăm frumos.
-
 import api from "./axios";
 
 // Funcția loginUser primește datele din formular

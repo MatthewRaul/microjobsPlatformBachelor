@@ -50,7 +50,7 @@ public class UserController {
     }
 
 
-    @PostMapping("/login")// /api/users/login
+    @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) {
     try {
         LoginResponse response = userService.loginUser(loginRequest);

@@ -1,7 +1,7 @@
 package com.licenta.microjobsPlatform.controller;
 
-import java.util.List;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -21,6 +21,7 @@ import com.licenta.microjobsPlatform.dto.CreateJobRequest;
 import com.licenta.microjobsPlatform.dto.UpdateJobRequest;
 import com.licenta.microjobsPlatform.model.Aplicare;
 import com.licenta.microjobsPlatform.model.Job;
+import com.licenta.microjobsPlatform.model.JobStatus;
 import com.licenta.microjobsPlatform.service.AplicareService;
 import com.licenta.microjobsPlatform.service.JobService;
 
@@ -50,10 +51,11 @@ public class JobController {
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) Integer participants) {
+            @RequestParam(required = false) Integer participants,
+            @RequestParam(required=false) JobStatus status) {
 
         return ResponseEntity.ok(
-                jobService.getVisibleJobsFiltered(startDate, endDate, location, participants)
+                jobService.getVisibleJobsFiltered(startDate, endDate, location, participants,status)
         );
     }
 

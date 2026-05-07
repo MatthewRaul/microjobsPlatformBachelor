@@ -16,11 +16,12 @@ public class Aplicare {
     private String applicantLastName;
     private AplicareStatus status;
     private LocalDateTime appliedAt;
+    private String jobTitle;
 
     public Aplicare(){
     }
 
-    public Aplicare(String id, String applicantEmail, String applicantFirstName, String applicantLastName, LocalDateTime appliedAt, String jobId, AplicareStatus status) {
+    public Aplicare(String id, String applicantEmail, String applicantFirstName, String applicantLastName, LocalDateTime appliedAt, String jobId, AplicareStatus status, String jobTitle) {
         this.id = id;
         this.applicantEmail = applicantEmail;
         this.applicantFirstName = applicantFirstName;
@@ -28,6 +29,7 @@ public class Aplicare {
         this.appliedAt = appliedAt;
         this.jobId = jobId;
         this.status = status;
+        this.jobTitle=jobTitle;
     }
 
     public String getId() {
@@ -85,6 +87,16 @@ public class Aplicare {
     public void setAppliedAt(LocalDateTime appliedAt) {
         this.appliedAt = appliedAt;
     }
+
+    public String getJobTitle() {
+        return jobTitle;
+    }
+
+    public void setJobTitle(String jobTitle) {
+        this.jobTitle = jobTitle;
+    }
+
+
 
     
 }

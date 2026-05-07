@@ -42,9 +42,11 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth->
                                 auth.requestMatchers("/api/users/register","/api/users/login").permitAll().
                                     requestMatchers("/error").permitAll().
-                                    requestMatchers(HttpMethod.GET,"/api/jobs/**").permitAll().//register si login sunt publice
+                                    requestMatchers(HttpMethod.GET,"/api/jobs").permitAll().
+                                    requestMatchers(HttpMethod.GET,"/api/jobs/*").permitAll().
                                     requestMatchers(HttpMethod.GET,"/api/users/profile/**").permitAll().
-                                    requestMatchers("/api/locations/**").permitAll()
+                                    requestMatchers("/api/locations/**").permitAll().
+                                    requestMatchers("/api/admin/**").hasRole("ADMIN")
                                     .anyRequest().authenticated()
                                  )
                                 .sessionManagement(session->

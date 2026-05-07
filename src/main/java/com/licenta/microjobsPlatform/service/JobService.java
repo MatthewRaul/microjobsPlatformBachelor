@@ -1,7 +1,6 @@
 package com.licenta.microjobsPlatform.service;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.security.core.Authentication;
@@ -251,7 +250,7 @@ public class JobService {
             job.setAcceptedWorkers(0);
         }
 
-        if (job.getStatus() == JobStatus.CANCELED) {
+        if (job.getStatus() == JobStatus.CANCELED || job.getStatus() == JobStatus.COMPLETED) {
             return job;
         }
 
@@ -269,86 +268,142 @@ public class JobService {
         return job;
     }
 
-    public List<Job> getVisibleJobsFiltered(LocalDateTime startDate, LocalDateTime endDate, String location, Integer participants) {
-        List<JobStatus> visibleStatuses = Arrays.asList(JobStatus.OPEN, JobStatus.FILLED);
+    public List<Job> getVisibleJobsFiltered(
+        LocalDateTime startDate,
+        LocalDateTime endDate,
+        String location,
+        Integer participants,
+        JobStatus status
+) {
+    String normalizedLocation = location != null ? location.trim() : null;
+    boolean hasStartDate = startDate != null;
+    boolean hasEndDate = endDate != null;
+    boolean hasLocation = normalizedLocation != null && !normalizedLocation.isBlank();
+    boolean hasParticipants = participants != null;
+    boolean hasStatus = status != null;
 
-        String normalizedLocation = location != null ? location.trim() : null;
-        boolean hasStartDate = startDate != null;
-        boolean hasEndDate = endDate != null;
-        boolean hasLocation = normalizedLocation != null && !normalizedLocation.isBlank();
-        boolean hasParticipants = participants != null;
+    if (hasStartDate && hasEndDate && endDate.isBefore(startDate)) {
+        throw new BadRequest("Data de sfarsit trebuie sa fie dupa sau egala cu data de inceput.");
+    }
 
-        if (hasStartDate && hasEndDate && endDate.isBefore(startDate)) {
-            throw new BadRequest("Data de sfarsit trebuie sa fie dupa sau egala cu data de inceput.");
+    if (hasParticipants && participants < 1) {
+        throw new BadRequest("Numarul de participanti trebuie sa fie cel putin 1.");
+    }
+
+    List<Job> jobs = jobRepository.findAll();
+
+    for (Job job : jobs) {
+        if (job.getAcceptedWorkers() == null) {
+            job.setAcceptedWorkers(0);
         }
 
+        JobStatus oldStatus = job.getStatus();
+        refreshStatusByTime(job);
 
-        if (hasParticipants && participants < 1) {
-            throw new BadRequest("Numarul de participanti trebuie sa fie cel putin 1.");
+        if (oldStatus != job.getStatus()) {
+            jobRepository.save(job);
+        }
+    }
+
+    return jobs.stream()
+            .filter(job -> {
+                if (hasStartDate && (job.getStartDate() == null || job.getStartDate().isBefore(startDate))) {
+                    return false;
+                }
+
+                if (hasEndDate && (job.getEndDate() == null || job.getEndDate().isAfter(endDate))) {
+                    return false;
+                }
+
+                if (hasLocation && (job.getLocation() == null || !job.getLocation().equalsIgnoreCase(normalizedLocation))) {
+                    return false;
+                }
+
+                if (hasParticipants && (job.getNeededWorkers() == null || job.getNeededWorkers() < participants)) {
+                    return false;
+                }
+
+                if (hasStatus && job.getStatus() != status) {
+                    return false;
+                }
+
+                return true;
+            })
+            .toList();
+}
+
+    // Returneaza toate joburile din sistem pentru zona de admin.
+    // Spre deosebire de lista publica, aici adminul poate vedea inclusiv joburi inchise.
+    public List<Job> getAllJobsForAdmin() {
+        List<Job> jobs = jobRepository.findAll();
+
+        for (Job job : jobs) {
+            if (job.getAcceptedWorkers() == null) {
+                job.setAcceptedWorkers(0);
+            }
+
+            JobStatus oldStatus = job.getStatus();
+            refreshStatusByTime(job);
+
+            if (oldStatus != job.getStatus()) {
+                jobRepository.save(job);
+            }
         }
 
-        // Doar startDate
-        if (hasStartDate && !hasEndDate && !hasLocation && !hasParticipants) {
-            return jobRepository.findByStatusInAndStartDateGreaterThanEqual(visibleStatuses, startDate);
+        return jobs;
+    }
+
+    // Cautare simpla pentru admin dupa titlu, locatie, judet sau email-ul ownerului.
+    // Daca search este gol, returnam toate joburile.
+    public List<Job> searchJobsForAdmin(String search) {
+        List<Job> jobs = getAllJobsForAdmin();
+
+        if (search == null || search.trim().isBlank()) {
+            return jobs;
         }
 
-        // Doar endDate
-        if (!hasStartDate && hasEndDate && !hasLocation && !hasParticipants) {
-            return jobRepository.findByStatusInAndEndDateLessThanEqual(visibleStatuses, endDate);
-        }
+        String normalizedSearch = search.trim().toLowerCase();
 
-        // Doar location
-        if (!hasStartDate && !hasEndDate && hasLocation && !hasParticipants) {
-            return jobRepository.findByStatusInAndLocationIgnoreCase(visibleStatuses, normalizedLocation);
-        }
+        return jobs.stream()
+                .filter(job
+                        -> containsIgnoreCase(job.getTitle(), normalizedSearch)
+                || containsIgnoreCase(job.getLocation(), normalizedSearch)
+                || containsIgnoreCase(job.getCounty(), normalizedSearch)
+                || containsIgnoreCase(job.getPostedBy(), normalizedSearch))
+                .toList();
+    }
 
-        // Doar participants
-        if (!hasStartDate && !hasEndDate && !hasLocation && hasParticipants) {
-            return jobRepository.findByStatusInAndNeededWorkersGreaterThanEqual(
-                    visibleStatuses,
-                    participants
-            );
-        }
+    // Returneaza un job pentru zona de admin.
+    // Momentan putem refolosi metoda existenta, dar o tinem separat pentru claritate.
+    public Job getJobByIdForAdmin(String id) {
+        return getJobById(id);
+    }
 
-        // startDate + endDate
-        if (hasStartDate && hasEndDate && !hasLocation && !hasParticipants) {
-            return jobRepository.findByStatusInAndStartDateGreaterThanEqualAndEndDateLessThanEqual(
-                    visibleStatuses,
-                    startDate,
-                    endDate
-            );
-        }
+    // Adminul poate modifica orice job, deci refolosim logica deja existenta.
+    // Metoda actuala updateJob permite deja acest lucru prin verificarea isAdmin().
+    public Job updateJobAsAdmin(String id, UpdateJobRequest request, String adminEmail) {
+        return updateJob(id, request, adminEmail);
+    }
 
-        // startDate + location
-        if (hasStartDate && !hasEndDate && hasLocation && !hasParticipants) {
-            return jobRepository.findByStatusInAndStartDateGreaterThanEqualAndLocationIgnoreCase(
-                    visibleStatuses,
-                    startDate,
-                    normalizedLocation
-            );
-        }
+    // Adminul poate sterge orice job.
+    // Metoda actuala deleteJob permite deja acest lucru prin verificarea isAdmin().
+    public void deleteJobAsAdmin(String id, String adminEmail) {
+        deleteJob(id, adminEmail);
+    }
 
-        // endDate + location
-        if (!hasStartDate && hasEndDate && hasLocation && !hasParticipants) {
-            return jobRepository.findByStatusInAndEndDateLessThanEqualAndLocationIgnoreCase(
-                    visibleStatuses,
-                    endDate,
-                    normalizedLocation
-            );
-        }
+    // Adminul poate anula orice job.
+    public Job cancelJobAsAdmin(String id, String adminEmail) {
+        return cancelJob(id, adminEmail);
+    }
 
-        // toate cele 3 filtre
-        if (hasStartDate && hasEndDate && hasLocation && !hasParticipants) {
-            return jobRepository.findByStatusInAndStartDateGreaterThanEqualAndEndDateLessThanEqualAndLocationIgnoreCase(
-                    visibleStatuses,
-                    startDate,
-                    endDate,
-                    normalizedLocation
-            );
-        }
+    // Adminul poate finaliza orice job.
+    public Job completeJobAsAdmin(String id, String adminEmail) {
+        return completeJob(id, adminEmail);
+    }
 
-        // daca nu exista niciun filtru, folosim metoda deja existenta
-        return getVisibleJobs();
+    // Helper simplu pentru cautari text fara probleme de null.
+    private boolean containsIgnoreCase(String value, String search) {
+        return value != null && value.toLowerCase().contains(search);
     }
 
 }

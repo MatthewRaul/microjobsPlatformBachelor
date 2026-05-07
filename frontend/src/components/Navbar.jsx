@@ -23,7 +23,7 @@ export default function Navbar() {
       {isAuthenticated && <Link to="/my-jobs">Joburile mele</Link>}
       {isAuthenticated && <Link to="/my-applications">Aplicările mele</Link>}
       {isAuthenticated && <Link to="/profile">Profil</Link>}
-      {isAuthenticated && isAdmin && <Link to="/admin">Panou Admin</Link>}
+      {isAuthenticated && isAdmin && <Link to="/admin/jobs">Panou Admin</Link>}
       {!isAuthenticated && <Link to="/login">Login</Link>}
       {!isAuthenticated && <Link to="/register">Register</Link>}
     </nav>
