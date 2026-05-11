@@ -2,11 +2,13 @@ package com.licenta.microjobsPlatform.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.licenta.microjobsPlatform.dto.AplicareResponse;
 import com.licenta.microjobsPlatform.exception.BadRequest;
 import com.licenta.microjobsPlatform.exception.ForbiddenAction;
 import com.licenta.microjobsPlatform.exception.ResourceNotFound;
@@ -26,15 +28,32 @@ public class AplicareService {
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
 
-    public AplicareService(AplicareRepository aplicareRepository, JobRepository jobRepository, UserRepository userRepository) {
+    public AplicareService(AplicareRepository aplicareRepository,
+                           JobRepository jobRepository,
+                           UserRepository userRepository) {
         this.aplicareRepository = aplicareRepository;
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
     }
 
-    // Verifica daca utilizatorul curent are rol de admin.
+    // =========================
+    // Helpers generale
+    // =========================
+
+    private Authentication getAuthentication() {
+        return SecurityContextHolder.getContext().getAuthentication();
+    }
+
+    private String getCurrentUserEmail() {
+        Authentication authentication = getAuthentication();
+        if (authentication == null || authentication.getName() == null) {
+            throw new ForbiddenAction("Utilizator neautentificat.");
+        }
+        return authentication.getName();
+    }
+
     private boolean isAdmin() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Authentication authentication = getAuthentication();
 
         if (authentication == null || authentication.getAuthorities() == null) {
             return false;
@@ -44,23 +63,65 @@ public class AplicareService {
                 .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
     }
 
-    private void updateJobStatusIfFull(Job job) {
-        if (job.getAcceptedWorkers() == null) {
-            job.setAcceptedWorkers(0);
-        }
-
-        if (job.getNeededWorkers() != null && job.getAcceptedWorkers() >= job.getNeededWorkers()) {
-            job.setStatus(JobStatus.FILLED);
-            jobRepository.save(job);
-        }
+    private Job getJobOrThrow(String jobId) {
+        return jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFound("Jobul nu exista"));
     }
 
-    public Aplicare applyToJob(String jobId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String applicantEmail = authentication.getName();
+    private Aplicare getAplicareOrThrow(String aplicareId) {
+        return aplicareRepository.findById(aplicareId)
+                .orElseThrow(() -> new ResourceNotFound("Aplicarea nu exista."));
+    }
 
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new ResourceNotFound("Job-ul nu exista"));
+    private boolean isOwner(Job job, String userEmail) {
+        return java.util.Objects.equals(job.getPostedBy(), userEmail);
+    }
+
+    private boolean isAcceptedParticipant(String jobId, String userEmail) {
+        return aplicareRepository.findByJobIdAndApplicantEmail(jobId, userEmail)
+                .map(aplicare -> aplicare.getStatus() == AplicareStatus.ACCEPTED)
+                .orElse(false);
+    }
+
+    private boolean canViewParticipants(Job job, String userEmail) {
+        if (isOwner(job, userEmail) || isAdmin()) {
+            return true;
+        }
+
+        return job.getStatus() == JobStatus.COMPLETED
+                && isAcceptedParticipant(job.getId(), userEmail);
+    }
+
+    private AplicareResponse mapToAplicareResponse(Aplicare aplicare) {
+        User user = userRepository.findByEmail(aplicare.getApplicantEmail()).orElse(null);
+
+        String applicantUserId = user != null ? user.getId() : null;
+        Double applicantAverageRating = user != null ? user.getAverageRating() : 0.0;
+        Integer applicantReviewCount = user != null ? user.getReviewCount() : 0;
+
+        return new AplicareResponse(
+                aplicare.getId(),
+                aplicare.getJobId(),
+                applicantUserId,
+                aplicare.getApplicantEmail(),
+                aplicare.getApplicantFirstName(),
+                aplicare.getApplicantLastName(),
+                applicantAverageRating,
+                applicantReviewCount,
+                aplicare.getStatus(),
+                aplicare.getAppliedAt(),
+                aplicare.getJobTitle()
+        );
+    }
+
+    // =========================
+    // Zona utilizator / owner
+    // =========================
+
+    public Aplicare applyToJob(String jobId) {
+        String applicantEmail = getCurrentUserEmail();
+
+        Job job = getJobOrThrow(jobId);
 
         if (job.getAcceptedWorkers() == null) {
             job.setAcceptedWorkers(0);
@@ -87,7 +148,7 @@ public class AplicareService {
             throw new BadRequest("Nu se poate aplica la un job inchis.");
         }
 
-        if (java.util.Objects.equals(job.getPostedBy(), applicantEmail)) {
+        if (isOwner(job, applicantEmail)) {
             throw new BadRequest("Nu poti aplica la propriul job.");
         }
 
@@ -104,6 +165,7 @@ public class AplicareService {
 
         Aplicare aplicare = new Aplicare();
         aplicare.setJobId(jobId);
+        aplicare.setJobTitle(job.getTitle());
         aplicare.setApplicantEmail(applicantEmail);
         aplicare.setApplicantFirstName(user.getFirstName());
         aplicare.setApplicantLastName(user.getLastName());
@@ -114,37 +176,35 @@ public class AplicareService {
     }
 
     public List<Aplicare> getAplicariForJob(String jobId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUserEmail = authentication.getName();
+        String currentUserEmail = getCurrentUserEmail();
 
-        Job job = jobRepository.findById(jobId)
-                .orElseThrow(() -> new ResourceNotFound("Jobul nu exista"));
+        Job job = getJobOrThrow(jobId);
 
-        // Ownerul jobului sau adminul poate vedea aplicarile.
-        if (!java.util.Objects.equals(job.getPostedBy(), currentUserEmail) && !isAdmin()) {
-            throw new ForbiddenAction("Nu ai voie sa vezi aplicarile acestui job.");
+        if (!canViewParticipants(job, currentUserEmail)) {
+            throw new ForbiddenAction("Nu ai voie sa vezi participantii acestui job.");
         }
 
         return aplicareRepository.findByJobId(jobId);
     }
 
+    public List<AplicareResponse> getAplicariForJobResponse(String jobId) {
+        return getAplicariForJob(jobId).stream()
+                .map(this::mapToAplicareResponse)
+                .collect(Collectors.toList());
+    }
+
     public Aplicare acceptAplicare(String aplicareId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUserEmail = authentication.getName();
+        String currentUserEmail = getCurrentUserEmail();
 
-        Aplicare aplicare = aplicareRepository.findById(aplicareId)
-                .orElseThrow(() -> new ResourceNotFound("Aplicarea nu exista"));
+        Aplicare aplicare = getAplicareOrThrow(aplicareId);
+        Job job = getJobOrThrow(aplicare.getJobId());
 
-        Job job = jobRepository.findById(aplicare.getJobId())
-                .orElseThrow(() -> new ResourceNotFound("Job-ul asociat nu exista"));
-
-        // Ownerul jobului sau adminul poate accepta aplicarea.
-        if (!java.util.Objects.equals(job.getPostedBy(), currentUserEmail) && !isAdmin()) {
+        if (!isOwner(job, currentUserEmail) && !isAdmin()) {
             throw new ForbiddenAction("Nu ai voie sa accepti aplicarile acestui job.");
         }
 
         if (aplicare.getStatus() != AplicareStatus.PENDING) {
-            throw new BadRequest("Doar aplicarile PENDING pot fi acceptate");
+            throw new BadRequest("Doar aplicarile PENDING pot fi acceptate.");
         }
 
         if (job.getStatus() == JobStatus.CANCELED || job.getStatus() == JobStatus.COMPLETED) {
@@ -189,17 +249,12 @@ public class AplicareService {
     }
 
     public Aplicare rejectAplicare(String aplicareId) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String currentUserEmail = authentication.getName();
+        String currentUserEmail = getCurrentUserEmail();
 
-        Aplicare aplicare = aplicareRepository.findById(aplicareId)
-                .orElseThrow(() -> new ResourceNotFound("Aplicarea nu exista."));
+        Aplicare aplicare = getAplicareOrThrow(aplicareId);
+        Job job = getJobOrThrow(aplicare.getJobId());
 
-        Job job = jobRepository.findById(aplicare.getJobId())
-                .orElseThrow(() -> new ResourceNotFound("Jobul asociat nu exista."));
-
-        // Ownerul jobului sau adminul poate respinge aplicarea.
-        if (!java.util.Objects.equals(job.getPostedBy(), currentUserEmail) && !isAdmin()) {
+        if (!isOwner(job, currentUserEmail) && !isAdmin()) {
             throw new ForbiddenAction("Nu ai voie sa respingi aplicarile acestui job.");
         }
 
@@ -212,8 +267,7 @@ public class AplicareService {
     }
 
     public List<Aplicare> getMyAplicari() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
+        String email = getCurrentUserEmail();
         return aplicareRepository.findByApplicantEmail(email);
     }
 
@@ -221,7 +275,6 @@ public class AplicareService {
     // Zona admin
     // =========================
 
-    // Returneaza toate aplicarile din sistem pentru admin.
     public List<Aplicare> getAllAplicariForAdmin() {
         if (!isAdmin()) {
             throw new ForbiddenAction("Doar adminul poate vedea toate aplicarile.");
@@ -230,7 +283,6 @@ public class AplicareService {
         return aplicareRepository.findAll();
     }
 
-    // Cautare simpla pentru admin dupa email aplicant, nume, prenume, status sau jobId.
     public List<Aplicare> searchAplicariForAdmin(String search) {
         if (!isAdmin()) {
             throw new ForbiddenAction("Doar adminul poate cauta in aplicari.");
@@ -256,17 +308,14 @@ public class AplicareService {
                 .toList();
     }
 
-    // Returneaza o aplicare dupa id pentru admin.
     public Aplicare getAplicareByIdForAdmin(String aplicareId) {
         if (!isAdmin()) {
             throw new ForbiddenAction("Doar adminul poate vedea aceasta aplicare.");
         }
 
-        return aplicareRepository.findById(aplicareId)
-                .orElseThrow(() -> new ResourceNotFound("Aplicarea nu exista."));
+        return getAplicareOrThrow(aplicareId);
     }
 
-    // Adminul poate accepta orice aplicare prin logica deja existenta.
     public Aplicare acceptAplicareAsAdmin(String aplicareId) {
         if (!isAdmin()) {
             throw new ForbiddenAction("Doar adminul poate accepta aplicari din zona de administrare.");
@@ -275,7 +324,6 @@ public class AplicareService {
         return acceptAplicare(aplicareId);
     }
 
-    // Adminul poate respinge orice aplicare prin logica deja existenta.
     public Aplicare rejectAplicareAsAdmin(String aplicareId) {
         if (!isAdmin()) {
             throw new ForbiddenAction("Doar adminul poate respinge aplicari din zona de administrare.");
@@ -284,19 +332,19 @@ public class AplicareService {
         return rejectAplicare(aplicareId);
     }
 
-    // Adminul poate sterge orice aplicare.
     public void deleteAplicareAsAdmin(String aplicareId) {
         if (!isAdmin()) {
             throw new ForbiddenAction("Doar adminul poate sterge aplicari.");
         }
 
-        Aplicare aplicare = aplicareRepository.findById(aplicareId)
-                .orElseThrow(() -> new ResourceNotFound("Aplicarea nu exista."));
-
+        Aplicare aplicare = getAplicareOrThrow(aplicareId);
         aplicareRepository.delete(aplicare);
     }
 
-    // Helper pentru cautare text fara null.
+    // =========================
+    // Helper text
+    // =========================
+
     private boolean containsIgnoreCase(String value, String search) {
         return value != null && value.toLowerCase().contains(search);
     }

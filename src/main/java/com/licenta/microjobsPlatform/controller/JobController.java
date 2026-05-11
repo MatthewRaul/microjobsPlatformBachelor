@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.licenta.microjobsPlatform.dto.AplicareResponse;
 import com.licenta.microjobsPlatform.dto.CreateJobRequest;
 import com.licenta.microjobsPlatform.dto.UpdateJobRequest;
 import com.licenta.microjobsPlatform.model.Aplicare;
@@ -52,10 +53,10 @@ public class JobController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) Integer participants,
-            @RequestParam(required=false) JobStatus status) {
+            @RequestParam(required = false) JobStatus status) {
 
         return ResponseEntity.ok(
-                jobService.getVisibleJobsFiltered(startDate, endDate, location, participants,status)
+                jobService.getVisibleJobsFiltered(startDate, endDate, location, participants, status)
         );
     }
 
@@ -85,8 +86,8 @@ public class JobController {
     }
 
     @GetMapping("/{jobId}/aplicari")
-    public ResponseEntity<List<Aplicare>> getAplicariForJob(@PathVariable String jobId) {
-        return ResponseEntity.ok(aplicareService.getAplicariForJob(jobId));
+    public ResponseEntity<List<AplicareResponse>> getAplicariForJob(@PathVariable String jobId) {
+        return ResponseEntity.ok(aplicareService.getAplicariForJobResponse(jobId));
     }
 
     @GetMapping("/me")
@@ -111,6 +112,11 @@ public class JobController {
         String userEmail = authentication.getName();
         jobService.deleteJob(id, userEmail);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/owner-id")
+    public ResponseEntity<String> getOwnerIdForJob(@PathVariable String id) {
+        return ResponseEntity.ok(jobService.getOwnerIdForJob(id));
     }
 
 }

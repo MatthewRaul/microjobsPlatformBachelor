@@ -1,22 +1,14 @@
-// jobApi.js
-// Aici ținem funcțiile legate de joburi.
-// Nu vrem să punem request-urile direct în pagină,
-// ca să păstrăm codul mai curat și mai ușor de înțeles.
-
 import api from "./axios";
 
-
-// Funcția cere toate joburile publice de la backend.
-export const getAllJobs = async (filters={}) => {
+export const getAllJobs = async (filters = {}) => {
   const response = await api.get("/api/jobs", {
-    params:filters ,
+    params: filters,
   });
-
-  // response.data este lista de joburi trimisă de backend
   return response.data;
 };
-export const createJob= async(jobData)=>{
-  const response=await api.post("/api/jobs",jobData);
+
+export const createJob = async (jobData) => {
+  const response = await api.post("/api/jobs", jobData);
   return response.data;
 };
 
@@ -25,12 +17,12 @@ export const applyToJob = async (jobId) => {
   return response.data;
 };
 
-export const getMyApplications = async()=>{
-  const response=await api.get("/api/aplicari/me");
+export const getMyApplications = async () => {
+  const response = await api.get("/api/aplicari/me");
   return response.data;
 };
 
-export const getJobById= async (jobId)=> {
+export const getJobById = async (jobId) => {
   const response = await api.get(`/api/jobs/${jobId}`);
   return response.data;
 };
@@ -45,7 +37,7 @@ export const completeJob = async (jobId) => {
   return response.data;
 };
 
-export const getMyJobs= async () => {
+export const getMyJobs = async () => {
   const response = await api.get("/api/jobs/me");
   return response.data;
 };
@@ -55,10 +47,10 @@ export const updateJob = async (jobId, jobData) => {
   return response.data;
 };
 
-export const deleteJob= async (jobId) => {
+export const deleteJob = async (jobId) => {
   const response = await api.delete(`/api/jobs/${jobId}`);
   return response.data;
-}
+};
 
 export const getApplicationsForJob = async (jobId) => {
   const response = await api.get(`/api/jobs/${jobId}/aplicari`);
@@ -75,6 +67,7 @@ export const rejectApplication = async (applicationId) => {
   return response.data;
 };
 
-
-
-
+export const getOwnerIdForJob = async (jobId) => {
+  const response = await api.get(`/api/jobs/${jobId}/owner-id`);
+  return response.data;
+};

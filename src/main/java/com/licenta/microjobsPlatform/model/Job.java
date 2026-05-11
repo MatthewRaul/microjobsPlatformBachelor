@@ -1,6 +1,8 @@
 package com.licenta.microjobsPlatform.model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -22,6 +24,7 @@ public class Job {
     private Integer salary;
     private String location;
     private String county;
+    private List<String> requiredSkills= new ArrayList<>();
 
     public Job(){
 
@@ -148,7 +151,15 @@ public class Job {
         this.county = county;
     }
 
+    public List<String> getRequiredSkills() {
+        return requiredSkills;
+    }
 
+    public void setRequiredSkills(List<String> requiredSkills) {
+        this.requiredSkills = requiredSkills;
+    }
+
+    
 
     
 

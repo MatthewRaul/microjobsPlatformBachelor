@@ -39,8 +39,21 @@ export default function PublicUserReviewsPage() {
     }
   }, [id]);
 
-  if (loading) return <div>Se încarcă review-urile...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) {
+    return (
+      <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
+        <p>Se încarcă review-urile...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>

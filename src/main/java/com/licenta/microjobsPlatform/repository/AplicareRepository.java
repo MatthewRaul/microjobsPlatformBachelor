@@ -13,6 +13,8 @@ public interface AplicareRepository extends MongoRepository<Aplicare, String> {
     List<Aplicare> findByApplicantEmail(String ApplicantEmail);
     Optional<Aplicare> findByJobIdAndApplicantEmail(String jobId,String applicantEmail);
     long countByJobIdAndStatus(String jobId, AplicareStatus status);
+    boolean existsByJobIdAndApplicantEmailAndStatus(String jobId,String applicantEmail,AplicareStatus status);
+    List<Aplicare> findByJobIdAndStatus(String jobId, AplicareStatus status);
     
 
     

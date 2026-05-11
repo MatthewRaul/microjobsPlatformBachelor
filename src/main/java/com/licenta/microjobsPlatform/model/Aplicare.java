@@ -17,6 +17,9 @@ public class Aplicare {
     private AplicareStatus status;
     private LocalDateTime appliedAt;
     private String jobTitle;
+    private String cvFileId;
+    private String cvFileName;
+    private String message;
 
     public Aplicare(){
     }
@@ -37,7 +40,7 @@ public class Aplicare {
     }
 
     public void setId(String id) {
-        id = id;
+        this.id = id;
     }
 
     public String getJobId() {

@@ -10,17 +10,22 @@ import org.springframework.stereotype.Service;
 import com.licenta.microjobsPlatform.dto.CreateJobRequest;
 import com.licenta.microjobsPlatform.dto.UpdateJobRequest;
 import com.licenta.microjobsPlatform.exception.BadRequest;
+import com.licenta.microjobsPlatform.exception.ResourceNotFound;
 import com.licenta.microjobsPlatform.model.Job;
 import com.licenta.microjobsPlatform.model.JobStatus;
+import com.licenta.microjobsPlatform.model.User;
 import com.licenta.microjobsPlatform.repository.JobRepository;
+import com.licenta.microjobsPlatform.repository.UserRepository;
 
 @Service
 public class JobService {
 
     private final JobRepository jobRepository;
+    private final UserRepository userRepository;
 
-    public JobService(JobRepository jobRepository) {
+    public JobService(JobRepository jobRepository, UserRepository userRepository) {
         this.jobRepository = jobRepository;
+        this.userRepository = userRepository;
     }
 
     private boolean isAdmin() {
@@ -32,6 +37,22 @@ public class JobService {
 
         return authentication.getAuthorities().stream()
                 .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+    }
+
+    public String getOwnerIdForJob(String jobId) {
+        Job job = jobRepository.findById(jobId)
+                .orElseThrow(() -> new ResourceNotFound("Jobul nu exista"));
+
+        String ownerEmail = job.getPostedBy();
+
+        if (ownerEmail == null || ownerEmail.isBlank()) {
+            throw new ResourceNotFound("Jobul nu are owner valid.");
+        }
+
+        User owner = userRepository.findByEmail(ownerEmail)
+                .orElseThrow(() -> new ResourceNotFound("Ownerul jobului nu exista."));
+
+        return owner.getId();
     }
 
     public Job createJob(CreateJobRequest request, String userEmail) {
@@ -269,71 +290,69 @@ public class JobService {
     }
 
     public List<Job> getVisibleJobsFiltered(
-        LocalDateTime startDate,
-        LocalDateTime endDate,
-        String location,
-        Integer participants,
-        JobStatus status
-) {
-    String normalizedLocation = location != null ? location.trim() : null;
-    boolean hasStartDate = startDate != null;
-    boolean hasEndDate = endDate != null;
-    boolean hasLocation = normalizedLocation != null && !normalizedLocation.isBlank();
-    boolean hasParticipants = participants != null;
-    boolean hasStatus = status != null;
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            String location,
+            Integer participants,
+            JobStatus status
+    ) {
+        String normalizedLocation = location != null ? location.trim() : null;
+        boolean hasStartDate = startDate != null;
+        boolean hasEndDate = endDate != null;
+        boolean hasLocation = normalizedLocation != null && !normalizedLocation.isBlank();
+        boolean hasParticipants = participants != null;
+        boolean hasStatus = status != null;
 
-    if (hasStartDate && hasEndDate && endDate.isBefore(startDate)) {
-        throw new BadRequest("Data de sfarsit trebuie sa fie dupa sau egala cu data de inceput.");
-    }
-
-    if (hasParticipants && participants < 1) {
-        throw new BadRequest("Numarul de participanti trebuie sa fie cel putin 1.");
-    }
-
-    List<Job> jobs = jobRepository.findAll();
-
-    for (Job job : jobs) {
-        if (job.getAcceptedWorkers() == null) {
-            job.setAcceptedWorkers(0);
+        if (hasStartDate && hasEndDate && endDate.isBefore(startDate)) {
+            throw new BadRequest("Data de sfarsit trebuie sa fie dupa sau egala cu data de inceput.");
         }
 
-        JobStatus oldStatus = job.getStatus();
-        refreshStatusByTime(job);
-
-        if (oldStatus != job.getStatus()) {
-            jobRepository.save(job);
+        if (hasParticipants && participants < 1) {
+            throw new BadRequest("Numarul de participanti trebuie sa fie cel putin 1.");
         }
+
+        List<Job> jobs = jobRepository.findAll();
+
+        for (Job job : jobs) {
+            if (job.getAcceptedWorkers() == null) {
+                job.setAcceptedWorkers(0);
+            }
+
+            JobStatus oldStatus = job.getStatus();
+            refreshStatusByTime(job);
+
+            if (oldStatus != job.getStatus()) {
+                jobRepository.save(job);
+            }
+        }
+
+        return jobs.stream()
+                .filter(job -> {
+                    if (hasStartDate && (job.getStartDate() == null || job.getStartDate().isBefore(startDate))) {
+                        return false;
+                    }
+
+                    if (hasEndDate && (job.getEndDate() == null || job.getEndDate().isAfter(endDate))) {
+                        return false;
+                    }
+
+                    if (hasLocation && (job.getLocation() == null || !job.getLocation().equalsIgnoreCase(normalizedLocation))) {
+                        return false;
+                    }
+
+                    if (hasParticipants && (job.getNeededWorkers() == null || job.getNeededWorkers() < participants)) {
+                        return false;
+                    }
+
+                    if (hasStatus && job.getStatus() != status) {
+                        return false;
+                    }
+
+                    return true;
+                })
+                .toList();
     }
 
-    return jobs.stream()
-            .filter(job -> {
-                if (hasStartDate && (job.getStartDate() == null || job.getStartDate().isBefore(startDate))) {
-                    return false;
-                }
-
-                if (hasEndDate && (job.getEndDate() == null || job.getEndDate().isAfter(endDate))) {
-                    return false;
-                }
-
-                if (hasLocation && (job.getLocation() == null || !job.getLocation().equalsIgnoreCase(normalizedLocation))) {
-                    return false;
-                }
-
-                if (hasParticipants && (job.getNeededWorkers() == null || job.getNeededWorkers() < participants)) {
-                    return false;
-                }
-
-                if (hasStatus && job.getStatus() != status) {
-                    return false;
-                }
-
-                return true;
-            })
-            .toList();
-}
-
-    // Returneaza toate joburile din sistem pentru zona de admin.
-    // Spre deosebire de lista publica, aici adminul poate vedea inclusiv joburi inchise.
     public List<Job> getAllJobsForAdmin() {
         List<Job> jobs = jobRepository.findAll();
 
@@ -353,8 +372,6 @@ public class JobService {
         return jobs;
     }
 
-    // Cautare simpla pentru admin dupa titlu, locatie, judet sau email-ul ownerului.
-    // Daca search este gol, returnam toate joburile.
     public List<Job> searchJobsForAdmin(String search) {
         List<Job> jobs = getAllJobsForAdmin();
 
@@ -365,45 +382,35 @@ public class JobService {
         String normalizedSearch = search.trim().toLowerCase();
 
         return jobs.stream()
-                .filter(job
-                        -> containsIgnoreCase(job.getTitle(), normalizedSearch)
-                || containsIgnoreCase(job.getLocation(), normalizedSearch)
-                || containsIgnoreCase(job.getCounty(), normalizedSearch)
-                || containsIgnoreCase(job.getPostedBy(), normalizedSearch))
+                .filter(job ->
+                        containsIgnoreCase(job.getTitle(), normalizedSearch)
+                                || containsIgnoreCase(job.getLocation(), normalizedSearch)
+                                || containsIgnoreCase(job.getCounty(), normalizedSearch)
+                                || containsIgnoreCase(job.getPostedBy(), normalizedSearch))
                 .toList();
     }
 
-    // Returneaza un job pentru zona de admin.
-    // Momentan putem refolosi metoda existenta, dar o tinem separat pentru claritate.
     public Job getJobByIdForAdmin(String id) {
         return getJobById(id);
     }
 
-    // Adminul poate modifica orice job, deci refolosim logica deja existenta.
-    // Metoda actuala updateJob permite deja acest lucru prin verificarea isAdmin().
     public Job updateJobAsAdmin(String id, UpdateJobRequest request, String adminEmail) {
         return updateJob(id, request, adminEmail);
     }
 
-    // Adminul poate sterge orice job.
-    // Metoda actuala deleteJob permite deja acest lucru prin verificarea isAdmin().
     public void deleteJobAsAdmin(String id, String adminEmail) {
         deleteJob(id, adminEmail);
     }
 
-    // Adminul poate anula orice job.
     public Job cancelJobAsAdmin(String id, String adminEmail) {
         return cancelJob(id, adminEmail);
     }
 
-    // Adminul poate finaliza orice job.
     public Job completeJobAsAdmin(String id, String adminEmail) {
         return completeJob(id, adminEmail);
     }
 
-    // Helper simplu pentru cautari text fara probleme de null.
     private boolean containsIgnoreCase(String value, String search) {
         return value != null && value.toLowerCase().contains(search);
     }
-
 }

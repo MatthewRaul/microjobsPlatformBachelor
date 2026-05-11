@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   getJobById,
+  getOwnerIdForJob,
   applyToJob,
   getApplicationsForJob,
   acceptApplication,
@@ -20,6 +21,7 @@ export default function JobDetailsPage() {
 
   const [hasApplied, setHasApplied] = useState(false);
   const [job, setJob] = useState(null);
+  const [ownerUserId, setOwnerUserId] = useState(null);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,27 +29,50 @@ export default function JobDetailsPage() {
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
 
+  const ownerEmail = job?.postedBy || null;
+
   const fetchJobDetails = async () => {
     try {
+      setLoading(true);
       setError("");
+      setMessage("");
 
       const jobData = await getJobById(id);
       setJob(jobData);
 
-      const owner =
-        user &&
-        (jobData.postedBy === user.email ||
-          jobData.ownerEmail === user.email ||
-          jobData.ownerId === user.id);
+      let fetchedOwnerId = null;
 
-      if (owner) {
-        const applicationsData = await getApplicationsForJob(id);
-        setApplications(applicationsData);
-      } else {
+      try {
+        fetchedOwnerId = await getOwnerIdForJob(id);
+        setOwnerUserId(fetchedOwnerId);
+      } catch (ownerError) {
+        console.log("NU S-A PUTUT ÎNCĂRCA OWNER ID", ownerError);
+        setOwnerUserId(null);
+      }
+
+      const currentOwner =
+        !!user &&
+        (
+          (fetchedOwnerId && user.id && fetchedOwnerId === user.id) ||
+          (jobData.postedBy && user.email && jobData.postedBy === user.email)
+        );
+
+      try {
+        const shouldTryLoadApplications =
+          isAuthenticated && user && (currentOwner || jobData.status === "COMPLETED");
+
+        if (shouldTryLoadApplications) {
+          const applicationsData = await getApplicationsForJob(id);
+          setApplications(applicationsData || []);
+        } else {
+          setApplications([]);
+        }
+      } catch (applicationsError) {
+        console.log("NU S-AU PUTUT ÎNCĂRCA APLICĂRILE", applicationsError);
         setApplications([]);
       }
 
-      if (isAuthenticated && user && !owner) {
+      if (isAuthenticated && user && !currentOwner) {
         const myApplications = await getMyApplications();
         const alreadyApplied = myApplications.some(
           (application) => application.jobId === id
@@ -66,25 +91,62 @@ export default function JobDetailsPage() {
 
   useEffect(() => {
     fetchJobDetails();
-  }, [id, user]);
+  }, [id, user, isAuthenticated]);
 
   const isOwner =
-    job &&
-    user &&
-    (job.postedBy === user.email ||
-      job.ownerEmail === user.email ||
-      job.ownerId === user.id);
+    !!job &&
+    !!user &&
+    (
+      (ownerUserId && user.id && ownerUserId === user.id) ||
+      (ownerEmail && user.email && ownerEmail === user.email)
+    );
 
   const isFilled =
-    job &&
-    (job.status === "FILLED" ||
+    !!job &&
+    (
+      job.status === "FILLED" ||
       ((job.acceptedWorkers ?? 0) >= (job.neededWorkers ?? 0) &&
-        (job.neededWorkers ?? 0) > 0));
+        (job.neededWorkers ?? 0) > 0)
+    );
 
   const isClosed =
-    job && (job.status === "CANCELED" || job.status === "COMPLETED");
+    !!job && (job.status === "CANCELED" || job.status === "COMPLETED");
 
-  const isInProgress = job && job.status === "IN_PROGRESS";
+  const isInProgress = !!job && job.status === "IN_PROGRESS";
+
+  const acceptedApplications = useMemo(() => {
+    return applications.filter((application) => application.status === "ACCEPTED");
+  }, [applications]);
+
+  const pendingApplications = useMemo(() => {
+    return applications.filter((application) => application.status === "PENDING");
+  }, [applications]);
+
+  const isAcceptedParticipant =
+    !!user &&
+    acceptedApplications.some(
+      (application) =>
+        (user.id &&
+          application.applicantUserId &&
+          application.applicantUserId === user.id) ||
+        (user.email &&
+          application.applicantEmail &&
+          application.applicantEmail === user.email)
+    );
+
+  const currentUserParticipated =
+    !!job && !!user && (isOwner || isAcceptedParticipant);
+
+  const canSeeCompletedParticipantsSection =
+    job?.status === "COMPLETED" && currentUserParticipated;
+
+  const isCurrentUserEmployer = isOwner;
+
+  const canReviewEmployer =
+    job?.status === "COMPLETED" &&
+    currentUserParticipated &&
+    !isCurrentUserEmployer &&
+    !!ownerUserId;
 
   const handleApplyClick = () => {
     if (!isAuthenticated) {
@@ -214,7 +276,7 @@ export default function JobDetailsPage() {
       </p>
 
       <p>
-      <strong>Locație:</strong>{" "}
+        <strong>Locație:</strong>{" "}
         {job.location
           ? `${job.location}${job.county ? `, ${job.county}` : ""}`
           : "Nespecificată"}
@@ -253,28 +315,143 @@ export default function JobDetailsPage() {
       {message && <p>{message}</p>}
 
       {isOwner && (
-        <div>
+        <div style={{ marginTop: "24px", marginBottom: "24px" }}>
           <h2>Acțiuni owner</h2>
 
-          <Link to={`/jobs/${id}/edit`}>Editează jobul</Link>
-          <button onClick={handleCancelJob}>Anulează jobul</button>
-          <button onClick={handleCompleteJob}>Finalizează jobul</button>
-          <button onClick={handleDeleteJob}>Șterge jobul</button>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <Link to={`/jobs/${id}/edit`}>Editează jobul</Link>
+            <button onClick={handleCancelJob}>Anulează jobul</button>
+            <button onClick={handleCompleteJob}>Finalizează jobul</button>
+            <button onClick={handleDeleteJob}>Șterge jobul</button>
+          </div>
+        </div>
+      )}
 
-          <h2>Aplicanți</h2>
+      {canSeeCompletedParticipantsSection && (
+        <div style={{ marginTop: "24px", marginBottom: "32px" }}>
+          <h2>Angajator</h2>
 
-          {applications.length === 0 ? (
-            <p>Nu există aplicări pentru acest job.</p>
+          <div
+            style={{
+              border: "1px solid #ddd",
+              borderRadius: "10px",
+              padding: "16px",
+              marginBottom: "24px",
+            }}
+          >
+            <p>
+              <strong>Email:</strong> {ownerEmail || "-"}
+            </p>
+
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+              {ownerUserId && (
+                <Link to={`/users/public/${ownerUserId}`}>
+                  Vezi profilul public
+                </Link>
+              )}
+
+              {canReviewEmployer && (
+                <Link to={`/jobs/${id}/review/${ownerUserId}`}>
+                  Lasă review pentru angajator
+                </Link>
+              )}
+            </div>
+          </div>
+
+          <h2>Participanți acceptați</h2>
+
+          {acceptedApplications.length === 0 ? (
+            <p>Nu există participanți acceptați pentru acest job.</p>
           ) : (
-            applications.map((application) => {
-              const applicantEmail = application.applicantEmail || application.email || "";
+            acceptedApplications.map((application) => {
               const applicantName =
                 application.applicantFirstName && application.applicantLastName
                   ? `${application.applicantFirstName} ${application.applicantLastName}`
-                  : applicantEmail || "Utilizator";
+                  : application.applicantEmail || "Utilizator";
+
+              const applicantUserId = application.applicantUserId || null;
+
+              const isSameUser =
+                (user?.id && applicantUserId && user.id === applicantUserId) ||
+                (user?.email &&
+                  application.applicantEmail &&
+                  user.email === application.applicantEmail);
+
+              const canLeaveReview =
+                job.status === "COMPLETED" &&
+                currentUserParticipated &&
+                !isSameUser &&
+                !!applicantUserId;
 
               return (
-                <div key={application.id || application._id}>
+                <div
+                  key={application.id || application._id}
+                  style={{
+                    border: "1px solid #ddd",
+                    borderRadius: "10px",
+                    padding: "16px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  <p>
+                    <strong>Participant:</strong> {applicantName}
+                  </p>
+
+                  <p>
+                    <strong>Email:</strong> {application.applicantEmail || "-"}
+                  </p>
+
+                  <p>
+                    <strong>Rating:</strong> ⭐{" "}
+                    {application.applicantAverageRating?.toFixed(1) ?? "0.0"} (
+                    {application.applicantReviewCount || 0} review-uri)
+                  </p>
+
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                    {applicantUserId && (
+                      <Link to={`/users/public/${applicantUserId}`}>
+                        Vezi profilul public
+                      </Link>
+                    )}
+
+                    {canLeaveReview && (
+                      <Link to={`/jobs/${id}/review/${applicantUserId}`}>
+                        Lasă review
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {isOwner && (
+        <div style={{ marginTop: "24px" }}>
+          <h2>Aplicanți în așteptare</h2>
+
+          {pendingApplications.length === 0 ? (
+            <p>Nu există aplicări PENDING pentru acest job.</p>
+          ) : (
+            pendingApplications.map((application) => {
+              const applicantName =
+                application.applicantFirstName && application.applicantLastName
+                  ? `${application.applicantFirstName} ${application.applicantLastName}`
+                  : application.applicantEmail || "Utilizator";
+
+              const applicantUserId = application.applicantUserId || null;
+
+              return (
+                <div
+                  key={application.id || application._id}
+                  style={{
+                    border: "1px solid #ddd",
+                    borderRadius: "10px",
+                    padding: "16px",
+                    marginBottom: "16px",
+                  }}
+                >
                   <p>
                     <strong>ID aplicare:</strong> {application.id || application._id}
                   </p>
@@ -284,35 +461,28 @@ export default function JobDetailsPage() {
                   </p>
 
                   <p>
-                    <strong>Aplicant:</strong>{" "}
-                    {applicantEmail ? (
-                      <Link to={`/profile/${applicantEmail}`}>{applicantName}</Link>
-                    ) : (
-                      applicantName
-                    )}
+                    <strong>Aplicant:</strong> {applicantName}
                   </p>
 
                   <p>
-                    <strong>Email aplicant:</strong>{" "}
-                    {applicantEmail ? (
-                      <Link to={`/profile/${applicantEmail}`}>{applicantEmail}</Link>
-                    ) : (
-                      "-"
-                    )}
+                    <strong>Email aplicant:</strong> {application.applicantEmail || "-"}
                   </p>
 
-                  {application.status === "PENDING" ? (
-                    <div>
-                      <button onClick={() => handleAccept(application.id || application._id)}>
-                        Acceptă
-                      </button>
-                      <button onClick={() => handleReject(application.id || application._id)}>
-                        Respinge
-                      </button>
-                    </div>
-                  ) : (
-                    <p>Aplicarea a fost deja procesată.</p>
-                  )}
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                    {applicantUserId && (
+                      <Link to={`/users/public/${applicantUserId}`}>
+                        Vezi profilul public
+                      </Link>
+                    )}
+
+                    <button onClick={() => handleAccept(application.id || application._id)}>
+                      Acceptă
+                    </button>
+
+                    <button onClick={() => handleReject(application.id || application._id)}>
+                      Respinge
+                    </button>
+                  </div>
                 </div>
               );
             })

@@ -19,6 +19,8 @@ public class User {
     private String bio;
     private String profilePictureUrl;
     private LocalDateTime createdAt;
+    private Double averageRating=0.0;
+    private Integer reviewCount=0;
 
     public User()
     {}
@@ -104,7 +106,23 @@ public class User {
         this.createdAt = createdAt;
     }
 
+    public Double getAverageRating() {
+        return averageRating;
+    }
 
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public Integer getReviewCount() {
+        return reviewCount;
+    }
+
+    public void setReviewCount(Integer reviewCount) {
+        this.reviewCount = reviewCount;
+    }
+
+    
     
     
 
