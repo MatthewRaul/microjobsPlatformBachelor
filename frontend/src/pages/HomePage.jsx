@@ -18,7 +18,8 @@ function HomePage() {
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
   const [isApplying, setIsApplying] = useState(false);
-  const [openMenuId, setOpenMenuId] = useState(null);
+  const [deleteModalJobId, setDeleteModalJobId] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // State-uri pentru filtre
   const [filterStartDate, setFilterStartDate] = useState("");
@@ -55,19 +56,6 @@ function HomePage() {
 
   useEffect(() => {
     fetchJobs();
-
-    const handleClickOutside = (event) => {
-      const clickedInsideMenu = event.target.closest(".job-owner-menu");
-      if (!clickedInsideMenu) {
-        setOpenMenuId(null);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
   }, [isAuthenticated]);
 
   const handleAddJobClick = () => {
@@ -196,92 +184,91 @@ function HomePage() {
     setSelectedJob(null);
   };
 
-  const handleDeleteJob = async (jobId) => {
-    const confirmDelete = window.confirm("Sigur vrei să ștergi acest job?");
-    if (!confirmDelete) return;
-
+  const handleDeleteJob = async () => {
+    if (!deleteModalJobId) return;
     try {
-      await deleteJob(jobId);
-
+      setIsDeleting(true);
+      await deleteJob(deleteModalJobId);
       setJobs((prevJobs) =>
-        prevJobs.filter((job) => (job.id || job._id) !== jobId)
+        prevJobs.filter((job) => (job.id || job._id) !== deleteModalJobId)
       );
-      setOpenMenuId(null);
-
-      alert("Jobul a fost șters.");
+      setDeleteModalJobId(null);
     } catch (err) {
       console.error("Eroare la ștergerea jobului:", err);
-      alert("Nu s-a putut șterge jobul.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
     <section className="page">
-      <h1>Platformă de microjoburi</h1>
 
-      {isAuthenticated ? (
-        <div className="card">
-          <p>Bine ai venit, {user.firstName}!</p>
-
-          <button className="primary-button" onClick={logout}>
-            Logout
-          </button>
+      {isAuthenticated && (
+        <div className="card" style={{ textAlign: "center", padding: "32px" }}>
+          <p style={{
+            fontSize: "28px",
+            fontWeight: "800",
+            color: "#ffffff",
+            letterSpacing: "0.5px",
+            textShadow: "0 0 20px rgba(255,255,255,0.4)",
+            margin: 0,
+          }}>
+            Bine ai venit, {user.firstName}! 👋
+          </p>
         </div>
-      ) : (
-        <p>Nu ești logat.</p>
       )}
 
       <div className="jobs-section">
-        <h2>Joburi disponibile</h2>
 
         <div className="card" style={{ marginBottom: "20px" }}>
-          <h3>Filtre</h3>
+          <h3 style={{ marginBottom: "24px" }}>Filtre</h3>
 
-          <p>
-            <strong>Locație:</strong>
-          </p>
-          <input
-            type="text"
-            value={filterLocation}
-            onChange={(e) => setFilterLocation(e.target.value)}
-            placeholder="Ex: Cluj-Napoca"
-          />
+          <div className="user-box">
+            <input
+              type="text"
+              placeholder=" "
+              value={filterLocation}
+              onChange={(e) => setFilterLocation(e.target.value)}
+            />
+            <label>Locație</label>
+          </div>
 
-          <p>
-            <strong>Data de start minimă:</strong>
-          </p>
-          <input
-            type="datetime-local"
-            value={filterStartDate}
-            onChange={(e) => setFilterStartDate(e.target.value)}
-          />
+          <div className="user-box">
+            <input
+              type="datetime-local"
+              placeholder=" "
+              value={filterStartDate}
+              onChange={(e) => setFilterStartDate(e.target.value)}
+            />
+            <label>Data de start minimă</label>
+          </div>
 
-          <p>
-            <strong>Data de final maximă:</strong>
-          </p>
-          <input
-            type="datetime-local"
-            value={filterEndDate}
-            onChange={(e) => setFilterEndDate(e.target.value)}
-          />
+          <div className="user-box">
+            <input
+              type="datetime-local"
+              placeholder=" "
+              value={filterEndDate}
+              onChange={(e) => setFilterEndDate(e.target.value)}
+            />
+            <label>Data de final maximă</label>
+          </div>
 
-          <p>
-            <strong>Număr minim participanți:</strong>
-          </p>
-          <input
-            type="number"
-            min="1"
-            value={filterParticipants}
-            onChange={(e) => setFilterParticipants(e.target.value)}
-            placeholder="Ex: 3"
-          />
+          <div className="user-box">
+            <input
+              type="number"
+              min="1"
+              placeholder=" "
+              value={filterParticipants}
+              onChange={(e) => setFilterParticipants(e.target.value)}
+            />
+            <label>Număr minim participanți</label>
+          </div>
 
-          <div style={{ marginTop: "12px", display: "flex", gap: "10px" }}>
-            <button className="primary-button" onClick={handleApplyFilters}>
+          <div style={{ display: "flex", gap: "10px", marginTop: "8px", flexWrap: "wrap" }}>
+            <button className="primary-button" style={{ flex: 1 }} onClick={handleApplyFilters}>
               Aplică filtrele
             </button>
-
-            <button className="primary-button" onClick={handleResetFilters}>
+            <button className="primary-button" style={{ flex: 1 }} onClick={handleResetFilters}>
               Resetează
             </button>
           </div>
@@ -320,81 +307,77 @@ function HomePage() {
 
               return (
                 <div key={jobId} className="card">
-                  <h3>{job.title}</h3>
+                  <h3 className="job-title">{job.title}</h3>
 
-                  <p>
-                    <strong>Descriere:</strong> {job.description || "Fără descriere"}
-                  </p>
+                  <div className="job-meta">
+                    <span className="job-meta__item">
+                      <svg className="job-meta__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+                        <circle cx="12" cy="9" r="2.5"/>
+                      </svg>
+                      {job.location
+                        ? `${job.location}${job.county ? `, ${job.county}` : ""}`
+                        : "Locație nespecificată"}
+                    </span>
 
-                  <p>
-                    <strong>Status:</strong> {job.status}
-                  </p>
+                    <span className="job-meta__item">
+                      <svg className="job-meta__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                      </svg>
+                      {job.acceptedWorkers ?? 0} / {job.neededWorkers ?? 0} locuri ocupate
+                    </span>
 
-                  <p>
-                    <strong>Locuri ocupate:</strong> {job.acceptedWorkers ?? 0}/
-                    {job.neededWorkers ?? 0}
-                  </p>
-
-                  <p>
-                    <strong>Salariu:</strong> {job.salary ?? "0"}
-                  </p>
-
-                  <p>
-                    <strong>Locație:</strong>{" "}
-                    {job.location
-                      ? `${job.location}${job.county ? `, ${job.county}` : ""}`
-                      : "Nespecificat"}
-                  </p>
-
-                  <p>
-                    <strong>Start:</strong>{" "}
-                    {job.startDate
-                      ? new Date(job.startDate).toLocaleString("ro-RO")
-                      : "Nespecificat"}
-                  </p>
-
-                  <p>
-                    <strong>Final:</strong>{" "}
-                    {job.endDate
-                      ? new Date(job.endDate).toLocaleString("ro-RO")
-                      : "Nespecificat"}
-                  </p>
+                    <span className="job-meta__item">
+                      <svg className="job-meta__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                      </svg>
+                      {job.startDate
+                        ? new Date(job.startDate).toLocaleString("ro-RO", { dateStyle: "medium", timeStyle: "short" })
+                        : "Dată nespecificată"}
+                      {" — "}
+                      {job.endDate
+                        ? new Date(job.endDate).toLocaleString("ro-RO", { dateStyle: "medium", timeStyle: "short" })
+                        : "Nespecificat"}
+                    </span>
+                  </div>
 
                   <div className="job-actions">
-                    <Link to={`/jobs/${jobId}`} className="primary-button">
-                      Vezi detalii
-                    </Link>
-
                     {isOwner ? (
-                      <div className="job-owner-menu">
-                        <button
-                          className="menu-button"
-                          onClick={() =>
-                            setOpenMenuId(openMenuId === jobId ? null : jobId)
-                          }
-                        >
-                          . . .
+                      <div className="owner-actions">
+                        {/* Buton Info */}
+                        <Link to={`/jobs/${jobId}`} className="icon-btn icon-btn--info" title="Detalii job">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                          </svg>
+                          Info
+                        </Link>
+
+                        {/* Buton Edit */}
+                        <Link to={`/jobs/${jobId}/edit`} className="icon-btn icon-btn--edit" title="Editează job">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                          </svg>
+                          Edit
+                        </Link>
+
+                        {/* Buton Delete */}
+                        <button className="icon-btn icon-btn--delete" title="Șterge job" onClick={() => setDeleteModalJobId(jobId)}>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                            <path d="M10 11v6"/>
+                            <path d="M14 11v6"/>
+                            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                          </svg>
+                          Delete
                         </button>
-
-                        {openMenuId === jobId && (
-                          <div className="dropdown-menu">
-                            <Link
-                              to={`/jobs/${jobId}/edit`}
-                              className="primary-button"
-                            >
-                              Editează
-                            </Link>
-
-                            <button
-                              className="primary-button"
-                              onClick={() => handleDeleteJob(jobId)}
-                            >
-                              Șterge
-                            </button>
-
-                            <button className="primary-button">Informații</button>
-                          </div>
-                        )}
                       </div>
                     ) : hasApplied ? (
                       <div className="status-box applied-box">
@@ -413,12 +396,17 @@ function HomePage() {
                         Locurile pentru acest job s-au ocupat
                       </div>
                     ) : (
-                      <button
-                        className="primary-button"
-                        onClick={() => handleApplyClick(job)}
-                      >
-                        Aplică la job
-                      </button>
+                      <>
+                        <Link to={`/jobs/${jobId}`} className="primary-button">
+                          Vezi detalii
+                        </Link>
+                        <button
+                          className="primary-button"
+                          onClick={() => handleApplyClick(job)}
+                        >
+                          Aplică la job
+                        </button>
+                      </>
                     )}
                   </div>
                 </div>
@@ -475,6 +463,71 @@ function HomePage() {
       <button className="primary-button" onClick={handleAddJobClick}>
         Postează un job
       </button>
+
+      {/* Modal confirmare stergere job */}
+      {deleteModalJobId && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0, left: 0,
+            width: "100%", height: "100%",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            style={{
+              backgroundColor: "white",
+              padding: "24px",
+              borderRadius: "8px",
+              minWidth: "300px",
+              textAlign: "center",
+            }}
+          >
+            <h3 style={{ marginBottom: "12px" }}>Șterge job</h3>
+            <p style={{ marginBottom: "20px", color: "#444" }}>
+              Ești sigur că vrei să ștergi acest job? Acțiunea este ireversibilă.
+            </p>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+              <button
+                onClick={handleDeleteJob}
+                disabled={isDeleting}
+                style={{
+                  padding: "10px 24px",
+                  background: "#dc2626",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                }}
+              >
+                {isDeleting ? "Se șterge..." : "Șterge"}
+              </button>
+              <button
+                onClick={() => setDeleteModalJobId(null)}
+                disabled={isDeleting}
+                style={{
+                  padding: "10px 24px",
+                  background: "#f3f4f6",
+                  color: "#333",
+                  border: "1px solid #ddd",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  fontWeight: "600",
+                }}
+              >
+                Anulează
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

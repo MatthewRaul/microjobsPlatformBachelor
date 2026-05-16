@@ -10,8 +10,8 @@ export const update = async (userData) => {
   return response.data;
 };
 
-export const getPublicUserProfile = async (userId) => {
-  const response = await api.get(`/api/users/public/${userId}`);
+export const getPublicUserProfile = async (email) => {
+  const response = await api.get(`/api/users/public/${encodeURIComponent(email)}`);
   return response.data;
 };
 
@@ -27,5 +27,37 @@ export const getPublicUserReviews = async (userId) => {
 
 export const createReview = async (reviewData) => {
   const response = await api.post("/api/reviews", reviewData);
+  return response.data;
+};
+
+// Upload CV ca FormData (fisier PDF)
+export const uploadCv = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await api.post("/api/users/me/cv", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};
+
+// Obtine CV-ul unui user ca Base64 pentru download
+export const getUserCv = async (userId) => {
+  const response = await api.get(`/api/users/${userId}/cv`);
+  return response.data; // { cvBase64, fileName }
+};
+
+// Upload poza de profil
+export const uploadAvatar = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const response = await api.post("/api/users/me/avatar", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data; // { profilePictureUrl }
+};
+
+// Sterge CV-ul propriu
+export const deleteCv = async () => {
+  const response = await api.delete("/api/users/me/cv");
   return response.data;
 };

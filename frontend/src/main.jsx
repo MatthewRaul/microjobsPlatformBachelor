@@ -4,6 +4,8 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter} from "react-router-dom";//spune aplicatiei ca va avea navigare intre pagini
 import App from "./App";//import componenta principala aplicatie
+import "./styles/auth.css";
+import "./styles/responsive.css";
 import "./styles/style.css";
 import { AuthProvider } from "./context/AuthContext";
 

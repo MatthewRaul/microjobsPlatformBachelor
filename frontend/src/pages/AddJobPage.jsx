@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createJob } from "../api/jobApi";
 import { useNavigate } from "react-router-dom";
 import LocationAutocomplete from "../components/LocationAutocomplete";
+import "../styles/auth.css";
 
 function AddJobPage() {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ function AddJobPage() {
       !endDate.trim() ||
       !location.trim()
     ) {
-      setError("Completeaza toate campurile obligatorii");
+      setError("Completează toate câmpurile obligatorii.");
       return;
     }
 
@@ -39,7 +40,7 @@ function AddJobPage() {
     }
 
     if (Number(neededWorkers) < 1) {
-      setError("Numarul de participanti trebuie sa fie minim 1");
+      setError("Numărul de participanți trebuie să fie minim 1.");
       return;
     }
 
@@ -49,12 +50,12 @@ function AddJobPage() {
     }
 
     if (Number(salary) < 0) {
-      setError("Salariul nu poate fi negativ");
+      setError("Salariul nu poate fi negativ.");
       return;
     }
 
     if (new Date(endDate) < new Date(startDate)) {
-      setError("Data de sfarsit trebuie sa fie dupa data de inceput");
+      setError("Data de finalizare trebuie să fie după data de start.");
       return;
     }
 
@@ -72,8 +73,7 @@ function AddJobPage() {
     try {
       setLoading(true);
       await createJob(jobData);
-      setSuccessMessage("Job publicat cu succes");
-
+      setSuccessMessage("Jobul a fost publicat cu succes.");
       setTitle("");
       setDescription("");
       setNeededWorkers(1);
@@ -82,103 +82,122 @@ function AddJobPage() {
       setSalary("");
       setLocation("");
       setCounty("");
-
       navigate("/");
     } catch (err) {
       console.error(err);
-      console.error(err.response?.data);
-      console.error(err.response?.status);
-      setError("Nu s-a putut publica jobul");
+      setError("Nu s-a putut publica jobul. Încearcă din nou.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section className="page auth-page">
-      <h1>Adauga un job</h1>
+    <section className="auth-page">
+      <div className="form-box" style={{ maxWidth: "520px" }}>
+        <h1>Publică un job</h1>
 
-      <form className="auth-form" onSubmit={handleSubmit}>
-        <label htmlFor="title">Denumire post</label>
-        <input
-          id="title"
-          type="text"
-          placeholder="Introdu denumirea jobului"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+        <form onSubmit={handleSubmit}>
+          <div className="user-box">
+            <input
+              id="title"
+              type="text"
+              placeholder=" "
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <label htmlFor="title">Denumire post</label>
+          </div>
 
-        <label htmlFor="description">Descriere job</label>
-        <input
-          id="description"
-          type="text"
-          placeholder="Introdu o scurta descriere"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+          <div className="user-box">
+            <textarea
+              id="description"
+              placeholder=" "
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              style={{ resize: "vertical", minHeight: "80px" }}
+            />
+            <label htmlFor="description">Descriere job</label>
+          </div>
 
-        <label htmlFor="neededWorkers">Numar participanti</label>
-        <input
-          id="neededWorkers"
-          type="number"
-          min="1"
-          value={neededWorkers}
-          onChange={(e) => setNeededWorkers(e.target.value)}
-        />
+          <div className="user-box">
+            <input
+              id="neededWorkers"
+              type="number"
+              min="1"
+              placeholder=" "
+              value={neededWorkers}
+              onChange={(e) => setNeededWorkers(e.target.value)}
+            />
+            <label htmlFor="neededWorkers">Număr participanți</label>
+          </div>
 
-        <label htmlFor="startDate">Data si ora start</label>
-        <input
-          id="startDate"
-          type="datetime-local"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-        />
+          <div className="user-box">
+            <input
+              id="startDate"
+              type="datetime-local"
+              placeholder=" "
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+            <label htmlFor="startDate">Data și ora de start</label>
+          </div>
 
-        <label htmlFor="endDate">Data si ora finalizare</label>
-        <input
-          id="endDate"
-          type="datetime-local"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-        />
+          <div className="user-box">
+            <input
+              id="endDate"
+              type="datetime-local"
+              placeholder=" "
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+            <label htmlFor="endDate">Data și ora de finalizare</label>
+          </div>
 
-        <label htmlFor="salary">Salariu</label>
-        <input
-          id="salary"
-          type="number"
-          min="0"
-          placeholder="Introdu salariul"
-          value={salary}
-          onChange={(e) => setSalary(e.target.value)}
-        />
+          <div className="user-box">
+            <input
+              id="salary"
+              type="number"
+              min="0"
+              placeholder=" "
+              value={salary}
+              onChange={(e) => setSalary(e.target.value)}
+            />
+            <label htmlFor="salary">Salariu (RON)</label>
+          </div>
 
-        <LocationAutocomplete
-          value={location}
-          onChange={(value) => {
-            setLocation(value);
-            setCounty("");
-          }}
-          onSelect={(selectedLocation) => {
-            console.log("SELECTED IN ADD JOB =", selectedLocation)
-            setLocation(selectedLocation.location || "");
-            setCounty(selectedLocation.county || "");
-          }}
-          label="Localitate"
-        />
+          <LocationAutocomplete
+            value={location}
+            onChange={(value) => {
+              setLocation(value);
+              setCounty("");
+            }}
+            onSelect={(selectedLocation) => {
+              setLocation(selectedLocation.location || "");
+              setCounty(selectedLocation.county || "");
+            }}
+            label="Localitate"
+          />
 
-        {county && (
-          <p>
-            <strong>Județ selectat:</strong> {county}
-          </p>
-        )}
+          {county && (
+            <p style={{
+              fontSize: "13px",
+              color: "rgba(255,255,255,0.75)",
+              marginTop: "-16px",
+              marginBottom: "16px",
+            }}>
+              Județ: <strong style={{ color: "#ffffff" }}>{county}</strong>
+            </p>
+          )}
 
-        {successMessage && <p className="form-success">{successMessage}</p>}
-        {error && <p className="form-error">{error}</p>}
+          {successMessage && <p className="form-success">{successMessage}</p>}
+          {error && <p className="form-error">{error}</p>}
 
-        <button type="submit" className="primary-button" disabled={loading}>
-          {loading ? "Se publică..." : "Publica job"}
-        </button>
-      </form>
+          <button type="submit" className="primary-button" disabled={loading}>
+            {loading ? "Se publică..." : "Publică jobul"}
+          </button>
+        </form>
+      </div>
     </section>
   );
 }

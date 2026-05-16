@@ -1,5 +1,7 @@
 package com.licenta.microjobsPlatform.dto;
 
+import java.util.List;
+
 public class PublicUserProfileResponse {
 
     private String id;
@@ -9,12 +11,15 @@ public class PublicUserProfileResponse {
     private String profilePictureUrl;
     private String phoneNumber;
     private String email;
+    private List<String> skills;
+    private boolean hasCv;
+    private Integer age;
 
-    public PublicUserProfileResponse() {
-    }
+    public PublicUserProfileResponse() {}
 
     public PublicUserProfileResponse(String id, String firstName, String lastName, String bio,
-                                     String profilePictureUrl, String phoneNumber, String email) {
+                                     String profilePictureUrl, String phoneNumber, String email,
+                                     List<String> skills, boolean hasCv) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -22,61 +27,37 @@ public class PublicUserProfileResponse {
         this.profilePictureUrl = profilePictureUrl;
         this.phoneNumber = phoneNumber;
         this.email = email;
+        this.skills = skills;
+        this.hasCv = hasCv;
     }
 
-    public String getId() {
-        return id;
-    }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setId(String id) {
-        this.id = id;
-    }
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
 
-    public String getFirstName() {
-        return firstName;
-    }
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
+    public String getBio() { return bio; }
+    public void setBio(String bio) { this.bio = bio; }
 
-    public String getLastName() {
-        return lastName;
-    }
+    public String getProfilePictureUrl() { return profilePictureUrl; }
+    public void setProfilePictureUrl(String profilePictureUrl) { this.profilePictureUrl = profilePictureUrl; }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
+    public String getPhoneNumber() { return phoneNumber; }
+    public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
 
-    public String getBio() {
-        return bio;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
+    public List<String> getSkills() { return skills; }
+    public void setSkills(List<String> skills) { this.skills = skills; }
 
-    public String getProfilePictureUrl() {
-        return profilePictureUrl;
-    }
+    public boolean isHasCv() { return hasCv; }
+    public void setHasCv(boolean hasCv) { this.hasCv = hasCv; }
 
-    public void setProfilePictureUrl(String profilePictureUrl) {
-        this.profilePictureUrl = profilePictureUrl;
-    }
-
-    public String getPhoneNumber() {
-        return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
 }

@@ -6,34 +6,17 @@ export default function AdminSidebar() {
       <div style={styles.logo}>Admin Panel</div>
 
       <nav style={styles.nav}>
-        <NavLink
-          to="/admin/jobs"
-          style={({ isActive }) => ({
-            ...styles.link,
-            ...(isActive ? styles.activeLink : {}),
-          })}
-        >
+        <NavLink to="/admin/jobs" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.activeLink : {}) })}>
           Joburi
         </NavLink>
-
-        <NavLink
-          to="/admin/aplicari"
-          style={({ isActive }) => ({
-            ...styles.link,
-            ...(isActive ? styles.activeLink : {}),
-          })}
-        >
+        <NavLink to="/admin/aplicari" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.activeLink : {}) })}>
           Aplicări
         </NavLink>
-
-        <NavLink
-          to="/admin/users"
-          style={({ isActive }) => ({
-            ...styles.link,
-            ...(isActive ? styles.activeLink : {}),
-          })}
-        >
+        <NavLink to="/admin/users" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.activeLink : {}) })}>
           Utilizatori
+        </NavLink>
+        <NavLink to="/admin/reviews" style={({ isActive }) => ({ ...styles.link, ...(isActive ? styles.activeLink : {}) })}>
+          Recenzii
         </NavLink>
       </nav>
     </aside>

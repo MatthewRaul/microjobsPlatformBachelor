@@ -48,7 +48,8 @@ public class SecurityConfig {
                                     requestMatchers("/api/locations/**").permitAll().
                                     requestMatchers("/api/admin/**").hasRole("ADMIN").
                                     requestMatchers(HttpMethod.GET,"/api/users/*/rating").permitAll().
-                                    requestMatchers(HttpMethod.GET,"/api/users/*/reviews").permitAll()
+                                    requestMatchers(HttpMethod.GET,"/api/users/*/reviews").permitAll().
+                                    requestMatchers(HttpMethod.GET,"/api/users/public/**").permitAll()
                                     .anyRequest().authenticated()
                                  )
                                 .sessionManagement(session->

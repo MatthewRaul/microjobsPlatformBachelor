@@ -1,0 +1,422 @@
+/* ============================================================
+   auth.css — stiluri globale pentru formulare
+   ============================================================ */
+
+/* --- Fundal pagina gri --- */
+.auth-page {
+  min-height: 100vh;
+  background-color: #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  box-sizing: border-box;
+}
+
+/* --- Cutia mov neon --- */
+.form-box {
+  background: #7c3aed;
+  border-radius: 12px;
+  padding: 48px 40px 40px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 0 40px rgba(167, 80, 255, 0.6), 0 20px 60px rgba(124, 58, 237, 0.4);
+  box-sizing: border-box;
+}
+
+/* Titlu in cutie */
+.form-box h1 {
+  margin: 0 0 36px;
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 12px rgba(200, 150, 255, 0.8);
+}
+
+/* --- Grup input cu label flotant --- */
+.user-box {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+/* Input negru ca butonul */
+.user-box input,
+.user-box textarea,
+.user-box select {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+  color: #ecf0f1;
+  background: #1e1e1e;
+  border: 1px solid #ffffff;
+  border-radius: 5px;
+  outline: none;
+  box-sizing: border-box;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+.user-box input::placeholder,
+.user-box textarea::placeholder {
+  color: transparent;
+}
+
+.user-box input:focus,
+.user-box textarea:focus,
+.user-box select:focus {
+  background: #2d2d2d;
+  border-color: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+
+/* Label flotant */
+.user-box label {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.6);
+  pointer-events: none;
+  transition: 0.35s ease;
+}
+
+/* Ridica label-ul cand input-ul e focusat sau completat */
+.user-box input:focus ~ label,
+.user-box input:not(:placeholder-shown) ~ label,
+.user-box textarea:focus ~ label,
+.user-box textarea:not(:placeholder-shown) ~ label,
+.user-box select:focus ~ label,
+.user-box select:not([value=""]) ~ label {
+  top: -20px;
+  left: 4px;
+  font-size: 12px;
+  color: #ffffff;
+}
+
+/* --- Buton principal (stil Uiverse press) --- */
+.primary-button {
+  display: inline-block;
+  width: 100%;
+  padding: 17px 40px;
+  margin-top: 8px;
+  background-color: white;
+  color: #1a1a1a;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border: 0;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: rgb(0 0 0 / 5%) 0 0 8px;
+  transition: all 0.5s ease;
+  text-decoration: none;
+  text-align: center;
+}
+
+.primary-button:hover {
+  letter-spacing: 3px;
+  background-color: hsl(261deg 80% 48%);
+  color: hsl(0, 0%, 100%);
+  box-shadow: rgb(93 24 220) 0px 7px 29px 0px;
+}
+
+.primary-button:active {
+  letter-spacing: 3px;
+  background-color: hsl(261deg 80% 48%);
+  color: hsl(0, 0%, 100%);
+  box-shadow: rgb(93 24 220) 0px 0px 0px 0px;
+  transform: translateY(10px);
+  transition: 100ms;
+}
+
+.primary-button:disabled {
+  background-color: #cccccc;
+  color: #888888;
+  cursor: not-allowed;
+  box-shadow: none;
+  letter-spacing: 1.5px;
+  transform: none;
+}
+
+/* --- Buton secundar (grupuri de butoane) --- */
+.btn-secondary {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: transparent;
+  color: #ecf0f1;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #ffffff;
+}
+
+.btn-secondary:active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* --- Mesaje feedback --- */
+.form-error {
+  color: #fca5a5;
+  font-size: 13px;
+  margin: -16px 0 16px;
+  text-align: center;
+}
+
+.form-success {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* --- Link secundar --- */
+.form-footer {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.form-footer a {
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.form-footer a:hover {
+  opacity: 0.75;
+  text-decoration: underline;
+}
+
+/* --- Responsive --- */
+@media (max-width: 480px) {
+  .form-box {
+    padding: 36px 24px 28px;
+  }
+}
+
+/* datetime-local are mereu valoare vizuala — label trebuie sa stea sus tot timpul */
+.user-box input[type="datetime-local"] ~ label,
+.user-box input[type="date"] ~ label,
+.user-box input[type="time"] ~ label {
+  top: -20px;
+  font-size: 12px;
+  color: #ffffff;
+}
+
+/* --- Butoane owner job (Info, Edit, Delete) --- */
+.owner-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background-color: transparent;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  font-family: inherit;
+}
+
+.icon-btn svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+/* Info si Edit — hover alb */
+.icon-btn--info:hover,
+.icon-btn--edit:hover {
+  background-color: #ffffff;
+  border-color: #ffffff;
+  color: #7c3aed;
+}
+
+/* Delete — hover rosu */
+.icon-btn--delete {
+  border-color: rgba(255, 100, 100, 0.5);
+  color: rgba(255, 180, 180, 1);
+}
+
+.icon-btn--delete:hover {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.icon-btn:active {
+  opacity: 0.85;
+  transform: scale(0.97);
+}
+
+/* --- Tipografie carduri joburi --- */
+.job-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 16px;
+  letter-spacing: 0.2px;
+  line-height: 1.3;
+}
+
+.job-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.job-meta__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.4;
+}
+
+.job-meta__label {
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+/* --- Tipografie inputuri (label flotant) --- */
+.user-box label {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.user-box input,
+.user-box textarea,
+.user-box select {
+  font-size: 15px;
+  letter-spacing: 0.1px;
+}
+
+/* Placeholder color cand nu e flotant */
+.user-box input:focus ~ label,
+.user-box input:not(:placeholder-shown) ~ label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+/* ============================================================
+   Card job — tipografie si layout
+   ============================================================ */
+
+.job-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 14px;
+  letter-spacing: 0.2px;
+  line-height: 1.3;
+}
+
+.job-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.job-meta__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.4;
+}
+
+.job-meta__icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+/* ============================================================
+   Input-uri — tipografie interna
+   ============================================================ */
+
+.user-box input,
+.user-box textarea,
+.user-box select {
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0.2px;
+}
+
+/* Placeholder vizibil (ex: datetime-local) */
+.user-box input[type="datetime-local"],
+.user-box input[type="date"],
+.user-box input[type="number"] {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Valori introduse */
+.user-box input:not(:placeholder-shown),
+.user-box textarea:not(:placeholder-shown) {
+  font-weight: 500;
+}
+
+/* ============================================================
+   Status boxes — text mai clar
+   ============================================================ */
+
+.status-box {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.applied-box {
+  background-color: rgba(220, 252, 231, 0.95);
+  color: #166534;
+  border: 1px solid rgba(134, 239, 172, 0.6);
+}
+
+.filled-box {
+  background-color: rgba(254, 226, 226, 0.95);
+  color: #991b1b;
+  border: 1px solid rgba(252, 165, 165, 0.6);
+}
+
+@media (max-width: 768px) {
+  .job-title { font-size: 16px; }
+  .job-meta__item { font-size: 13px; }
+}

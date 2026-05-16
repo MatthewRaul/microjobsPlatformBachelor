@@ -1,10 +1,9 @@
-/* 
-  Acesta este fișierul global de stiluri.
-  Regula simplă:
-  - aici punem stilurile generale ale aplicației
-  - nu facem design complicat acum
-  - vrem doar ceva curat, lizibil și ușor de extins
-*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ============================================================
+   index.css — stiluri globale de baza
+   Design-ul specific paginilor e in auth.css
+   ============================================================ */
 
 * {
   box-sizing: border-box;
@@ -12,10 +11,16 @@
   padding: 0;
 }
 
-body {
-  background-color: #f4f6f8;
+html, body {
+  height: auto;
+  overflow-x: hidden;
+  background-color: #d1d5db;
   color: #1f2937;
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', Arial, sans-serif;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 a {
@@ -27,38 +32,9 @@ a {
   min-height: 100vh;
 }
 
-/* Bara de navigare de sus */
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 40px;
-  background-color: #1f2937;
-  color: white;
-}
-
-.logo {
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.navbar-right {
-  display: flex;
-  gap: 20px;
-}
-
-.nav-link {
-  color: white;
-  font-weight: 500;
-}
-
-.nav-link:hover {
-  color: #cbd5e1;
-}
-
-/* Zona principală a paginii */
+/* main-content — padding-top setat din App.jsx dinamic (56px cand navbar e fix) */
 .main-content {
-  padding: 40px;
+  padding: 24px 40px 40px;
 }
 
 /* Stil general pentru pagini */
@@ -79,61 +55,25 @@ a {
 
 /* Card simplu */
 .card {
-  background-color: white;
+  background: #7c3aed;
   padding: 24px;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0 24px rgba(167, 80, 255, 0.4), 0 8px 24px rgba(124, 58, 237, 0.3);
   margin-top: 20px;
 }
+
+.card { color: #ffffff; }
+
+.card h2,
+.card h3 { color: #ffffff; margin-bottom: 12px; }
+
+.card p, .card strong { color: rgba(255, 255, 255, 0.9); }
 
 .card h2 {
   margin-bottom: 12px;
 }
 
-/* Pagini de autentificare */
-.auth-page {
-  max-width: 500px;
-}
-
-.auth-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background-color: white;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.auth-form label {
-  font-weight: 600;
-}
-
-.auth-form input {
-  padding: 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  font-size: 16px;
-}
-
-/* Buton principal */
-.primary-button {
-  margin-top: 10px;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background-color: #2563eb;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.primary-button:hover {
-  background-color: #1d4ed8;
-}
-
-/*Mesaj eroare*/
+/* Mesaj eroare */
 .error-message {
   color: #dc2626;
   font-weight: 600;

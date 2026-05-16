@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { getPublicUserReviews, getPublicUserRating } from "../api/userApi";
 
 export default function PublicUserReviewsPage() {
-  const { id } = useParams();
+  const { id } = useParams(); // MongoDB ObjectId
+  const location = useLocation();
+  const ownerEmail = location.state?.ownerEmail;
+  const fromOwnProfile = location.state?.fromOwnProfile === true;
 
   const [reviews, setReviews] = useState([]);
   const [ratingData, setRatingData] = useState(null);
@@ -39,6 +42,15 @@ export default function PublicUserReviewsPage() {
     }
   }, [id]);
 
+  // Daca am venit din profilul personal, ne intoarcem acolo
+  // Daca am venit din profilul public al altui user, ne intoarcem pe profilul public
+  // Altfel, mergem pe homepage
+  const backPath = fromOwnProfile
+    ? "/profile"
+    : ownerEmail
+    ? `/users/public/${encodeURIComponent(ownerEmail)}`
+    : "/";
+
   if (loading) {
     return (
       <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
@@ -50,7 +62,10 @@ export default function PublicUserReviewsPage() {
   if (error) {
     return (
       <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
-        <p>{error}</p>
+        <Link to={backPath} style={{ textDecoration: "none", color: "#0077cc" }}>
+          ← Înapoi la profil
+        </Link>
+        <p style={{ marginTop: "16px" }}>{error}</p>
       </div>
     );
   }
@@ -58,10 +73,7 @@ export default function PublicUserReviewsPage() {
   return (
     <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
       <div style={{ marginBottom: "20px" }}>
-        <Link
-          to={`/users/public/${id}`}
-          style={{ textDecoration: "none", color: "#0077cc" }}
-        >
+        <Link to={backPath} style={{ textDecoration: "none", color: "#0077cc" }}>
           ← Înapoi la profil
         </Link>
       </div>

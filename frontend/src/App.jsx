@@ -30,7 +30,8 @@ function App() {
     <div className="app-container">
       {!isAdminRoute && <Navbar />}
 
-      <main className="main-content">
+      {/* paddingTop cat inaltimea navbar-ului fix (~56px) ca sa nu se ascunda continutul */}
+      <main className="main-content" style={!isAdminRoute ? { paddingTop: "56px" } : {}}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -48,8 +49,6 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/jobs/:id/edit" element={<EditJobPage />} />
             <Route path="/jobs/:jobId/review/:reviewedUserId" element={<ReviewPage />} />
-        
-           
           </Route>
 
           <Route element={<AdminRoute />}>

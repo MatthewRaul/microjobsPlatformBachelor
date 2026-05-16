@@ -1,0 +1,180 @@
+/* ============================================================
+   responsive.css — stiluri responsive globale
+   Import in main.jsx dupa index.css si auth.css
+   ============================================================ */
+
+/* --- Tablet: 768px si mai mic --- */
+@media (max-width: 768px) {
+
+  /* Navbar */
+  nav {
+    padding: 10px 16px !important;
+    gap: 6px !important;
+  }
+
+  /* Main content */
+  .main-content {
+    padding: 16px !important;
+  }
+
+  /* Pagini generale */
+  .page {
+    max-width: 100%;
+    padding: 0 4px;
+  }
+
+  .page h1 {
+    font-size: 24px;
+  }
+
+  /* Cards */
+  .card {
+    padding: 16px;
+    border-radius: 10px;
+  }
+
+  /* Filtre */
+  .card input[type="text"],
+  .card input[type="number"],
+  .card input[type="datetime-local"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    margin-top: 4px;
+    box-sizing: border-box;
+  }
+
+  /* Butoane in rand pe mobile */
+  .job-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 8px !important;
+  }
+
+  .job-actions .primary-button,
+  .job-actions .status-box {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Status box */
+  .status-box {
+    min-width: unset;
+    width: 100%;
+  }
+
+  /* Form box (login/register) */
+  .form-box {
+    padding: 32px 20px 28px !important;
+  }
+
+  /* Auth page fara padding lateral */
+  .auth-page {
+    padding: 24px 12px !important;
+  }
+
+  /* Butoane primare full width pe mobile */
+  .primary-button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* --- Telefon mic: 480px si mai mic --- */
+@media (max-width: 480px) {
+
+  /* Navbar — ascunde textul lung, pastreaza logo si esentiale */
+  nav {
+    flex-wrap: wrap !important;
+    padding: 8px 12px !important;
+  }
+
+  /* Main content */
+  .main-content {
+    padding: 12px !important;
+  }
+
+  /* Cards mai compacte */
+  .card {
+    padding: 12px;
+    margin-top: 12px;
+  }
+
+  .page h1 {
+    font-size: 20px;
+  }
+
+  /* Form box */
+  .form-box {
+    padding: 28px 16px 24px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Input-uri mai mici */
+  .user-box {
+    margin-bottom: 24px !important;
+  }
+
+  .user-box input,
+  .user-box textarea,
+  .user-box select {
+    font-size: 15px !important;
+  }
+
+  /* Buton principal */
+  .primary-button {
+    font-size: 14px !important;
+    padding: 11px 0 !important;
+  }
+
+  /* Job list */
+  .jobs-list .card h3 {
+    font-size: 17px;
+  }
+
+  /* Modal */
+  div[role="dialog"] {
+    min-width: unset !important;
+    width: 90vw !important;
+    padding: 16px !important;
+  }
+}
+
+/* --- Desktop mare: 1200px+ --- */
+@media (min-width: 1200px) {
+  .page {
+    max-width: 960px;
+  }
+
+  .jobs-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .jobs-list .card {
+    margin-top: 0;
+  }
+}
+
+/* --- Desktop foarte mare: 1600px+ --- */
+@media (min-width: 1600px) {
+  .jobs-list {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .page {
+    max-width: 1200px;
+  }
+}
+
+/* --- Job actions row implicit (desktop) --- */
+.job-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
