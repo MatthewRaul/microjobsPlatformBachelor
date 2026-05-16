@@ -134,3 +134,6 @@ Ce urmează
 •	eventuală extindere a modulului de profil;
 •	adăugarea unui sistem de review/rating după finalizarea unui job, ca extensie ulterioară.
 
+
+Ce mi a ramas din frontend de facut :
+Stilizare PublicUserReviewsPage, MyApplications, ReviewPage, eventual ce tine de Admin
