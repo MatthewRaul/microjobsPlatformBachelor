@@ -27,16 +27,13 @@ public class AplicareService {
     private final AplicareRepository aplicareRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
-    private final EmailService emailService;
 
     public AplicareService(AplicareRepository aplicareRepository,
                            JobRepository jobRepository,
-                           UserRepository userRepository,
-                           EmailService emailService) {
+                           UserRepository userRepository) {
         this.aplicareRepository = aplicareRepository;
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
-        this.emailService = emailService;
     }
 
     // =========================
@@ -57,7 +54,11 @@ public class AplicareService {
 
     private boolean isAdmin() {
         Authentication authentication = getAuthentication();
-        if (authentication == null || authentication.getAuthorities() == null) return false;
+
+        if (authentication == null || authentication.getAuthorities() == null) {
+            return false;
+        }
+
         return authentication.getAuthorities().stream()
                 .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
     }
@@ -83,13 +84,16 @@ public class AplicareService {
     }
 
     private boolean canViewParticipants(Job job, String userEmail) {
-        if (isOwner(job, userEmail) || isAdmin()) return true;
-        return job.getStatus() == JobStatus.COMPLETED
-                && isAcceptedParticipant(job.getId(), userEmail);
+        if (isOwner(job, userEmail) || isAdmin()) {
+            return true;
+        }
+
+        return isAcceptedParticipant(job.getId(), userEmail);
     }
 
     private AplicareResponse mapToAplicareResponse(Aplicare aplicare) {
         User user = userRepository.findByEmail(aplicare.getApplicantEmail()).orElse(null);
+
         String applicantUserId = user != null ? user.getId() : null;
         Double applicantAverageRating = user != null ? user.getAverageRating() : 0.0;
         Integer applicantReviewCount = user != null ? user.getReviewCount() : 0;
@@ -118,7 +122,9 @@ public class AplicareService {
 
         Job job = getJobOrThrow(jobId);
 
-        if (job.getAcceptedWorkers() == null) job.setAcceptedWorkers(0);
+        if (job.getAcceptedWorkers() == null) {
+            job.setAcceptedWorkers(0);
+        }
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -165,33 +171,18 @@ public class AplicareService {
         aplicare.setStatus(AplicareStatus.PENDING);
         aplicare.setAppliedAt(LocalDateTime.now());
 
-        Aplicare saved = aplicareRepository.save(aplicare);
-
-        // Notificam ownerul jobului ca a primit o noua aplicare
-        try {
-            User owner = userRepository.findByEmail(job.getPostedBy()).orElse(null);
-            if (owner != null) {
-                emailService.sendNewApplicationNotificationEmail(
-                        owner.getEmail(),
-                        owner.getFirstName(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        job.getTitle()
-                );
-            }
-        } catch (Exception e) {
-            System.err.println("Eroare la trimiterea notificarii catre owner: " + e.getMessage());
-        }
-
-        return saved;
+        return aplicareRepository.save(aplicare);
     }
 
     public List<Aplicare> getAplicariForJob(String jobId) {
         String currentUserEmail = getCurrentUserEmail();
+
         Job job = getJobOrThrow(jobId);
+
         if (!canViewParticipants(job, currentUserEmail)) {
             throw new ForbiddenAction("Nu ai voie sa vezi participantii acestui job.");
         }
+
         return aplicareRepository.findByJobId(jobId);
     }
 
@@ -219,7 +210,9 @@ public class AplicareService {
             throw new BadRequest("Nu poti accepta aplicari pentru un job inchis.");
         }
 
-        if (job.getAcceptedWorkers() == null) job.setAcceptedWorkers(0);
+        if (job.getAcceptedWorkers() == null) {
+            job.setAcceptedWorkers(0);
+        }
 
         if (job.getNeededWorkers() == null || job.getNeededWorkers() <= 0) {
             throw new BadRequest("Capacitatea jobului este invalida.");
@@ -240,44 +233,15 @@ public class AplicareService {
             job.setStatus(JobStatus.FILLED);
             jobRepository.save(job);
 
-            // Respingem automat aplicarile ramase PENDING si le notificam
             List<Aplicare> aplicari = aplicareRepository.findByJobId(job.getId());
             for (Aplicare a : aplicari) {
                 if (a.getStatus() == AplicareStatus.PENDING) {
                     a.setStatus(AplicareStatus.REJECTED);
                     aplicareRepository.save(a);
-
-                    // Email de respingere automata
-                    try {
-                        User rejectedUser = userRepository.findByEmail(a.getApplicantEmail()).orElse(null);
-                        if (rejectedUser != null) {
-                            emailService.sendApplicationRejectedEmail(
-                                    rejectedUser.getEmail(),
-                                    rejectedUser.getFirstName(),
-                                    job.getTitle()
-                            );
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Eroare email respingere automata: " + e.getMessage());
-                    }
                 }
             }
         } else {
             jobRepository.save(job);
-        }
-
-        // Email de acceptare catre aplicant
-        try {
-            User applicant = userRepository.findByEmail(aplicare.getApplicantEmail()).orElse(null);
-            if (applicant != null) {
-                emailService.sendApplicationAcceptedEmail(
-                        applicant.getEmail(),
-                        applicant.getFirstName(),
-                        job.getTitle()
-                );
-            }
-        } catch (Exception e) {
-            System.err.println("Eroare email acceptare: " + e.getMessage());
         }
 
         return savedAplicare;
@@ -298,23 +262,34 @@ public class AplicareService {
         }
 
         aplicare.setStatus(AplicareStatus.REJECTED);
-        Aplicare saved = aplicareRepository.save(aplicare);
+        return aplicareRepository.save(aplicare);
+    }
 
-        // Email de respingere catre aplicant
-        try {
-            User applicant = userRepository.findByEmail(aplicare.getApplicantEmail()).orElse(null);
-            if (applicant != null) {
-                emailService.sendApplicationRejectedEmail(
-                        applicant.getEmail(),
-                        applicant.getFirstName(),
-                        job.getTitle()
-                );
-            }
-        } catch (Exception e) {
-            System.err.println("Eroare email respingere: " + e.getMessage());
+    public void withdrawAplicare(String aplicareId) {
+        String currentUserEmail = getCurrentUserEmail();
+
+        Aplicare aplicare = getAplicareOrThrow(aplicareId);
+
+        if (!currentUserEmail.equals(aplicare.getApplicantEmail())) {
+            throw new ForbiddenAction("Nu poti retrage aplicarea altcuiva.");
         }
 
-        return saved;
+        Job job = getJobOrThrow(aplicare.getJobId());
+
+        if (job.getStatus() == JobStatus.COMPLETED || job.getStatus() == JobStatus.CANCELED) {
+            throw new BadRequest("Nu poti retrage aplicarea la un job inchis.");
+        }
+
+        if (aplicare.getStatus() == AplicareStatus.ACCEPTED) {
+            int current = job.getAcceptedWorkers() == null ? 0 : job.getAcceptedWorkers();
+            job.setAcceptedWorkers(Math.max(0, current - 1));
+            if (job.getStatus() == JobStatus.FILLED) {
+                job.setStatus(JobStatus.OPEN);
+            }
+            jobRepository.save(job);
+        }
+
+        aplicareRepository.delete(aplicare);
     }
 
     public List<Aplicare> getMyAplicari() {
@@ -322,94 +297,79 @@ public class AplicareService {
         return aplicareRepository.findByApplicantEmail(email);
     }
 
-    // 8. Notifica aplicantii acceptati cand jobul e anulat
-    public void notifyAcceptedApplicantsOnCancel(String jobId, String jobTitle) {
-        List<Aplicare> aplicari = aplicareRepository.findByJobId(jobId);
-        for (Aplicare a : aplicari) {
-            if (a.getStatus() == AplicareStatus.ACCEPTED) {
-                try {
-                    User applicant = userRepository.findByEmail(a.getApplicantEmail()).orElse(null);
-                    if (applicant != null) {
-                        emailService.sendJobCancelledEmail(
-                                applicant.getEmail(),
-                                applicant.getFirstName(),
-                                jobTitle
-                        );
-                    }
-                } catch (Exception e) {
-                    System.err.println("Eroare email anulare job: " + e.getMessage());
-                }
-            }
-        }
-    }
-
-    // 9. Sterge aplicarile PENDING cand jobul incepe (startDate a trecut)
-    public void rejectPendingApplicationsOnStart(String jobId) {
-        List<Aplicare> aplicari = aplicareRepository.findByJobId(jobId);
-        for (Aplicare a : aplicari) {
-            if (a.getStatus() == AplicareStatus.PENDING) {
-                a.setStatus(AplicareStatus.REJECTED);
-                aplicareRepository.save(a);
-                try {
-                    User applicant = userRepository.findByEmail(a.getApplicantEmail()).orElse(null);
-                    if (applicant != null) {
-                        emailService.sendApplicationRejectedEmail(
-                                applicant.getEmail(),
-                                applicant.getFirstName(),
-                                a.getJobTitle()
-                        );
-                    }
-                } catch (Exception e) {
-                    System.err.println("Eroare email respingere automata la start: " + e.getMessage());
-                }
-            }
-        }
-    }
-
     // =========================
     // Zona admin
     // =========================
 
     public List<Aplicare> getAllAplicariForAdmin() {
-        if (!isAdmin()) throw new ForbiddenAction("Doar adminul poate vedea toate aplicarile.");
+        if (!isAdmin()) {
+            throw new ForbiddenAction("Doar adminul poate vedea toate aplicarile.");
+        }
+
         return aplicareRepository.findAll();
     }
 
     public List<Aplicare> searchAplicariForAdmin(String search) {
-        if (!isAdmin()) throw new ForbiddenAction("Doar adminul poate cauta in aplicari.");
+        if (!isAdmin()) {
+            throw new ForbiddenAction("Doar adminul poate cauta in aplicari.");
+        }
+
         List<Aplicare> aplicari = aplicareRepository.findAll();
-        if (search == null || search.trim().isBlank()) return aplicari;
+
+        if (search == null || search.trim().isBlank()) {
+            return aplicari;
+        }
+
         String normalizedSearch = search.trim().toLowerCase();
+
         return aplicari.stream()
                 .filter(aplicare ->
                         containsIgnoreCase(aplicare.getApplicantEmail(), normalizedSearch) ||
                         containsIgnoreCase(aplicare.getApplicantFirstName(), normalizedSearch) ||
                         containsIgnoreCase(aplicare.getApplicantLastName(), normalizedSearch) ||
                         containsIgnoreCase(aplicare.getJobId(), normalizedSearch) ||
-                        containsIgnoreCase(aplicare.getStatus() != null ? aplicare.getStatus().name() : null, normalizedSearch))
+                        containsIgnoreCase(
+                                aplicare.getStatus() != null ? aplicare.getStatus().name() : null,
+                                normalizedSearch))
                 .toList();
     }
 
     public Aplicare getAplicareByIdForAdmin(String aplicareId) {
-        if (!isAdmin()) throw new ForbiddenAction("Doar adminul poate vedea aceasta aplicare.");
+        if (!isAdmin()) {
+            throw new ForbiddenAction("Doar adminul poate vedea aceasta aplicare.");
+        }
+
         return getAplicareOrThrow(aplicareId);
     }
 
     public Aplicare acceptAplicareAsAdmin(String aplicareId) {
-        if (!isAdmin()) throw new ForbiddenAction("Doar adminul poate accepta aplicari din zona de administrare.");
+        if (!isAdmin()) {
+            throw new ForbiddenAction("Doar adminul poate accepta aplicari din zona de administrare.");
+        }
+
         return acceptAplicare(aplicareId);
     }
 
     public Aplicare rejectAplicareAsAdmin(String aplicareId) {
-        if (!isAdmin()) throw new ForbiddenAction("Doar adminul poate respinge aplicari din zona de administrare.");
+        if (!isAdmin()) {
+            throw new ForbiddenAction("Doar adminul poate respinge aplicari din zona de administrare.");
+        }
+
         return rejectAplicare(aplicareId);
     }
 
     public void deleteAplicareAsAdmin(String aplicareId) {
-        if (!isAdmin()) throw new ForbiddenAction("Doar adminul poate sterge aplicari.");
+        if (!isAdmin()) {
+            throw new ForbiddenAction("Doar adminul poate sterge aplicari.");
+        }
+
         Aplicare aplicare = getAplicareOrThrow(aplicareId);
         aplicareRepository.delete(aplicare);
     }
+
+    // =========================
+    // Helper text
+    // =========================
 
     private boolean containsIgnoreCase(String value, String search) {
         return value != null && value.toLowerCase().contains(search);

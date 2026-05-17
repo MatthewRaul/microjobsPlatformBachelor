@@ -7,6 +7,7 @@ import App from "./App";//import componenta principala aplicatie
 import "./styles/auth.css";
 import "./styles/responsive.css";
 import "./styles/style.css";
+import "./styles/datepicker.css";
 import { AuthProvider } from "./context/AuthContext";
 
 // createRoot pornește aplicația React modernă.

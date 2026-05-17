@@ -13,9 +13,9 @@ public class PublicUserProfileResponse {
     private String email;
     private List<String> skills;
     private boolean hasCv;
-    private Integer age;
 
-    public PublicUserProfileResponse() {}
+    public PublicUserProfileResponse() {
+    }
 
     public PublicUserProfileResponse(String id, String firstName, String lastName, String bio,
                                      String profilePictureUrl, String phoneNumber, String email,
@@ -57,7 +57,4 @@ public class PublicUserProfileResponse {
 
     public boolean isHasCv() { return hasCv; }
     public void setHasCv(boolean hasCv) { this.hasCv = hasCv; }
-
-    public Integer getAge() { return age; }
-    public void setAge(Integer age) { this.age = age; }
 }

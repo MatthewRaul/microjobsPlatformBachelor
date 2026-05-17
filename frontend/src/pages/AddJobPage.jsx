@@ -1,4 +1,5 @@
 import { useState } from "react";
+import DatePickerInput from "../components/DatePickerInput";
 import { createJob } from "../api/jobApi";
 import { useNavigate } from "react-router-dom";
 import LocationAutocomplete from "../components/LocationAutocomplete";
@@ -10,8 +11,8 @@ function AddJobPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [neededWorkers, setNeededWorkers] = useState(1);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const [salary, setSalary] = useState("");
   const [location, setLocation] = useState("");
   const [county, setCounty] = useState("");
@@ -26,8 +27,8 @@ function AddJobPage() {
     if (
       !title.trim() ||
       !description.trim() ||
-      !startDate.trim() ||
-      !endDate.trim() ||
+      !startDate ||
+      !endDate ||
       !location.trim()
     ) {
       setError("Completează toate câmpurile obligatorii.");
@@ -54,7 +55,7 @@ function AddJobPage() {
       return;
     }
 
-    if (new Date(endDate) < new Date(startDate)) {
+    if (endDate < startDate) {
       setError("Data de finalizare trebuie să fie după data de start.");
       return;
     }
@@ -63,8 +64,8 @@ function AddJobPage() {
       title,
       description,
       neededWorkers: Number(neededWorkers),
-      startDate,
-      endDate,
+      startDate: startDate ? startDate.toISOString() : "",
+      endDate: endDate ? endDate.toISOString() : "",
       salary: Number(salary),
       location,
       county,
@@ -77,8 +78,8 @@ function AddJobPage() {
       setTitle("");
       setDescription("");
       setNeededWorkers(1);
-      setStartDate("");
-      setEndDate("");
+      setStartDate(null);
+      setEndDate(null);
       setSalary("");
       setLocation("");
       setCounty("");
@@ -112,10 +113,14 @@ function AddJobPage() {
             <textarea
               id="description"
               placeholder=" "
-              rows={3}
+              rows={1}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              style={{ resize: "vertical", minHeight: "80px" }}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                e.target.style.height = "auto";
+                e.target.style.height = e.target.scrollHeight + "px";
+              }}
+              style={{ resize: "none", overflow: "hidden" }}
             />
             <label htmlFor="description">Descriere job</label>
           </div>
@@ -132,27 +137,18 @@ function AddJobPage() {
             <label htmlFor="neededWorkers">Număr participanți</label>
           </div>
 
-          <div className="user-box">
-            <input
-              id="startDate"
-              type="datetime-local"
-              placeholder=" "
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-            <label htmlFor="startDate">Data și ora de start</label>
-          </div>
+          <DatePickerInput
+            label="Data și ora de start"
+            selected={startDate}
+            onChange={(date) => setStartDate(date)}
+          />
 
-          <div className="user-box">
-            <input
-              id="endDate"
-              type="datetime-local"
-              placeholder=" "
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-            <label htmlFor="endDate">Data și ora de finalizare</label>
-          </div>
+          <DatePickerInput
+            label="Data și ora de finalizare"
+            selected={endDate}
+            onChange={(date) => setEndDate(date)}
+            minDate={startDate}
+          />
 
           <div className="user-box">
             <input
@@ -180,14 +176,16 @@ function AddJobPage() {
           />
 
           {county && (
-            <p style={{
-              fontSize: "13px",
-              color: "rgba(255,255,255,0.75)",
-              marginTop: "-16px",
-              marginBottom: "16px",
-            }}>
-              Județ: <strong style={{ color: "#ffffff" }}>{county}</strong>
-            </p>
+            <div className="user-box">
+              <input
+                id="county"
+                type="text"
+                placeholder=" "
+                value={county}
+                onChange={(e) => setCounty(e.target.value)}
+              />
+              <label htmlFor="county">Județ</label>
+            </div>
           )}
 
           {successMessage && <p className="form-success">{successMessage}</p>}

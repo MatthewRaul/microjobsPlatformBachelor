@@ -161,6 +161,7 @@ public class UserService {
                 user.getEmail(),
                 user.getSkills(),
                 user.getHasCv()
+                
         );
     }
 

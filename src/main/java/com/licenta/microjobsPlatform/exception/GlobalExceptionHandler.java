@@ -39,6 +39,18 @@ public class GlobalExceptionHandler {
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
+    @ExceptionHandler(BadRequest.class)
+    public ResponseEntity<ApiError> handleBadRequestCustom(BadRequest ex, HttpServletRequest request) {
+        ApiError error = new ApiError(
+                ex.getMessage(),
+                "Bad Request",
+                request.getRequestURI(),
+                HttpStatus.BAD_REQUEST.value(),
+                LocalDateTime.now()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiError> handleBadRequest(BadRequestException ex, HttpServletRequest request) {
         ApiError error = new ApiError(
@@ -66,4 +78,3 @@ public class GlobalExceptionHandler {
 
 
 }
-

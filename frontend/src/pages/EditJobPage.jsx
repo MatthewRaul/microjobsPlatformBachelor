@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import DatePickerInput from "../components/DatePickerInput";
 import { getJobById, updateJob } from "../api/jobApi";
 import { useNavigate, useParams, Link } from "react-router-dom";
+import LocationAutocomplete from "../components/LocationAutocomplete";
 import "../styles/auth.css";
 
 function EditJobPage() {
@@ -10,21 +12,19 @@ function EditJobPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [neededWorkers, setNeededWorkers] = useState(1);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
   const [salary, setSalary] = useState("");
   const [location, setLocation] = useState("");
+  const [county, setCounty] = useState("");
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingJob, setLoadingJob] = useState(true);
 
-  const formatDateTimeLocal = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    const offset = date.getTimezoneOffset();
-    const localDate = new Date(date.getTime() - offset * 60000);
-    return localDate.toISOString().slice(0, 16);
+  const parseToDate = (dateString) => {
+    if (!dateString) return null;
+    return new Date(dateString);
   };
 
   useEffect(() => {
@@ -35,10 +35,11 @@ function EditJobPage() {
         setTitle(job.title || "");
         setDescription(job.description || "");
         setNeededWorkers(job.neededWorkers ?? 1);
-        setStartDate(formatDateTimeLocal(job.startDate));
-        setEndDate(formatDateTimeLocal(job.endDate));
+        setStartDate(parseToDate(job.startDate));
+        setEndDate(parseToDate(job.endDate));
         setSalary(job.salary ?? "");
         setLocation(job.location || "");
+        setCounty(job.county || "");
       } catch (err) {
         console.error("Eroare la încărcarea jobului:", err);
         setError("Nu s-au putut încărca datele jobului.");
@@ -54,7 +55,7 @@ function EditJobPage() {
     e.preventDefault();
     setError("");
 
-    if (!title.trim() || !description.trim() || !startDate.trim() || !endDate.trim() || !location.trim()) {
+    if (!title.trim() || !description.trim() || !startDate || !endDate || !location.trim()) {
       setError("Completează toate câmpurile obligatorii.");
       return;
     }
@@ -74,7 +75,7 @@ function EditJobPage() {
       return;
     }
 
-    if (new Date(endDate) < new Date(startDate)) {
+    if (endDate < startDate) {
       setError("Data de finalizare trebuie să fie după data de start.");
       return;
     }
@@ -83,10 +84,11 @@ function EditJobPage() {
       title,
       description,
       neededWorkers: Number(neededWorkers),
-      startDate,
-      endDate,
+      startDate: startDate ? startDate.toISOString() : "",
+      endDate: endDate ? endDate.toISOString() : "",
       salary: Number(salary),
       location,
+      county,
     };
 
     try {
@@ -126,10 +128,14 @@ function EditJobPage() {
             <textarea
               id="description"
               placeholder=" "
-              rows={3}
+              rows={1}
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              style={{ resize: "vertical", minHeight: "80px" }}
+              onChange={(e) => {
+                setDescription(e.target.value);
+                e.target.style.height = "auto";
+                e.target.style.height = e.target.scrollHeight + "px";
+              }}
+              style={{ resize: "none", overflow: "hidden" }}
             />
             <label htmlFor="description">Descriere job</label>
           </div>
@@ -146,27 +152,18 @@ function EditJobPage() {
             <label htmlFor="neededWorkers">Număr participanți</label>
           </div>
 
-          <div className="user-box">
-            <input
-              id="startDate"
-              type="datetime-local"
-              placeholder=" "
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-            />
-            <label htmlFor="startDate">Data și ora de start</label>
-          </div>
+          <DatePickerInput
+            label="Data și ora de start"
+            selected={startDate}
+            onChange={(date) => setStartDate(date)}
+          />
 
-          <div className="user-box">
-            <input
-              id="endDate"
-              type="datetime-local"
-              placeholder=" "
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-            />
-            <label htmlFor="endDate">Data și ora de finalizare</label>
-          </div>
+          <DatePickerInput
+            label="Data și ora de finalizare"
+            selected={endDate}
+            onChange={(date) => setEndDate(date)}
+            minDate={startDate}
+          />
 
           <div className="user-box">
             <input
@@ -180,16 +177,31 @@ function EditJobPage() {
             <label htmlFor="salary">Salariu (RON)</label>
           </div>
 
-          <div className="user-box">
-            <input
-              id="location"
-              type="text"
-              placeholder=" "
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
-            <label htmlFor="location">Locație</label>
-          </div>
+          <LocationAutocomplete
+            value={location}
+            onChange={(value) => {
+              setLocation(value);
+              setCounty("");
+            }}
+            onSelect={(selectedLocation) => {
+              setLocation(selectedLocation.location || "");
+              setCounty(selectedLocation.county || "");
+            }}
+            label="Localitate"
+          />
+
+          {county && (
+            <div className="user-box">
+              <input
+                id="county"
+                type="text"
+                placeholder=" "
+                value={county}
+                onChange={(e) => setCounty(e.target.value)}
+              />
+              <label htmlFor="county">Județ</label>
+            </div>
+          )}
 
           {error && <p className="form-error">{error}</p>}
 

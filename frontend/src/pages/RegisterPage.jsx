@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { registerUser } from "../api/register";
 import { useNavigate, Link } from "react-router-dom";
-import "../styles/auth.css";
 
 function RegisterPage() {
   const navigate = useNavigate();
@@ -11,55 +10,89 @@ function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [age,setAge]= useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [age, setAge] = useState("");
 
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!firstName.trim())
+      newErrors.firstName = "Prenumele este obligatoriu.";
+    else if (firstName.trim().length < 2)
+      newErrors.firstName = "Prenumele trebuie să aibă cel puțin 2 caractere.";
+
+    if (!lastName.trim())
+      newErrors.lastName = "Numele este obligatoriu.";
+    else if (lastName.trim().length < 2)
+      newErrors.lastName = "Numele trebuie să aibă cel puțin 2 caractere.";
+
+    if (!email.trim())
+      newErrors.email = "Emailul este obligatoriu.";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+      newErrors.email = "Introdu o adresă de email validă.";
+
+    if (!phoneNumber.trim())
+      newErrors.phoneNumber = "Numărul de telefon este obligatoriu.";
+    else if (!/^[0-9+\s\-()]{7,15}$/.test(phoneNumber.trim()))
+      newErrors.phoneNumber = "Introdu un număr de telefon valid.";
+
+    if (!password)
+      newErrors.password = "Parola este obligatorie.";
+    else if (password.length < 6)
+      newErrors.password = "Parola trebuie să aibă cel puțin 6 caractere.";
+
+    if (!age.trim())
+      newErrors.age = "Vârsta este obligatorie.";
+    else if (isNaN(Number(age)) || Number(age) < 15 || Number(age) > 100)
+      newErrors.age = "Vârsta trebuie să fie între 15 și 100 de ani.";
+
+    if (!confirmPassword)
+      newErrors.confirmPassword = "Confirmarea parolei este obligatorie.";
+    else if (password && confirmPassword !== password)
+      newErrors.confirmPassword = "Parolele nu coincid.";
+
+    return newErrors;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setServerError("");
 
-    if (
-      !firstName.trim() ||
-      !lastName.trim() ||
-      !email.trim() ||
-      !phoneNumber.trim() ||
-      !age.trim()||
-      !password.trim() ||
-      !confirmPassword.trim()
-    ) {
-      setError("Toate câmpurile sunt obligatorii.");
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError("Parolele nu coincid.");
-      return;
-    }
-
-    if (password.length < 6) {
-      setError("Parola trebuie să aibă minim 6 caractere.");
-      return;
-    }
-
-    const registerData = { firstName, lastName, email, phoneNumber, password };
+    setErrors({});
 
     try {
       setLoading(true);
-      await registerUser(registerData);
+      await registerUser({ firstName, lastName, email, phoneNumber, password, age: Number(age) });
       navigate("/login", {
         state: { successMessage: "Contul a fost creat cu succes." },
       });
     } catch (err) {
-      const backendMessage =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
+      const data = err.response?.data;
+      const msg =
+        (typeof data === "string" ? data : null) ||
+        data?.message ||
+        data?.error ||
         "Înregistrarea a eșuat. Verifică datele introduse.";
-      setError(backendMessage);
+      setServerError(msg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Sterge eroarea unui camp cand userul incepe sa scrie
+  const clearError = (field) => {
+    if (errors[field]) {
+      setErrors((prev) => { const next = { ...prev }; delete next[field]; return next; });
     }
   };
 
@@ -68,84 +101,100 @@ function RegisterPage() {
       <div className="form-box">
         <h1>Înregistrare</h1>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
+
           <div className="user-box">
             <input
               id="firstName"
               type="text"
-              placeholder=" "
+              placeholder="Prenume"
               value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              onChange={(e) => { setFirstName(e.target.value); clearError("firstName"); }}
+              style={errors.firstName ? { borderColor: "#fca5a5" } : {}}
             />
             <label htmlFor="firstName">Prenume</label>
+            {errors.firstName && <p className="form-error" style={{ marginTop: 6 }}>{errors.firstName}</p>}
           </div>
 
           <div className="user-box">
             <input
               id="lastName"
               type="text"
-              placeholder=" "
+              placeholder="Nume"
               value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
+              onChange={(e) => { setLastName(e.target.value); clearError("lastName"); }}
+              style={errors.lastName ? { borderColor: "#fca5a5" } : {}}
             />
             <label htmlFor="lastName">Nume</label>
+            {errors.lastName && <p className="form-error" style={{ marginTop: 6 }}>{errors.lastName}</p>}
           </div>
 
           <div className="user-box">
             <input
               id="email"
               type="email"
-              placeholder=" "
+              placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => { setEmail(e.target.value); clearError("email"); }}
+              style={errors.email ? { borderColor: "#fca5a5" } : {}}
             />
             <label htmlFor="email">Email</label>
+            {errors.email && <p className="form-error" style={{ marginTop: 6 }}>{errors.email}</p>}
           </div>
 
           <div className="user-box">
             <input
               id="phoneNumber"
               type="text"
-              placeholder=" "
+              placeholder="Număr de telefon"
               value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              onChange={(e) => { setPhoneNumber(e.target.value); clearError("phoneNumber"); }}
+              style={errors.phoneNumber ? { borderColor: "#fca5a5" } : {}}
             />
             <label htmlFor="phoneNumber">Număr de telefon</label>
+            {errors.phoneNumber && <p className="form-error" style={{ marginTop: 6 }}>{errors.phoneNumber}</p>}
           </div>
+
           <div className="user-box">
             <input
-              id="phoneNumber" 
-              type="text"
-              placeholder=" "
+              id="age"
+              type="number"
+              placeholder="Vârstă"
               value={age}
-              onChange={(e)=> setAge(e.target.value)}
-              />
-              <label htmlFor="age">Vârsta</label>
+              onChange={(e) => { setAge(e.target.value); clearError("age"); }}
+              style={errors.age ? { borderColor: "#fca5a5" } : {}}
+            />
+            <label htmlFor="age">Vârstă</label>
+            {errors.age && <p className="form-error" style={{ marginTop: 6 }}>{errors.age}</p>}
           </div>
 
           <div className="user-box">
             <input
               id="password"
               type="password"
-              placeholder=" "
+              placeholder="Parolă"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); clearError("password"); clearError("confirmPassword"); }}
+              style={errors.password ? { borderColor: "#fca5a5" } : {}}
             />
             <label htmlFor="password">Parolă</label>
+            {errors.password && <p className="form-error" style={{ marginTop: 6 }}>{errors.password}</p>}
           </div>
 
           <div className="user-box">
             <input
               id="confirmPassword"
               type="password"
-              placeholder=" "
+              placeholder="Confirmă parola"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => { setConfirmPassword(e.target.value); clearError("confirmPassword"); }}
+              style={errors.confirmPassword ? { borderColor: "#fca5a5" } : {}}
             />
             <label htmlFor="confirmPassword">Confirmă parola</label>
+            {errors.confirmPassword && <p className="form-error" style={{ marginTop: 6 }}>{errors.confirmPassword}</p>}
           </div>
 
-          {error && <p className="form-error">{error}</p>}
+          {serverError && <p className="form-error">{serverError}</p>}
 
           <button type="submit" className="primary-button" disabled={loading}>
             {loading ? "Se procesează..." : "Creează cont"}
@@ -153,8 +202,7 @@ function RegisterPage() {
         </form>
 
         <p className="form-footer">
-          Ai deja cont?{" "}
-          <Link to="/login">Autentifică-te</Link>
+          Ai deja un cont? <Link to="/login">Autentifică-te</Link>
         </p>
       </div>
     </section>

@@ -61,3 +61,9 @@ export const deleteCv = async () => {
   const response = await api.delete("/api/users/me/cv");
   return response.data;
 };
+
+// Sterge poza de profil (seteaza profilePictureUrl la string gol)
+export const deleteAvatar = async () => {
+  const response = await api.patch("/api/users/me", { profilePictureUrl: "" });
+  return response.data;
+};

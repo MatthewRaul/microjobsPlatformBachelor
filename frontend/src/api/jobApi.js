@@ -67,6 +67,11 @@ export const rejectApplication = async (applicationId) => {
   return response.data;
 };
 
+export const withdrawApplication = async (applicationId) => {
+  const response = await api.delete(`/api/aplicari/${applicationId}/withdraw`);
+  return response.data;
+};
+
 export const getOwnerIdForJob = async (jobId) => {
   const response = await api.get(`/api/jobs/${jobId}/owner-id`);
   return response.data;

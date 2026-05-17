@@ -21,6 +21,8 @@ import AdminJobsPage from "./admin/pages/AdminJobsPage";
 import AdminApplicationsPage from "./admin/pages/AdminApplicationsPage";
 import AdminUsersPage from "./admin/pages/AdminUsersPage";
 import AddReviewForm from "./components/AddReviewForm";
+import AdminLayout from "./admin/components/AdminLayout";
+import AdminReviewsPage from "./admin/pages/AdminReviewsPage";
 
 function App() {
   const location = useLocation();
@@ -56,6 +58,7 @@ function App() {
             <Route path="/admin/jobs" element={<AdminJobsPage />} />
             <Route path="/admin/aplicari" element={<AdminApplicationsPage />} />
             <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/reviews" element={<AdminReviewsPage/>}/>
           </Route>
         </Routes>
       </main>
