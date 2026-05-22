@@ -32,7 +32,6 @@ public class EmailService {
     }
 
     // === Template-uri email ===
-
     public void sendWelcomeEmail(String to, String firstName) {
         String subject = "Bun venit pe platforma JobY!";
         String body = """
@@ -76,7 +75,7 @@ public class EmailService {
                     <p>Din păcate, aplicarea ta la jobul <strong>"%s"</strong> a fost <strong>respinsă</strong>.</p>
                     <p>Nu te descuraja — mai sunt multe joburi disponibile pe platformă!</p>
                     <p style="margin-top: 24px; color: #888; font-size: 13px;">
-                        Echipa platformei de microjoburi
+                        Echipa JobY
                     </p>
                 </div>
                 """.formatted(firstName, jobTitle);
@@ -100,8 +99,8 @@ public class EmailService {
     }
 
     public void sendNewApplicationNotificationEmail(String to, String ownerFirstName,
-                                                     String applicantFirstName, String applicantLastName,
-                                                     String jobTitle) {
+            String applicantFirstName, String applicantLastName,
+            String jobTitle) {
         String subject = "Cineva a aplicat la jobul tău!";
         String body = """
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -113,6 +112,22 @@ public class EmailService {
                         Echipa JobY
                     </p>
                 </div>
+                """.formatted(ownerFirstName, applicantFirstName, applicantLastName, jobTitle);
+        sendEmail(to, subject, body);
+    }
+
+    public void sendApplicationWithdrawnEmail(String to, String ownerFirstName, String applicantFirstName, String applicantLastName, String jobTitle) {
+        String subject = "Un aplicant și-a retras aplicarea";
+        String body = """
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2 style="color: #f59e0b;">Notificare retragere aplicare</h2>
+                <p>Salut, <strong>%s</strong>!</p>
+                <p><strong>%s %s</strong> și-a retras aplicarea de la jobul tău <strong>"%s"</strong>.</p>
+                <p>Dacă mai ai nevoie de un candidat, intră pe platformă pentru a vedea ceilalți aplicanți.</p>
+                <p style="margin-top: 24px; color: #888; font-size: 13px;">
+                    Echipa JobY
+                </p>
+            </div>
                 """.formatted(ownerFirstName, applicantFirstName, applicantLastName, jobTitle);
         sendEmail(to, subject, body);
     }

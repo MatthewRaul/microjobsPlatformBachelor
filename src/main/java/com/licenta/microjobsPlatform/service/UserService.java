@@ -33,15 +33,18 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+    private final EmailService emailService;
 
     public UserService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
                        AuthenticationManager authenticationManager,
-                       JwtService jwtService) {
+                       JwtService jwtService,
+                        EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
+        this.emailService=emailService;
     }
 
     private boolean isAdmin() {
@@ -77,6 +80,7 @@ public class UserService {
         user.setProfileCompleted(false);
         user.setHasCv(false);
 
+        emailService.sendWelcomeEmail(user.getEmail(), user.getFirstName());
         return userRepository.save(user);
     }
 
