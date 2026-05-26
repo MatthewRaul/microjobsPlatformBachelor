@@ -210,9 +210,6 @@ function EditJobPage() {
           </button>
         </form>
 
-        <p className="form-footer">
-          <Link to={`/jobs/${id}`}>Înapoi la job</Link>
-        </p>
       </div>
     </section>
   );

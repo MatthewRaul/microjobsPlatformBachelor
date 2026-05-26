@@ -227,7 +227,7 @@ export default function ProfilePage() {
       {isFirstLogin && !formData.profileCompleted && (
         <div style={{ background: "#fffbea", border: "1px solid #f0c040", borderRadius: "10px", padding: "16px", marginBottom: "16px" }}>
           <strong>Bine ai venit!</strong>
-          <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#555" }}>
+          <p style={{ margin: "8px 0 0", fontSize: "14px", color: "var(--color-text-medium)" }}>
             Completează-ți profilul cu o poză, o descriere și competențele tale pentru a-ți crește șansele la joburi.
           </p>
         </div>
@@ -241,21 +241,21 @@ export default function ProfilePage() {
               style={{ width: "72px", height: "72px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
               onError={(e) => { e.target.src = DEFAULT_AVATAR; }} />
           ) : (
-            <div style={{ width: "72px", height: "72px", borderRadius: "50%", background: "#7c3aed", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "24px", fontWeight: "700", flexShrink: 0 }}>
+            <div style={{ width: "72px", height: "72px", borderRadius: "50%", background: "var(--color-primary)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: "24px", fontWeight: "700", flexShrink: 0 }}>
               {initials}
             </div>
           )}
           <div>
-            <h2 style={{ margin: 0, fontSize: "20px", fontWeight: "800", color: "#111" }}>{fullName}</h2>
+            <h2 style={{ margin: 0, fontSize: "20px", fontWeight: "800", color: "var(--color-text-dark)" }}>{fullName}</h2>
             {formData.role === "ADMIN" && (
-              <span style={{ fontSize: "11px", fontWeight: "700", color: "#7c3aed", background: "#ede9fe", padding: "2px 8px", borderRadius: "10px", display: "inline-block", marginTop: "4px" }}>
+              <span style={{ fontSize: "11px", fontWeight: "700", color: "var(--color-primary)", background: "rgba(69,70,121,0.15)", padding: "2px 8px", borderRadius: "10px", display: "inline-block", marginTop: "4px" }}>
                 Administrator
               </span>
             )}
           </div>
         </div>
 
-        <p style={{ fontSize: "11px", fontWeight: "600", color: "#aaa", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "12px" }}>
+        <p style={{ fontSize: "11px", fontWeight: "600", color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "12px" }}>
           Date personale — nu pot fi modificate
         </p>
 
@@ -267,7 +267,7 @@ export default function ProfilePage() {
         </div>
 
         <div style={{ borderTop: "1px solid #f0f0f0", paddingTop: "16px" }}>
-          <p style={{ fontSize: "12px", fontWeight: "600", color: "#aaa", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "10px" }}>
+          <p style={{ fontSize: "12px", fontWeight: "600", color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "10px" }}>
             Poză de profil
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
@@ -340,7 +340,9 @@ export default function ProfilePage() {
           {message && <p className="form-success">{message}</p>}
           {error && <p className="form-error">{error}</p>}
 
-          <button type="submit" className="primary-button">Salvează modificările</button>
+          <button type="submit" className="icon-btn icon-btn--edit" style={{ marginTop: "8px" }}>
+            Salvează modificările
+</button>
         </form>
       </div>
 
@@ -413,27 +415,28 @@ export default function ProfilePage() {
       {userId && (
         <div
           onClick={() => navigate(`/users/public/${userId}/reviews`, { state: { ownerEmail: formData.email, fromOwnProfile: true } })}
-          style={{ background: "#40826D", borderRadius: "12px", padding: "20px 24px", boxShadow: "0 4px 16px rgba(64,130,109,0.35)", cursor: "pointer", marginBottom: "16px" }}
+          className="profile-card--accent"
+          style={{ cursor: "pointer", marginBottom: "16px" }}
         >
-          <p style={{ fontSize: "12px", fontWeight: "600", color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 12px" }}>
+          <p style={{ fontSize: "12px", fontWeight: "600", color: "rgba(0,0,0,0.5)", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 12px" }}>
             Recenziile mele
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
             <div style={{ display: "flex", gap: "2px" }}>
               {Array.from({ length: 5 }, (_, i) => (
-                <span key={i} style={{ color: i < Math.round(avgRating) ? "#facc15" : "rgba(255,255,255,0.25)", fontSize: "20px" }}>★</span>
+                <span key={i} style={{ color: i < Math.round(avgRating) ? "#facc15" : "rgba(0,0,0,0.2)", fontSize: "20px" }}>★</span>
               ))}
             </div>
-            <span style={{ fontSize: "18px", fontWeight: "700", color: "#fff" }}>
+            <span style={{ fontSize: "18px", fontWeight: "700", color: "#1a1a1a" }}>
               {ratingData?.averageRating != null ? Number(avgRating).toFixed(1) : "—"}
             </span>
-            <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.6)" }}>/ 5</span>
+            <span style={{ fontSize: "13px", color: "rgba(0,0,0,0.5)" }}>/ 5</span>
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)" }}>
+            <span style={{ fontSize: "13px", color: "rgba(0,0,0,0.6)" }}>
               {reviewCount} {reviewCount === 1 ? "recenzie primită" : "recenzii primite"}
             </span>
-            <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.9)", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>
+            <span style={{ fontSize: "13px", color: "#1a1a1a", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>
               Vezi toate
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="9 18 15 12 9 6"/>
@@ -457,7 +460,7 @@ export default function ProfilePage() {
       {saveModal && (
         <ConfirmModal title="Salvează modificările"
           message="Ești sigur că vrei să salvezi modificările?"
-          confirmLabel="Salvează" confirmStyle={{ background: "#7c3aed" }}
+          confirmLabel="Salvează" confirmStyle={{ background: "var(--color-primary)" }}
           onConfirm={handleSaveConfirm} onCancel={() => setSaveModal(false)} isLoading={isActioning} />
       )}
       {logoutModal && (
@@ -469,13 +472,13 @@ export default function ProfilePage() {
       {deleteAvatarModal && (
         <ConfirmModal title="Șterge poza de profil"
           message="Ești sigur că vrei să ștergi poza de profil?"
-          confirmLabel="Șterge poza" confirmStyle={{ background: "#dc2626" }}
+          confirmLabel="Șterge poza" confirmStyle={{ background: "var(--color-error)" }}
           onConfirm={handleDeleteAvatarConfirm} onCancel={() => setDeleteAvatarModal(false)} isLoading={isActioning} />
       )}
       {deleteCvModal && (
         <ConfirmModal title="Șterge CV"
           message="Ești sigur că vrei să ștergi CV-ul? Acțiunea este ireversibilă."
-          confirmLabel="Șterge CV" confirmStyle={{ background: "#dc2626" }}
+          confirmLabel="Șterge CV" confirmStyle={{ background: "var(--color-error)" }}
           onConfirm={handleDeleteCvConfirm} onCancel={() => setDeleteCvModal(false)} isLoading={isActioning} />
       )}
     </section>
@@ -495,7 +498,7 @@ function ReadOnlyField({ icon, label, value }) {
         {paths[icon]}
       </svg>
       <div>
-        <p style={{ margin: 0, fontSize: "11px", color: "#aaa", letterSpacing: "0.3px" }}>{label}</p>
+        <p style={{ margin: 0, fontSize: "11px", color: "var(--color-text-muted)", letterSpacing: "0.3px" }}>{label}</p>
         <p style={{ margin: 0, fontSize: "14px", color: "#333", fontWeight: "500" }}>{value}</p>
       </div>
     </div>
@@ -506,8 +509,8 @@ function ConfirmModal({ title, message, confirmLabel, confirmStyle, onConfirm, o
   return (
     <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
       <div role="dialog" aria-modal="true" style={{ backgroundColor: "white", padding: "28px 24px", borderRadius: "10px", minWidth: "300px", maxWidth: "420px", width: "90vw", textAlign: "center", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-        <h3 style={{ marginBottom: "10px", fontSize: "18px", color: "#111" }}>{title}</h3>
-        <p style={{ marginBottom: "24px", color: "#555", fontSize: "14px", lineHeight: "1.5" }}>{message}</p>
+        <h3 style={{ marginBottom: "10px", fontSize: "18px", color: "var(--color-text-dark)" }}>{title}</h3>
+        <p style={{ marginBottom: "24px", color: "var(--color-text-medium)", fontSize: "14px", lineHeight: "1.5" }}>{message}</p>
         <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
           <button onClick={onConfirm} disabled={isLoading} style={{ padding: "10px 24px", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "14px", ...confirmStyle }}>
             {isLoading ? "Se procesează..." : confirmLabel}

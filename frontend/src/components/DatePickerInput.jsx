@@ -22,6 +22,9 @@ export default function DatePickerInput({
   onChange,
   minDate,
   maxDate,
+  minTime,
+  maxTime,
+  filterTime,
   showTime = true,
 }) {
   const hasValue = !!selected;
@@ -38,6 +41,9 @@ export default function DatePickerInput({
         locale="ro"
         minDate={minDate}
         maxDate={maxDate}
+        minTime={minTime}
+        maxTime={maxTime}
+        filterTime={filterTime}
         placeholderText=" "
         autoComplete="off"
         popperPlacement="bottom-start"
@@ -56,7 +62,7 @@ export default function DatePickerInput({
         left: hasValue ? "4px" : "12px",
         top: hasValue ? "-20px" : "10px",
         fontSize: hasValue ? "12px" : "16px",
-        color: hasValue ? "#ffffff" : "rgba(255,255,255,0.6)",
+        color: hasValue ? "#ffffff" : "rgba(0,0,0,0.5)",
         pointerEvents: "none",
         transition: "all 0.35s ease",
       }}>

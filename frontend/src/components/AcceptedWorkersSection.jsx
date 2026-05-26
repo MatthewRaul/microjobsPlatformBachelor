@@ -13,37 +13,29 @@ export default function AcceptedWorkersSection({ job }) {
     const fetchData = async () => {
       try {
         setError("");
-
         const [aplicariData, meData] = await Promise.all([
           getAplicariForJob(job.id),
           getMe(),
         ]);
-
-        const accepted = aplicariData.filter(
-          (aplicare) => aplicare.status === "ACCEPTED"
-        );
-
+        const accepted = aplicariData.filter((a) => a.status === "ACCEPTED");
         setAcceptedWorkers(accepted);
         setCurrentUser(meData);
-      } catch (err) {
-        console.log("EROARE ACCEPTED WORKERS", err);
+      } catch {
         setError("Nu am putut încărca participanții jobului.");
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [job.id]);
 
-  if (loading) return <div>Se încarcă participanții...</div>;
-  if (error) return <div>{error}</div>;
-  if (acceptedWorkers.length === 0) return <div>Nu există participanți acceptați.</div>;
+  if (loading) return <div className="page"><p>Se încarcă participanții...</p></div>;
+  if (error)   return <div className="page"><p className="error-message">{error}</p></div>;
+  if (acceptedWorkers.length === 0) return <div className="page"><p>Nu există participanți acceptați.</p></div>;
 
   return (
     <div style={{ marginTop: "30px" }}>
       <h2>Participanți acceptați</h2>
-
       {acceptedWorkers.map((worker) => {
         const canReview =
           job.status === "COMPLETED" &&
@@ -51,61 +43,28 @@ export default function AcceptedWorkersSection({ job }) {
           currentUser.id !== worker.applicantUserId;
 
         return (
-          <div
-            key={worker.id}
-            style={{
-              border: "1px solid #ddd",
-              borderRadius: "10px",
-              padding: "16px",
-              marginBottom: "16px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              gap: "16px",
-              flexWrap: "wrap",
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: "bold", fontSize: "16px" }}>
+          <div key={worker.id} className="worker-card">
+            <div className="worker-card__info">
+              <div className="worker-card__name">
                 {worker.applicantFirstName} {worker.applicantLastName}
               </div>
-
-              <div style={{ color: "#666", marginTop: "4px" }}>
-                {worker.applicantEmail}
-              </div>
-
-              <div style={{ color: "#444", marginTop: "6px" }}>
-                ⭐ {worker.applicantAverageRating?.toFixed(1) ?? "0.0"} ({worker.applicantReviewCount || 0} review-uri)
+              <div className="worker-card__email">{worker.applicantEmail}</div>
+              <div className="worker-card__rating">
+                ⭐ {worker.applicantAverageRating?.toFixed(1) ?? "0.0"}
+                <span className="worker-card__review-count">
+                  ({worker.applicantReviewCount || 0} review-uri)
+                </span>
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+            <div className="worker-card__actions">
               {worker.applicantUserId && (
-                <Link
-                  to={`/users/${worker.applicantUserId}`}
-                  style={{
-                    padding: "8px 12px",
-                    border: "1px solid #0077cc",
-                    borderRadius: "8px",
-                    textDecoration: "none",
-                    color: "#0077cc",
-                  }}
-                >
+                <Link to={`/users/${worker.applicantUserId}`} className="icon-btn icon-btn--info">
                   Vezi profil
                 </Link>
               )}
-
               {canReview && worker.applicantUserId && (
-                <Link
-                  to={`/jobs/${job.id}/review/${worker.applicantUserId}`}
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    textDecoration: "none",
-                    backgroundColor: "#0077cc",
-                    color: "white",
-                  }}
-                >
+                <Link to={`/jobs/${job.id}/review/${worker.applicantUserId}`} className="icon-btn icon-btn--review">
                   Lasă review
                 </Link>
               )}

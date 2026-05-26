@@ -19,7 +19,7 @@
 
 /* --- Header --- */
 .react-datepicker__header {
-  background-color: #7c3aed !important;
+  background-color: var(--color-primary) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 10px 0 0 0 !important;
   padding: 12px 0 8px !important;
@@ -56,17 +56,17 @@
   border-radius: 6px !important;
 }
 .react-datepicker__day:hover {
-  background-color: rgba(124, 58, 237, 0.5) !important;
+  background-color: rgba(69, 70, 121, 0.5) !important;
   color: #ffffff !important;
 }
 .react-datepicker__day--selected,
 .react-datepicker__day--keyboard-selected {
-  background-color: #7c3aed !important;
+  background-color: var(--color-primary) !important;
   color: #ffffff !important;
   font-weight: 700 !important;
 }
 .react-datepicker__day--today {
-  color: #a78bfa !important;
+  color: var(--color-primary) !important;
   font-weight: 700 !important;
 }
 .react-datepicker__day--outside-month {
@@ -101,7 +101,7 @@
   color: rgba(255, 255, 255, 0.6) !important;
   font-size: 12px !important;
   font-weight: 600 !important;
-  background-color: #7c3aed !important;
+  background-color: var(--color-primary) !important;
   padding: 8px 0 !important;
   border-radius: 0 10px 0 0 !important;
 }
@@ -121,7 +121,7 @@
   background: #1e1e1e;
 }
 .react-datepicker__time-list::-webkit-scrollbar-thumb {
-  background: rgba(124, 58, 237, 0.6);
+  background: var(--color-primary-shadow);
   border-radius: 4px;
 }
 
@@ -135,11 +135,11 @@
   transition: background 0.15s !important;
 }
 .react-datepicker__time-list-item:hover {
-  background-color: rgba(124, 58, 237, 0.4) !important;
+  background-color: rgba(69, 70, 121, 0.4) !important;
   color: #ffffff !important;
 }
 .react-datepicker__time-list-item--selected {
-  background-color: #7c3aed !important;
+  background-color: var(--color-primary) !important;
   color: #ffffff !important;
   font-weight: 700 !important;
 }
@@ -157,4 +157,15 @@
 .react-datepicker__input-container {
   width: 100%;
   display: block;
+}
+/* ── Input DatePicker — galben ca celelalte inputuri ── */
+.react-datepicker__input-container input {
+  background: var(--color-accent) !important;
+  color: #1a1a1a !important;
+  border: 1px solid rgba(0,0,0,0.2) !important;
+}
+.react-datepicker__input-container input:focus {
+  background: #ffd740 !important;
+  border-color: rgba(0,0,0,0.4) !important;
+  box-shadow: none !important;
 }

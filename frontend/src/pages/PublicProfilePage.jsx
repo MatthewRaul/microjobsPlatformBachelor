@@ -26,23 +26,16 @@ export default function PublicProfilePage() {
           try {
             const ratingResponse = await getPublicUserRating(profileData.id);
             setRatingData(ratingResponse || null);
-          } catch {
-            setRatingData(null);
-          }
+          } catch { setRatingData(null); }
         }
-      } catch (err) {
-        console.log("EROARE PUBLIC PROFILE", err);
+      } catch {
         setError("Nu am putut incarca profilul utilizatorului.");
       } finally {
         setLoading(false);
       }
     };
-
     if (id) fetchProfile();
-    else {
-      setLoading(false);
-      setError("Utilizator invalid.");
-    }
+    else { setLoading(false); setError("Utilizator invalid."); }
   }, [id]);
 
   const handleRatingClick = () => {
@@ -59,9 +52,7 @@ export default function PublicProfilePage() {
     try {
       const data = await getUserCv(profile.id);
       const byteCharacters = atob(data.cvBase64);
-      const byteArray = new Uint8Array(
-        Array.from({ length: byteCharacters.length }, (_, i) => byteCharacters.charCodeAt(i))
-      );
+      const byteArray = new Uint8Array(Array.from({ length: byteCharacters.length }, (_, i) => byteCharacters.charCodeAt(i)));
       const blob = new Blob([byteArray], { type: "application/pdf" });
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank", "noopener,noreferrer");
@@ -73,9 +64,9 @@ export default function PublicProfilePage() {
     }
   };
 
-  if (loading) return <div style={{ padding: "20px" }}>Se incarca profilul...</div>;
-  if (error) return <div style={{ padding: "20px", color: "#dc2626" }}>{error}</div>;
-  if (!profile) return <div style={{ padding: "20px" }}>Profilul nu exista.</div>;
+  if (loading) return <div className="page"><p>Se incarca profilul...</p></div>;
+  if (error)   return <div className="page"><p className="error-message">{error}</p></div>;
+  if (!profile) return <div className="page"><p>Profilul nu exista.</p></div>;
 
   const fullName = `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || "Utilizator";
   const initials = `${profile.firstName?.[0] || ""}${profile.lastName?.[0] || ""}`.toUpperCase() || "?";
@@ -86,62 +77,32 @@ export default function PublicProfilePage() {
   return (
     <section className="page" style={{ maxWidth: "640px" }}>
 
-      {/* Buton inapoi */}
-      <button
-        onClick={() => navigate(-1)}
-        style={{
-          background: "none", border: "none", color: "#555",
-          cursor: "pointer", fontSize: "14px", padding: "0 0 16px 0",
-          display: "flex", alignItems: "center", gap: "6px",
-          fontFamily: "inherit",
-        }}
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <polyline points="15 18 9 12 15 6"/>
-        </svg>
-        Inapoi
-      </button>
-
-      {/* ===== CARD 1 - ALB - Info profil ===== */}
-      <div style={{
-        background: "#ffffff", borderRadius: "12px", padding: "24px",
-        marginBottom: "16px", boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
-      }}>
+      {/* CARD 1 — ALB — Info profil */}
+      <div className="profile-card">
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "20px" }}>
           {profile.profilePictureUrl ? (
-            <img
-              src={profile.profilePictureUrl}
-              alt="Avatar"
+            <img src={profile.profilePictureUrl} alt="Avatar"
               style={{ width: "72px", height: "72px", borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
-              onError={(e) => { e.target.style.display = "none"; }}
-            />
+              onError={(e) => { e.target.style.display = "none"; }} />
           ) : (
-            <div style={{
-              width: "72px", height: "72px", borderRadius: "50%",
-              background: "#7c3aed", display: "flex", alignItems: "center",
-              justifyContent: "center", color: "#fff", fontSize: "24px",
-              fontWeight: "700", flexShrink: 0,
-            }}>
-              {initials}
-            </div>
+            <div className="avatar-initials">{initials}</div>
           )}
           <div>
-            <h1 style={{ margin: 0, marginBottom: "4px", fontSize: "22px", fontWeight: "800", color: "#111" }}>
+            <h1 style={{ margin: 0, marginBottom: "4px", fontSize: "22px", fontWeight: "800", color: "var(--color-text-dark)" }}>
               {fullName}
             </h1>
-            {profile.age && (
-              <p style={{ margin: 0, fontSize: "14px", color: "#888" }}>{profile.age} ani</p>
-            )}
+            {profile.age && <p style={{ margin: 0, fontSize: "14px", color: "var(--color-text-muted)" }}>{profile.age} ani</p>}
           </div>
         </div>
 
         <div style={{ marginBottom: "16px" }}>
-          <p style={{ fontSize: "12px", fontWeight: "600", color: "#aaa", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "4px" }}>
-            Despre
-          </p>
+          <p className="section-label--dark" style={{ marginBottom: "4px" }}>Despre</p>
           <p style={{
-            fontSize: "15px", color: profile.bio?.trim() ? "#333" : "#bbb",
-            lineHeight: "1.6", fontStyle: profile.bio?.trim() ? "normal" : "italic", margin: 0,
+            fontSize: "15px",
+            color: profile.bio?.trim() ? "var(--color-text-medium)" : "#bbb",
+            lineHeight: "1.6",
+            fontStyle: profile.bio?.trim() ? "normal" : "italic",
+            margin: 0,
           }}>
             {profile.bio?.trim() ? profile.bio : "Nu exista biografie."}
           </p>
@@ -149,72 +110,46 @@ export default function PublicProfilePage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {profile.email && (
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" style={{ flexShrink: 0 }}>
+            <div className="contact-row">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" strokeWidth="2" style={{ flexShrink: 0 }}>
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                 <polyline points="22,6 12,13 2,6"/>
               </svg>
-              <span style={{ fontSize: "14px", color: "#444" }}>{profile.email}</span>
+              <span>{profile.email}</span>
             </div>
           )}
           {profile.phoneNumber && (
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="2" style={{ flexShrink: 0 }}>
+            <div className="contact-row">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-muted)" strokeWidth="2" style={{ flexShrink: 0 }}>
                 <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.78a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
               </svg>
-              <span style={{ fontSize: "14px", color: "#444" }}>{profile.phoneNumber}</span>
+              <span>{profile.phoneNumber}</span>
             </div>
           )}
         </div>
       </div>
 
-      {/* ===== CARD 2 - MOV - Skills ===== */}
+      {/* CARD 2 — MOV — Skills */}
       {profile.skills && profile.skills.length > 0 && (
-        <div style={{
-          background: "#7c3aed", borderRadius: "12px", padding: "20px 24px",
-          marginBottom: "16px",
-          boxShadow: "0 0 24px rgba(167,80,255,0.4), 0 8px 24px rgba(124,58,237,0.3)",
-        }}>
-          <p style={{ fontSize: "12px", fontWeight: "600", color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 12px" }}>
-            Competente
-          </p>
+        <div className="profile-card--primary">
+          <p className="section-label">Competente</p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
             {profile.skills.map((skill) => (
-              <span key={skill} style={{
-                background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)",
-                color: "#ffffff", padding: "5px 14px", borderRadius: "20px",
-                fontSize: "13px", fontWeight: "500",
-              }}>
-                {skill}
-              </span>
+              <span key={skill} className="skill-tag">{skill}</span>
             ))}
           </div>
         </div>
       )}
 
-      {/* ===== CARD CV - MOV - doar daca are CV uploadat ===== */}
+      {/* CARD CV — MOV */}
       {profile.hasCv && (
         <div
           onClick={handleOpenCv}
-          style={{
-            background: "#7c3aed", borderRadius: "12px", padding: "20px 24px",
-            marginBottom: "16px",
-            boxShadow: "0 0 24px rgba(167,80,255,0.4), 0 8px 24px rgba(124,58,237,0.3)",
-            cursor: cvLoading ? "wait" : "pointer",
-            display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px",
-            transition: "filter 0.15s ease",
-            opacity: cvLoading ? 0.75 : 1,
-          }}
-          onMouseEnter={(e) => { if (!cvLoading) e.currentTarget.style.filter = "brightness(1.12)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.filter = "brightness(1)"; }}
+          className="profile-card--primary profile-card--primary-link"
+          style={{ opacity: cvLoading ? 0.75 : 1, cursor: cvLoading ? "wait" : "pointer" }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-            <div style={{
-              width: "44px", height: "44px",
-              background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)",
-              borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0,
-            }}>
+            <div className="icon-box">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" strokeWidth="2">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14 2 14 8 20 8"/>
@@ -224,15 +159,12 @@ export default function PublicProfilePage() {
               </svg>
             </div>
             <div>
-              <p style={{ margin: "0 0 3px", fontSize: "12px", fontWeight: "600", color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                Curriculum Vitae
-              </p>
+              <p className="section-label" style={{ marginBottom: "3px" }}>Curriculum Vitae</p>
               <p style={{ margin: 0, fontSize: "14px", color: "#ffffff", fontWeight: "600" }}>
                 {cvLoading ? "Se incarca..." : "CV disponibil — apasa pentru a vizualiza"}
               </p>
             </div>
           </div>
-
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" strokeWidth="2" style={{ flexShrink: 0 }}>
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
             <polyline points="15 3 21 3 21 9"/>
@@ -241,35 +173,27 @@ export default function PublicProfilePage() {
         </div>
       )}
 
-      {/* ===== CARD 3 - VERDE - Reviews ===== */}
-      <div
-        onClick={handleRatingClick}
-        style={{
-          background: "#40826D", borderRadius: "12px", padding: "20px 24px",
-          boxShadow: "0 4px 16px rgba(64,130,109,0.35)",
-          cursor: profile.id ? "pointer" : "default",
-        }}
-      >
-        <p style={{ fontSize: "12px", fontWeight: "600", color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.5px", margin: "0 0 12px" }}>
-          Recenzii
-        </p>
+      {/* CARD 3 — VERDE — Reviews */}
+      <div className="profile-card--accent" onClick={handleRatingClick}
+        style={{ cursor: profile.id ? "pointer" : "default" }}>
+        <p className="section-label">Recenzii</p>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
           <div style={{ display: "flex", gap: "2px" }}>
             {Array.from({ length: 5 }, (_, i) => (
-              <span key={i} style={{ color: i < Math.round(avgRating) ? "#facc15" : "rgba(255,255,255,0.25)", fontSize: "20px" }}>★</span>
+              <span key={i} className={i < Math.round(avgRating) ? "star--active" : "star--inactive"}>★</span>
             ))}
           </div>
-          <span style={{ fontSize: "18px", fontWeight: "700", color: "#ffffff" }}>
+          <span style={{ fontSize: "18px", fontWeight: "700", color: "var(--color-text-light)" }}>
             {hasRating ? avgRating.toFixed(1) : "—"}
           </span>
-          <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.6)" }}>/ 5</span>
+          <span style={{ fontSize: "13px", color: "var(--color-text-light-60)" }}>/ 5</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.7)" }}>
+          <span style={{ fontSize: "13px", color: "var(--color-text-light-70)" }}>
             {reviewCount} {reviewCount === 1 ? "recenzie" : "recenzii"}
           </span>
           {profile.id && (
-            <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.9)", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>
+            <span style={{ fontSize: "13px", color: "var(--color-text-light)", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>
               Vezi toate recenziile
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="9 18 15 12 9 6"/>

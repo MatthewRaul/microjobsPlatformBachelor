@@ -1,0 +1,451 @@
+/* src/styles/components.css */
+
+/* ── Welcome banner ── */
+.welcome-banner {
+  background: #1d1d1d;
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  margin-top: 20px;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.welcome-banner__text {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-accent);
+  letter-spacing: 0.5px;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Card accent galben (owner job) ── */
+.card--accent {
+  background: var(--color-accent) !important;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.card--accent:hover {
+  transform: translateY(-2px);
+  box-shadow: none !important;
+}
+.card--accent .job-meta__item { color: #1a1a1a !important; }
+.card--accent .job-meta__icon { opacity: 0.7; }
+.card--accent p { color: #1a1a1a !important; }
+.card--accent span { color: #1a1a1a !important; }
+.card--accent strong { color: #1a1a1a !important; }
+
+/* ── Card dark #3d3d3d (participanți acceptați) ── */
+.card--dark {
+  background: #3d3d3d !important;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.card--dark:hover {
+  transform: translateY(-2px);
+  box-shadow: none !important;
+}
+.card--dark .job-meta__item { color: rgba(255,255,255,0.88) !important; }
+.card--dark p { color: rgba(255,255,255,0.7) !important; }
+.card--dark span { color: rgba(255,255,255,0.88) !important; }
+.card--dark strong { color: #ffffff !important; }
+
+/* ── Card verde clickabil (owner card, participanți) ── */
+.card--green {
+  background: var(--color-green-dark) !important;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.card--green:hover {
+  transform: translateY(-2px);
+  box-shadow: none !important;
+}
+
+/* ── Card alb cu bordură primary (participanți acceptați) ── */
+.card--white {
+  background: #ffffff !important;
+  border: 1px solid var(--color-primary-border) !important;
+  box-shadow: 0 4px 16px var(--color-primary-shadow-light) !important;
+  color: var(--color-primary) !important;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.card--white:hover {
+  transform: translateY(-2px);
+  box-shadow: none !important;
+}
+.card--white .job-meta__item { color: var(--color-primary) !important; }
+.card--white .hint-text { color: var(--color-primary); }
+
+/* ── Card clickabil generic ── */
+.card--clickable {
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.card--clickable:hover {
+  transform: translateY(-2px);
+}
+
+/* ── Empty state box verde ── */
+.empty-state-box {
+  background: #1d1d1d;
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  margin-top: 20px;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.empty-state-box__text {
+  color: var(--color-accent);
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--color-modal-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.modal-dialog {
+  background-color: #ffffff;
+  padding: 28px 24px;
+  border-radius: var(--radius-lg);
+  min-width: 300px;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+.modal-dialog__title {
+  margin-bottom: 10px;
+  color: var(--color-text-dark);
+  font-size: 18px;
+  font-weight: 700;
+}
+.modal-dialog__body {
+  color: var(--color-text-medium);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+.modal-dialog__body strong { color: var(--color-primary); }
+.modal-dialog__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+.modal-dialog__btn-confirm { flex: 1; }
+.modal-dialog__btn-cancel {
+  flex: 1;
+  background: var(--color-neutral-light) !important;
+  color: var(--color-text-dark) !important;
+  box-shadow: none !important;
+  letter-spacing: 1.5px !important;
+}
+.modal-dialog__btn-danger {
+  flex: 1;
+  background: var(--color-error) !important;
+  color: var(--color-text-light) !important;
+}
+
+/* ── Status badge ── */
+.status-badge {
+  display: inline-block;
+  padding: 3px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.status-badge--open {
+  background: var(--color-status-open-bg);
+  color: var(--color-status-open-text);
+  border: 1px solid var(--color-status-open-border);
+}
+.status-badge--filled {
+  background: var(--color-status-filled-bg);
+  color: var(--color-status-filled-text);
+  border: 1px solid var(--color-status-filled-border);
+}
+.status-badge--in_progress {
+  background: var(--color-status-inprogress-bg);
+  color: var(--color-status-inprogress-text);
+  border: 1px solid var(--color-status-inprogress-border);
+}
+.status-badge--completed {
+  background: var(--color-status-completed-bg);
+  color: var(--color-status-completed-text);
+  border: 1px solid var(--color-status-completed-border);
+}
+.status-badge--canceled {
+  background: var(--color-status-canceled-bg);
+  color: var(--color-status-canceled-text);
+  border: 1px solid var(--color-status-canceled-border);
+}
+
+/* ── PublicProfilePage cards ── */
+.profile-card {
+  background: #ffffff;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+.profile-card--primary {
+  background: var(--color-primary);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  box-shadow: none;
+}
+.profile-card--primary-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+.profile-card--primary-link:hover { filter: brightness(1.12); }
+.profile-card--accent {
+  background: var(--color-accent);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: none;
+  cursor: pointer;
+}
+.profile-card--accent .section-label { color: rgba(0,0,0,0.5); }
+.profile-card--accent span,
+.profile-card--accent p { color: #1a1a1a !important; }
+.profile-card--accent .star--inactive { color: rgba(0,0,0,0.2) !important; }
+
+.profile-card--green {
+  background: var(--color-green);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  box-shadow: 0 4px 16px var(--color-green-shadow);
+  cursor: pointer;
+}
+
+/* ── Avatar inițiale ── */
+.avatar-initials {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-light);
+  font-size: 24px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* ── Section label (DESPRE, COMPETENȚE etc.) ── */
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-light-55);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 12px;
+}
+.section-label--dark { color: #aaaaaa; }
+
+/* ── Skill tag ── */
+.skill-tag {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--color-text-light);
+  padding: 5px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ── Icon box pătrat (CV card) ── */
+.icon-box {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── Stars ── */
+.star--active   { color: var(--color-star-active); font-size: 20px; }
+.star--inactive { color: var(--color-text-light-25); font-size: 20px; }
+
+/* ── Mesaje pe fundal colorat ── */
+.msg--success-on-dark { color: var(--color-success-light); font-weight: 600; margin-top: 12px; }
+.msg--error-on-dark   { color: var(--color-error-light);   font-weight: 600; margin-top: 12px; }
+
+/* ── Hint text (apasă pentru profil) ── */
+.hint-text {
+  margin-top: 10px;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+/* ── Contact row (email, telefon în profile card) ── */
+.contact-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--color-text-medium);
+}
+
+/* ── Status badge — stări suplimentare (aplicări, roluri) ── */
+.status-badge--pending  { background: rgba(251,191,36,0.2);  color: #fde68a; border: 1px solid rgba(251,191,36,0.4); }
+.status-badge--accepted { background: rgba(52,211,153,0.2);  color: #a7f3d0; border: 1px solid rgba(52,211,153,0.4); }
+.status-badge--rejected { background: rgba(248,113,113,0.2); color: #fecaca; border: 1px solid rgba(248,113,113,0.4); }
+.status-badge--admin    { background: rgba(96,165,250,0.2);  color: #bfdbfe; border: 1px solid rgba(96,165,250,0.4); }
+.status-badge--user     { background: rgba(255,255,255,0.15); color: #ffffff; border: 1px solid rgba(255,255,255,0.4); }
+.status-badge--unknown  { background: rgba(229,231,235,0.3); color: #ffffff; border: 1px solid rgba(229,231,235,0.4); }
+
+/* ── Buton înapoi — pe fundal deschis (PublicProfilePage, PublicUserReviewsPage) ── */
+.btn-back {
+  background: none;
+  border: none;
+  color: #555555;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+.btn-back:hover { color: var(--color-text-dark); }
+
+/* ── Buton înapoi — pe fundal colorat (ReviewPage, form-box) ── */
+.btn-back-light {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+.btn-back-light:hover { color: var(--color-text-light); }
+
+/* ── Input error border ── */
+.input--error { border-color: var(--color-error-light) !important; }
+/* ── Navbar ── */
+.navbar {
+  background-color: #1d1d1d;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  flex-wrap: wrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+}
+.navbar__logo {
+  color: var(--color-text-light);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 18px;
+  margin-right: 16px;
+  letter-spacing: 0.5px;
+}
+.navbar__spacer { flex: 1; }
+.navbar__btn {
+  display: inline-block;
+  padding: 7px 14px;
+  background-color: transparent;
+  color: var(--color-text-light);
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 5px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  font-family: inherit;
+}
+.navbar__btn:hover {
+  background-color: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #1a1a1a;
+}
+
+/* ── AcceptedWorkersSection ── */
+.worker-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: #ffffff;
+}
+.worker-card__info { display: flex; flex-direction: column; gap: 4px; }
+.worker-card__name { font-weight: 700; font-size: 16px; color: var(--color-text-dark); }
+.worker-card__email { font-size: 14px; color: var(--color-text-muted); }
+.worker-card__rating { font-size: 14px; color: var(--color-text-medium); }
+.worker-card__review-count { margin-left: 4px; color: var(--color-text-muted); }
+.worker-card__actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ── LocationAutocomplete ── */
+.location-autocomplete { position: relative; }
+.location-autocomplete__loading {
+  font-size: 12px;
+  color: var(--color-text-light-60);
+  margin: 4px 0 0;
+}
+.location-autocomplete__dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--color-bg-input-focus);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  z-index: 1000;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-top: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+.location-autocomplete__item {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--color-text-light);
+  font-size: 14px;
+  transition: background 0.15s;
+}
+.location-autocomplete__item:hover { background: rgba(255, 255, 255, 0.1); }
+.location-autocomplete__item:last-child { border-bottom: none; }
+.location-autocomplete__county {
+  color: var(--color-text-light-55);
+  margin-left: 6px;
+}

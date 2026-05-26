@@ -143,15 +143,8 @@ function HomePage() {
     <section className="page">
 
       {isAuthenticated && (
-        <div style={{
-          background: "#40826D",
-          borderRadius: "12px",
-          padding: "28px 32px",
-          marginTop: "20px",
-          textAlign: "center",
-          boxShadow: "0 4px 16px rgba(64,130,109,0.35)",
-        }}>
-          <p style={{ fontSize: "26px", fontWeight: "800", color: "#ffffff", letterSpacing: "0.5px", margin: 0 }}>
+        <div className="welcome-banner">
+          <p className="welcome-banner__text">
             Bine ai venit, {user.firstName}!
           </p>
         </div>
@@ -310,11 +303,11 @@ function HomePage() {
             maxWidth: "420px",
             boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
           }}>
-            <h3 style={{ marginBottom: 10, color: "#111", fontSize: "18px", fontWeight: "700" }}>
+            <h3 style={{ marginBottom: 10, color: "var(--color-text-dark)", fontSize: "18px", fontWeight: "700" }}>
               Confirmare aplicare
             </h3>
-            <p style={{ color: "#444", marginBottom: 24, lineHeight: 1.5 }}>
-              Sigur vrei să aplici la jobul <strong style={{ color: "#7c3aed" }}>{selectedJob.title}</strong>?
+            <p style={{ color: "var(--color-text-medium)", marginBottom: 24, lineHeight: 1.5 }}>
+              Sigur vrei să aplici la jobul <strong style={{ color: "var(--color-primary)" }}>{selectedJob.title}</strong>?
             </p>
             <div style={{ display: "flex", gap: 10 }}>
               <button
@@ -329,7 +322,7 @@ function HomePage() {
                 className="primary-button"
                 onClick={closeApplyModal}
                 disabled={isApplying}
-                style={{ flex: 1, background: "#e5e7eb", color: "#111" }}
+                style={{ flex: 1, background: "var(--color-neutral-light)", color: "var(--color-text-dark)" }}
               >
                 Renunță
               </button>
@@ -354,10 +347,10 @@ function HomePage() {
             maxWidth: "420px",
             boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
           }}>
-            <h3 style={{ marginBottom: 10, color: "#111", fontSize: "18px", fontWeight: "700" }}>
+            <h3 style={{ marginBottom: 10, color: "var(--color-text-dark)", fontSize: "18px", fontWeight: "700" }}>
               Șterge job
             </h3>
-            <p style={{ color: "#444", marginBottom: 24, lineHeight: 1.5 }}>
+            <p style={{ color: "var(--color-text-medium)", marginBottom: 24, lineHeight: 1.5 }}>
               Ești sigur că vrei să ștergi acest job? Acțiunea este ireversibilă.
             </p>
             <div style={{ display: "flex", gap: 10 }}>
@@ -365,7 +358,7 @@ function HomePage() {
                 className="primary-button"
                 onClick={handleDeleteJob}
                 disabled={isDeleting}
-                style={{ flex: 1, background: "#dc2626", color: "#fff" }}
+                style={{ flex: 1, background: "var(--color-error)", color: "var(--color-text-light)" }}
               >
                 {isDeleting ? "Se șterge..." : "Șterge"}
               </button>
@@ -373,7 +366,7 @@ function HomePage() {
                 className="primary-button"
                 onClick={() => setDeleteModalJobId(null)}
                 disabled={isDeleting}
-                style={{ flex: 1, background: "#e5e7eb", color: "#111" }}
+                style={{ flex: 1, background: "var(--color-neutral-light)", color: "var(--color-text-dark)" }}
               >
                 Anulează
               </button>

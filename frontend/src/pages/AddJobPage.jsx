@@ -140,8 +140,15 @@ function AddJobPage() {
           <DatePickerInput
             label="Data și ora de start"
             selected={startDate}
-            onChange={(date) => setStartDate(date)}
-          />
+  onChange={(date) => setStartDate(date)}
+  minDate={new Date()}
+  filterTime={(time) => {
+    const now = new Date();
+    if (!startDate) return time > now;
+    const isToday = startDate.toDateString() === now.toDateString();
+    return isToday ? time > now : true;
+  }}
+/>
 
           <DatePickerInput
             label="Data și ora de finalizare"

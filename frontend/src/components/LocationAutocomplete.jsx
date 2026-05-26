@@ -13,23 +13,19 @@ function LocationAutocomplete({ value, onChange, onSelect, label = "Localitate" 
           setSuggestions([]);
           return;
         }
-
         try {
           setLoading(true);
           const results = await searchLocations(value.trim());
           setSuggestions(results);
           setShowSuggestions(true);
-        } catch (error) {
-          console.error("Eroare la căutarea localităților:", error);
+        } catch {
           setSuggestions([]);
         } finally {
           setLoading(false);
         }
       };
-
       fetchSuggestions();
     }, 400);
-
     return () => clearTimeout(delayDebounce);
   }, [value]);
 
@@ -40,61 +36,32 @@ function LocationAutocomplete({ value, onChange, onSelect, label = "Localitate" 
   };
 
   return (
-    <div className="user-box" style={{ position: "relative" }}>
+    <div className="user-box location-autocomplete">
       <input
         type="text"
         placeholder=" "
         value={value}
-        onChange={(e) => {
-          onChange(e.target.value);
-          setShowSuggestions(true);
-        }}
+        onChange={(e) => { onChange(e.target.value); setShowSuggestions(true); }}
         autoComplete="off"
       />
       <label>{label}</label>
 
       {loading && (
-        <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.6)", margin: "4px 0 0 0" }}>
-          Se caută localități...
-        </p>
+        <p className="location-autocomplete__loading">Se caută localități...</p>
       )}
 
       {showSuggestions && suggestions.length > 0 && (
-        <div style={{
-          position: "absolute",
-          top: "100%",
-          left: 0,
-          right: 0,
-          background: "#2d2d2d",
-          border: "1px solid rgba(255,255,255,0.3)",
-          borderRadius: "6px",
-          zIndex: 1000,
-          maxHeight: "220px",
-          overflowY: "auto",
-          marginTop: "4px",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
-        }}>
+        <div className="location-autocomplete__dropdown">
           {suggestions.map((item, index) => (
             <div
               key={`${item.location}-${item.county}-${index}`}
+              className="location-autocomplete__item"
               onClick={() => handleSelect(item)}
-              style={{
-                padding: "10px 14px",
-                cursor: "pointer",
-                borderBottom: "1px solid rgba(255,255,255,0.08)",
-                color: "#ffffff",
-                fontSize: "14px",
-                transition: "background 0.15s",
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
-              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
             >
               <strong>{item.location}</strong>
-              {item.county ? (
-                <span style={{ color: "rgba(255,255,255,0.55)", marginLeft: "6px" }}>
-                  {item.county}
-                </span>
-              ) : ""}
+              {item.county && (
+                <span className="location-autocomplete__county">{item.county}</span>
+              )}
             </div>
           ))}
         </div>

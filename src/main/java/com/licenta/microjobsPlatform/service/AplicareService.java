@@ -99,7 +99,11 @@ public class AplicareService {
         String applicantUserId = user != null ? user.getId() : null;
         Double applicantAverageRating = user != null ? user.getAverageRating() : 0.0;
         Integer applicantReviewCount = user != null ? user.getReviewCount() : 0;
-
+        String jobOwnerEmail= null;
+        Job job=jobRepository.findById(aplicare.getJobId()).orElse(null);
+        if(job!=null){
+            jobOwnerEmail=job.getPostedBy();
+        }
         return new AplicareResponse(
                 aplicare.getId(),
                 aplicare.getJobId(),
@@ -111,7 +115,8 @@ public class AplicareService {
                 applicantReviewCount,
                 aplicare.getStatus(),
                 aplicare.getAppliedAt(),
-                aplicare.getJobTitle()
+                aplicare.getJobTitle(),
+                jobOwnerEmail
         );
     }
 
@@ -345,9 +350,12 @@ public class AplicareService {
         aplicareRepository.delete(aplicare);
     }
 
-    public List<Aplicare> getMyAplicari() {
+    public List<AplicareResponse> getMyAplicari() {
         String email = getCurrentUserEmail();
-        return aplicareRepository.findByApplicantEmail(email);
+        return aplicareRepository.findByApplicantEmail(email)
+                .stream()
+                .map(this::mapToAplicareResponse)
+                .collect(Collectors.toList());
     }
 
     // =========================

@@ -81,7 +81,7 @@ const IconMail = () => (
 
 // ── Status badge ────────────────────────────────────────────
 const STATUS_LABEL = {
-  OPEN: "Deschis", FILLED: "Complet", IN_PROGRESS: "În desfășurare",
+  OPEN: "Deschis", FILLED: "Locuri ocupate", IN_PROGRESS: "În desfășurare",
   COMPLETED: "Finalizat", CANCELED: "Anulat",
 };
 
@@ -90,7 +90,7 @@ function StatusBadge({ status }) {
     OPEN:        { background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.4)" },
     FILLED:      { background: "rgba(251,191,36,0.2)",  color: "#fde68a", border: "1px solid rgba(251,191,36,0.4)" },
     IN_PROGRESS: { background: "rgba(96,165,250,0.2)",  color: "#bfdbfe", border: "1px solid rgba(96,165,250,0.4)" },
-    COMPLETED:   { background: "rgba(52,211,153,0.2)",  color: "#a7f3d0", border: "1px solid rgba(52,211,153,0.4)" },
+    COMPLETED:   { background: "rgba(52,211,153,0.2)",  color: "var(--color-success-light)", border: "1px solid rgba(52,211,153,0.4)" },
     CANCELED:    { background: "rgba(248,113,113,0.2)", color: "#fecaca", border: "1px solid rgba(248,113,113,0.4)" },
   };
   const s = colors[status] || colors.OPEN;
@@ -124,19 +124,21 @@ function ConfirmModal({ open, title, description, confirmText, onConfirm, onCanc
         borderRadius: "12px", minWidth: "300px", maxWidth: "420px",
         boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
       }}>
-        <h3 style={{ marginBottom: 10, color: "#111" }}>{title}</h3>
-        <p style={{ color: "#444", marginBottom: 20, lineHeight: 1.5 }}>{description}</p>
-        <div style={{ display: "flex", gap: 10 }}>
+        <h3 style={{ marginBottom: 10, color: "var(--color-text-dark)" }}>{title}</h3>
+        <p style={{ color: "var(--color-text-medium)", marginBottom: 20, lineHeight: 1.5 }}>{description}</p>
+        <div className="modal-dialog__actions">
           <button
-            className="primary-button"
+            className={`primary-button modal-dialog__btn-confirm${danger ? " modal-dialog__btn-danger" : ""}`}
             onClick={onConfirm}
             disabled={disabled}
-            style={danger ? { background: "#dc2626", color: "#fff" } : {}}
           >
             {confirmText}
           </button>
-          <button className="primary-button" onClick={onCancel} disabled={disabled}
-            style={{ background: "#e5e7eb", color: "#111" }}>
+          <button
+            className="primary-button modal-dialog__btn-cancel"
+            onClick={onCancel}
+            disabled={disabled}
+          >
             Renunță
           </button>
         </div>
@@ -148,7 +150,7 @@ function ConfirmModal({ open, title, description, confirmText, onConfirm, onCanc
 // ── Owner card ──────────────────────────────────────────────
 function OwnerCard({ ownerFirstName, ownerRating, ownerPublicProfilePath }) {
   const inner = (
-    <div className="card" style={{ marginTop: 20, background: "#047857" }}>
+    <div className="card card--accent" style={{ marginTop: 20 }}>
       <div className="job-meta">
         <div className="job-meta__item">
           <IconUser />
@@ -200,6 +202,10 @@ export default function JobDetailsPage() {
   const [isApplying, setIsApplying] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [showAcceptModal, setShowAcceptModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [pendingAppId, setPendingAppId] = useState(null);
+  const [isActioning, setIsActioning] = useState(false);
 
   const fetchJobDetails = async () => {
     try {
@@ -299,13 +305,33 @@ export default function JobDetailsPage() {
     finally { setIsWithdrawing(false); }
   };
 
-  const handleAccept = async (appId) => {
-    try { await acceptApplication(appId); await fetchJobDetails(); }
-    catch { setMessage("Nu s-a putut accepta aplicarea."); }
+  const handleAccept = (appId) => {
+    setPendingAppId(appId);
+    setShowAcceptModal(true);
   };
-  const handleReject = async (appId) => {
-    try { await rejectApplication(appId); await fetchJobDetails(); }
-    catch { setMessage("Nu s-a putut respinge aplicarea."); }
+  const handleReject = (appId) => {
+    setPendingAppId(appId);
+    setShowRejectModal(true);
+  };
+  const confirmAccept = async () => {
+    try {
+      setIsActioning(true);
+      await acceptApplication(pendingAppId);
+      setShowAcceptModal(false);
+      setPendingAppId(null);
+      await fetchJobDetails();
+    } catch { setMessage("Nu s-a putut accepta aplicarea."); }
+    finally { setIsActioning(false); }
+  };
+  const confirmReject = async () => {
+    try {
+      setIsActioning(true);
+      await rejectApplication(pendingAppId);
+      setShowRejectModal(false);
+      setPendingAppId(null);
+      await fetchJobDetails();
+    } catch { setMessage("Nu s-a putut respinge aplicarea."); }
+    finally { setIsActioning(false); }
   };
   const handleCompleteJob = async () => {
     try { await completeJob(id); await fetchJobDetails(); }
@@ -410,7 +436,7 @@ export default function JobDetailsPage() {
         )}
 
         {message && (
-          <p style={{ marginTop: 12, color: message.includes("succes") ? "#a7f3d0" : "#fca5a5", fontWeight: 600 }}>
+          <p className={message.includes("succes") ? "msg--success-on-dark" : "msg--error-on-dark"}>
             {message}
           </p>
         )}
@@ -422,11 +448,8 @@ export default function JobDetailsPage() {
         const canReviewOwner = job.status === "COMPLETED" && isAcceptedParticipant && !!ownerUserId;
         return (
           <div
-            className="card"
-            style={{ background: "#047857", cursor: ownerPublicProfilePath ? "pointer" : "default", transition: "transform 0.15s, box-shadow 0.15s" }}
+            className="card card--accent"
             onClick={() => ownerPublicProfilePath && navigate(ownerPublicProfilePath)}
-            onMouseEnter={(e) => { if (ownerPublicProfilePath) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(4,120,87,0.45)"; }}}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}
           >
             <div className="job-meta">
               <div className="job-meta__item"><IconUser /><span style={{ fontWeight: 600 }}>{ownerFirstName}</span></div>
@@ -462,16 +485,13 @@ export default function JobDetailsPage() {
             return (
               <div
                 key={app.id || app._id}
-                className="card"
-                style={{ background: "#ffffff", color: "#7c3aed", cursor: profilePath ? "pointer" : "default", transition: "transform 0.15s, box-shadow 0.15s", boxShadow: "0 4px 16px rgba(124,58,237,0.12)", border: "1px solid rgba(124,58,237,0.15)" }}
+                className="card card--accent"
                 onClick={() => profilePath && navigate(profilePath)}
-                onMouseEnter={(e) => { if (profilePath) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(124,58,237,0.2)"; }}}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 4px 16px rgba(124,58,237,0.12)"; }}
               >
-                <div className="job-meta" style={{ color: "#7c3aed" }}>
-                  <div className="job-meta__item" style={{ color: "#7c3aed" }}><IconUser /><span style={{ fontWeight: 600 }}>{name}</span></div>
-                  {app.applicantEmail && <div className="job-meta__item" style={{ color: "#7c3aed" }}><IconMail /><span>{app.applicantEmail}</span></div>}
-                  <div className="job-meta__item" style={{ color: "#7c3aed" }}>
+                <div className="job-meta">
+                  <div className="job-meta__item"><IconUser /><span style={{ fontWeight: 600 }}>{name}</span></div>
+                  {app.applicantEmail && <div className="job-meta__item"><IconMail /><span>{app.applicantEmail}</span></div>}
+                  <div className="job-meta__item">
                     <IconStar />
                     <span>{app.applicantAverageRating != null ? Number(app.applicantAverageRating).toFixed(1) : "0.0"}</span>
                     <span style={{ opacity: 0.65, fontSize: 13 }}>· {app.applicantReviewCount || 0} review-uri</span>
@@ -484,7 +504,7 @@ export default function JobDetailsPage() {
                     </Link>
                   </div>
                 )}
-                {profilePath && <p style={{ marginTop: 10, fontSize: 13, color: "#7c3aed", opacity: 0.6 }}>› Apasă pentru profil public</p>}
+                {profilePath && <p className="hint-text">› Apasă pentru profil public</p>}
               </div>
             );
           })}
@@ -501,25 +521,25 @@ export default function JobDetailsPage() {
             const name = [app.applicantFirstName, app.applicantLastName].filter(Boolean).join(" ") || app.applicantEmail || "Utilizator";
             const appId = app.id || app._id;
             return (
-              <div key={appId} className="card">
-                <div className="job-meta">
-                  <div className="job-meta__item"><IconUser /><span>{name}</span></div>
-                  {app.applicantEmail && <div className="job-meta__item"><IconMail /><span>{app.applicantEmail}</span></div>}
-                </div>
-                <div className="owner-actions" style={{ marginTop: 14 }}>
-                  {app.applicantEmail && (
-                    <Link to={`/users/public/${encodeURIComponent(app.applicantEmail)}`} className="icon-btn icon-btn--info">
-                      <IconUser /> Profil public
-                    </Link>
-                  )}
-                  <button className="icon-btn icon-btn--edit" onClick={() => handleAccept(appId)}>
-                    <IconCheck /> Acceptă
-                  </button>
-                  <button className="icon-btn icon-btn--delete" onClick={() => handleReject(appId)}>
-                    <IconCancel /> Respinge
-                  </button>
-                </div>
-              </div>
+              <div key={appId} className="card card--white">
+  <div className="job-meta">
+    <div className="job-meta__item"><IconUser /><span>{name}</span></div>
+    {app.applicantEmail && <div className="job-meta__item"><IconMail /><span>{app.applicantEmail}</span></div>}
+  </div>
+  <div className="owner-actions" style={{ marginTop: 14 }}>
+    {app.applicantEmail && (
+      <Link to={`/users/public/${encodeURIComponent(app.applicantEmail)}`} className="icon-btn icon-btn--info">
+        <IconUser /> Vezi profil
+      </Link>
+    )}
+    <button className="icon-btn icon-btn--edit" onClick={() => handleAccept(appId)}>
+      <IconCheck /> Acceptă
+    </button>
+    <button className="icon-btn icon-btn--delete" onClick={() => handleReject(appId)}>
+      <IconCancel /> Respinge
+    </button>
+  </div>
+</div>
             );
           })}
         </>
@@ -543,6 +563,25 @@ export default function JobDetailsPage() {
         onConfirm={confirmWithdraw}
         onCancel={() => setShowWithdrawModal(false)}
         disabled={isWithdrawing}
+        danger
+      />
+      <ConfirmModal
+        open={showAcceptModal}
+        title="Acceptă aplicare"
+        description="Sigur vrei să accepți această aplicare?"
+        confirmText={isActioning ? "Se procesează..." : "Da, acceptă"}
+        onConfirm={confirmAccept}
+        onCancel={() => { setShowAcceptModal(false); setPendingAppId(null); }}
+        disabled={isActioning}
+      />
+      <ConfirmModal
+        open={showRejectModal}
+        title="Respinge aplicare"
+        description="Sigur vrei să respingi această aplicare?"
+        confirmText={isActioning ? "Se procesează..." : "Da, respinge"}
+        onConfirm={confirmReject}
+        onCancel={() => { setShowRejectModal(false); setPendingAppId(null); }}
+        disabled={isActioning}
         danger
       />
     </div>

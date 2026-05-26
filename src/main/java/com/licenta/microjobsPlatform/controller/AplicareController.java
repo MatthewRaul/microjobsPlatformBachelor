@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.licenta.microjobsPlatform.dto.AplicareResponse;
 import com.licenta.microjobsPlatform.model.Aplicare;
 import com.licenta.microjobsPlatform.service.AplicareService;
 
@@ -36,7 +37,7 @@ public class AplicareController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<List<Aplicare>> getMyAplicari() {
+    public ResponseEntity<List<AplicareResponse>> getMyAplicari() {
         return ResponseEntity.ok(aplicareService.getMyAplicari());
     }
 

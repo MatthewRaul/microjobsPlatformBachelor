@@ -1,0 +1,60 @@
+/* src/styles/variables.css */
+:root {
+  --color-primary: #3d3d3d;
+  --color-primary-shadow: rgba(69, 70, 121, 0.4);
+  --color-primary-shadow-strong: rgba(69, 70, 121, 0.6);
+  --color-primary-shadow-light: rgba(69, 70, 121, 0.12);
+  --color-primary-border: rgba(69, 70, 121, 0.15);
+  --color-primary-hover-shadow: rgba(69, 70, 121, 0.22);
+
+  --color-green: #40826D;
+  --color-green-shadow: rgba(64, 130, 109, 0.35);
+  --color-green-dark: #047857;
+  --color-green-dark-shadow: rgba(4, 120, 87, 0.45);
+
+  --color-bg-page: #7b7b7b;
+  --color-bg-input: #1e1e1e;
+  --color-bg-input-focus: #2d2d2d;
+
+  --color-text-dark: #111111;
+  --color-text-medium: #444444;
+  --color-text-muted: #888888;
+  --color-text-light: #ffffff;
+  --color-text-light-70: rgba(255, 255, 255, 0.70);
+  --color-text-light-60: rgba(255, 255, 255, 0.60);
+  --color-text-light-55: rgba(255, 255, 255, 0.55);
+  --color-text-light-25: rgba(255, 255, 255, 0.25);
+
+  --color-neutral-light: #e5e7eb;
+  --color-modal-bg: rgba(0, 0, 0, 0.55);
+
+  --color-status-open-bg: rgba(255, 255, 255, 0.15);
+  --color-status-open-text: #ffffff;
+  --color-status-open-border: rgba(255, 255, 255, 0.4);
+  --color-status-filled-bg: rgba(251, 191, 36, 0.2);
+  --color-status-filled-text: #fde68a;
+  --color-status-filled-border: rgba(251, 191, 36, 0.4);
+  --color-status-inprogress-bg: rgba(96, 165, 250, 0.2);
+  --color-status-inprogress-text: #bfdbfe;
+  --color-status-inprogress-border: rgba(96, 165, 250, 0.4);
+  --color-status-completed-bg: rgba(52, 211, 153, 0.2);
+  --color-status-completed-text: #a7f3d0;
+  --color-status-completed-border: rgba(52, 211, 153, 0.4);
+  --color-status-canceled-bg: rgba(248, 113, 113, 0.2);
+  --color-status-canceled-text: #fecaca;
+  --color-status-canceled-border: rgba(248, 113, 113, 0.4);
+
+  --color-error: #dc2626;
+  --color-error-light: #fca5a5;
+  --color-success: #16a34a;
+  --color-success-light: #a7f3d0;
+
+  --color-star-active: #facc15;
+  --color-accent: #ffc900;
+  --color-accent-shadow: rgba(255, 201, 0, 0.5);
+
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+}
