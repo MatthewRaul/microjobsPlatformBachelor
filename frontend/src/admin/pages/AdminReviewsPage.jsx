@@ -1,25 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AdminLayout from "../components/AdminLayout";
+import ConfirmModal from "../components/ConfirmModal";
 import { getAllReviews, deleteReviewAsAdmin } from "../api/adminReviewsApi";
 
 export default function AdminReviewsPage() {
   const [reviews, setReviews] = useState([]);
-  const [filtered, setFiltered] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Filtre
-  const [searchUser, setSearchUser] = useState("");
-  const [minRating, setMinRating] = useState("");
-  const [maxRating, setMaxRating] = useState("");
+  const [filters, setFilters] = useState({
+    searchUser: "",
+    minRating: "",
+    maxRating: "",
+  });
 
-  useEffect(() => {
-    fetchReviews();
-  }, []);
+  const [reviewToDelete, setReviewToDelete] = useState(null);
 
-  useEffect(() => {
-    applyFilters();
-  }, [reviews, searchUser, minRating, maxRating]);
+  useEffect(() => { fetchReviews(); }, []);
 
   const fetchReviews = async () => {
     try {
@@ -33,198 +30,144 @@ export default function AdminReviewsPage() {
     }
   };
 
-  const applyFilters = () => {
-    let result = [...reviews];
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  }
 
-    // Filtrare dupa numele reviewerului sau al celui evaluat
-    if (searchUser.trim()) {
-      const q = searchUser.trim().toLowerCase();
-      result = result.filter(
-        (r) =>
-          `${r.reviewerFirstName || ""} ${r.reviewerLastName || ""}`.toLowerCase().includes(q) ||
-          `${r.reviewedUserFirstName || ""} ${r.reviewedUserLastName || ""}`.toLowerCase().includes(q)
-      );
-    }
+  function handleResetFilters() {
+    setFilters({ searchUser: "", minRating: "", maxRating: "" });
+  }
 
-    // Filtrare dupa rating minim
-    if (minRating !== "") {
-      result = result.filter((r) => r.rating >= parseInt(minRating));
-    }
-
-    // Filtrare dupa rating maxim
-    if (maxRating !== "") {
-      result = result.filter((r) => r.rating <= parseInt(maxRating));
-    }
-
-    setFiltered(result);
-  };
-
-  const handleDelete = async (reviewId) => {
-    if (!window.confirm("Ești sigur că vrei să ștergi această recenzie?")) return;
+  async function handleDelete() {
+    if (!reviewToDelete) return;
     try {
-      await deleteReviewAsAdmin(reviewId);
-      setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+      await deleteReviewAsAdmin(reviewToDelete.id);
+      setReviews((prev) => prev.filter((r) => r.id !== reviewToDelete.id));
+      setReviewToDelete(null);
     } catch {
       alert("Nu s-a putut șterge recenzia.");
     }
-  };
+  }
 
-  const handleClearFilters = () => {
-    setSearchUser("");
-    setMinRating("");
-    setMaxRating("");
-  };
+  const filteredReviews = useMemo(() => {
+    return reviews.filter((r) => {
+      const matchesUser = !filters.searchUser.trim() || (
+        `${r.reviewerFirstName || ""} ${r.reviewerLastName || ""}`.toLowerCase().includes(filters.searchUser.toLowerCase()) ||
+        `${r.reviewedUserFirstName || ""} ${r.reviewedUserLastName || ""}`.toLowerCase().includes(filters.searchUser.toLowerCase())
+      );
+      const matchesMin = filters.minRating === "" || r.rating >= parseInt(filters.minRating);
+      const matchesMax = filters.maxRating === "" || r.rating <= parseInt(filters.maxRating);
+      return matchesUser && matchesMin && matchesMax;
+    });
+  }, [reviews, filters]);
 
   return (
     <AdminLayout title="Recenzii">
-    <div>
-      <h1 style={{ marginBottom: "20px" }}>Recenzii</h1>
+      <div className="admin-page-header">
+        <h2 className="admin-page-header__title">Lista recenziilor</h2>
+        <p className="admin-page-header__subtitle">
+          Poți filtra și șterge recenziile din platformă.
+        </p>
+      </div>
 
-      {/* Filtre */}
-      <div
-        style={{
-          display: "flex",
-          gap: "12px",
-          flexWrap: "wrap",
-          marginBottom: "20px",
-          alignItems: "flex-end",
-        }}
-      >
-        <div>
-          <label style={{ fontSize: "13px", display: "block", marginBottom: "4px" }}>
-            Caută după nume
-          </label>
-          <input
-            type="text"
-            placeholder="Reviewer sau evaluat..."
-            value={searchUser}
-            onChange={(e) => setSearchUser(e.target.value)}
-            style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ddd", width: "220px" }}
-          />
-        </div>
-
-        <div>
-          <label style={{ fontSize: "13px", display: "block", marginBottom: "4px" }}>
-            Rating minim
-          </label>
-          <select
-            value={minRating}
-            onChange={(e) => setMinRating(e.target.value)}
-            style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ddd" }}
-          >
-            <option value="">Orice</option>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <option key={n} value={n}>{n} ⭐</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label style={{ fontSize: "13px", display: "block", marginBottom: "4px" }}>
-            Rating maxim
-          </label>
-          <select
-            value={maxRating}
-            onChange={(e) => setMaxRating(e.target.value)}
-            style={{ padding: "8px", borderRadius: "6px", border: "1px solid #ddd" }}
-          >
-            <option value="">Orice</option>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <option key={n} value={n}>{n} ⭐</option>
-            ))}
-          </select>
-        </div>
-
-        <button
-          onClick={handleClearFilters}
-          style={{
-            padding: "8px 14px",
-            borderRadius: "6px",
-            border: "1px solid #ddd",
-            background: "white",
-            cursor: "pointer",
-          }}
-        >
-          Resetează filtrele
+      <div className="admin-filters-box">
+        <input
+          type="text"
+          name="searchUser"
+          placeholder="Caută după nume..."
+          value={filters.searchUser}
+          onChange={handleChange}
+          className="admin-input"
+        />
+        <select name="minRating" value={filters.minRating} onChange={handleChange} className="admin-input">
+          <option value="">Rating minim</option>
+          {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n} / 5</option>)}
+        </select>
+        <select name="maxRating" value={filters.maxRating} onChange={handleChange} className="admin-input">
+          <option value="">Rating maxim</option>
+          {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n} / 5</option>)}
+        </select>
+        <button type="button" onClick={handleResetFilters} className="admin-btn admin-btn--reset">
+          Reset
         </button>
       </div>
 
-      <p style={{ fontSize: "13px", color: "#666", marginBottom: "16px" }}>
-        {filtered.length} recenz{filtered.length === 1 ? "ie" : "ii"} găsite
-      </p>
+      {loading && <p>Se încarcă recenziile...</p>}
+      {error && <p className="admin-text--error">{error}</p>}
 
-      {loading && <p>Se încarcă...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {!loading && filtered.length === 0 && (
-        <p style={{ color: "#888" }}>Nu există recenzii care să corespundă filtrelor.</p>
+      {!loading && !error && filteredReviews.length === 0 && (
+        <div className="admin-empty-box">Nu există recenzii pentru filtrele selectate.</div>
       )}
 
-      {filtered.map((review) => (
-        <div
-          key={review.id}
-          style={{
-            border: "1px solid #e5e7eb",
-            borderRadius: "10px",
-            padding: "16px",
-            marginBottom: "12px",
-            backgroundColor: "white",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: "16px",
-          }}
-        >
-          <div style={{ flex: 1 }}>
-            <div style={{ marginBottom: "6px", fontSize: "14px" }}>
-              <strong>
-                {review.reviewerFirstName || "?"} {review.reviewerLastName || ""}
-              </strong>
-              <span style={{ color: "#888", margin: "0 8px" }}>→</span>
-              <strong>
-                {review.reviewedUserFirstName || "?"} {review.reviewedUserLastName || ""}
-              </strong>
-            </div>
-
-            <div style={{ fontSize: "18px", marginBottom: "6px" }}>
-              {"⭐".repeat(review.rating || 0)}
-              <span style={{ fontSize: "14px", color: "#666", marginLeft: "6px" }}>
-                ({review.rating}/5)
-              </span>
-            </div>
-
-            {review.message && (
-              <p style={{ color: "#444", fontSize: "14px", marginBottom: "6px" }}>
-                {review.message}
-              </p>
-            )}
-
-            <p style={{ fontSize: "12px", color: "#999" }}>
-              Job ID: {review.jobId} •{" "}
-              {review.createdAt
-                ? new Date(review.createdAt).toLocaleString("ro-RO")
-                : ""}
-            </p>
-          </div>
-
-          <button
-            onClick={() => handleDelete(review.id)}
-            style={{
-              padding: "6px 12px",
-              backgroundColor: "#fee2e2",
-              color: "#dc2626",
-              border: "1px solid #fca5a5",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontWeight: "600",
-              whiteSpace: "nowrap",
-            }}
-          >
-            🗑 Șterge
-          </button>
+      {!loading && !error && filteredReviews.length > 0 && (
+        <div className="admin-table-wrapper">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Reviewer</th>
+                <th>Evaluat</th>
+                <th>Rating</th>
+                <th>Mesaj</th>
+                <th>Job ID</th>
+                <th>Data</th>
+                <th>Acțiuni</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredReviews.map((review) => (
+                <tr key={review.id}>
+                  <td data-label="Reviewer">
+                    <strong>{review.reviewerFirstName || "?"} {review.reviewerLastName || ""}</strong>
+                  </td>
+                  <td data-label="Evaluat">
+                    <strong>{review.reviewedUserFirstName || "?"} {review.reviewedUserLastName || ""}</strong>
+                  </td>
+                  <td data-label="Rating">
+                    <span style={{ color: "#f59e0b", fontWeight: "700", letterSpacing: "2px" }}>
+                      {"★".repeat(review.rating || 0)}{"☆".repeat(5 - (review.rating || 0))}
+                    </span>
+                    <span style={{ marginLeft: "6px", fontSize: "13px", color: "#6b7280" }}>
+                      {review.rating}/5
+                    </span>
+                  </td>
+                  <td data-label="Mesaj" style={{ maxWidth: "220px", wordBreak: "break-word" }}>
+                    {review.message || "-"}
+                  </td>
+                  <td data-label="Job ID">{review.jobId}</td>
+                  <td data-label="Data">
+                    {review.createdAt ? new Date(review.createdAt).toLocaleString("ro-RO") : "-"}
+                  </td>
+                  <td data-label="Acțiuni" className="td--actions">
+                    <div className="admin-actions">
+                      <button
+                        className="admin-action-btn admin-action-btn--delete"
+                        onClick={() => setReviewToDelete(review)}
+                      >
+                        Șterge
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      ))}
-    </div>
+      )}
+
+      <ConfirmModal
+        open={!!reviewToDelete}
+        title="Ștergere recenzie"
+        message={
+          reviewToDelete
+            ? `Ești sigur că vrei să ștergi recenzia lui ${reviewToDelete.reviewerFirstName} ${reviewToDelete.reviewerLastName}?`
+            : "Ești sigur că vrei să ștergi această recenzie?"
+        }
+        confirmText="Șterge"
+        cancelText="Renunță"
+        onCancel={() => setReviewToDelete(null)}
+        onConfirm={handleDelete}
+      />
     </AdminLayout>
   );
 }

@@ -1,34 +1,27 @@
+import { useState } from "react";
 import AdminSidebar from "./AdminSidebar";
 import AdminTopbar from "./AdminTopbar";
+import "../styles/admin.css";
 
 export default function AdminLayout({ title, children }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <div style={styles.wrapper}>
-      <AdminSidebar />
+    <div className="admin-wrapper">
+      {/* Overlay pentru mobile */}
+      <div
+        className={`admin-sidebar-overlay${sidebarOpen ? " admin-sidebar-overlay--visible" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+      />
 
-      <div style={styles.mainArea}>
-        <AdminTopbar title={title} />
+      <AdminSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-        <main style={styles.content}>
+      <div className="admin-main-area">
+        <AdminTopbar title={title} onMenuClick={() => setSidebarOpen((prev) => !prev)} />
+        <main className="admin-content">
           {children}
         </main>
       </div>
     </div>
   );
 }
-
-const styles = {
-  wrapper: {
-    display: "flex",
-    minHeight: "100vh",
-    backgroundColor: "#f5f7fb",
-  },
-  mainArea: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-  },
-  content: {
-    padding: "24px",
-  },
-};

@@ -23,15 +23,12 @@ export default function AdminApplicationsPage() {
 
   const [applicationToDelete, setApplicationToDelete] = useState(null);
 
-  useEffect(() => {
-    loadApplications();
-  }, []);
+  useEffect(() => { loadApplications(); }, []);
 
   async function loadApplications() {
     try {
       setLoading(true);
       setError("");
-
       const data = await getAdminApplications();
       setApplications(data);
     } catch (err) {
@@ -44,10 +41,7 @@ export default function AdminApplicationsPage() {
 
   function handleChange(e) {
     const { name, value } = e.target;
-    setFilters((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFilters((prev) => ({ ...prev, [name]: value }));
   }
 
   async function handleApplyFilters() {
@@ -57,13 +51,7 @@ export default function AdminApplicationsPage() {
   }
 
   async function handleResetFilters() {
-    const emptyFilters = {
-      email: "",
-      status: "",
-      jobId: "",
-    };
-
-    setFilters(emptyFilters);
+    setFilters({ email: "", status: "", jobId: "" });
     setFilterMessage("");
     await loadApplications();
   }
@@ -90,7 +78,6 @@ export default function AdminApplicationsPage() {
 
   async function handleDelete() {
     if (!applicationToDelete) return;
-
     try {
       await deleteAdminApplication(applicationToDelete.id);
       setApplicationToDelete(null);
@@ -103,148 +90,75 @@ export default function AdminApplicationsPage() {
 
   const filteredApplications = useMemo(() => {
     return applications.filter((application) => {
-      const matchesEmail =
-        !filters.email ||
-        (application.applicantEmail || "")
-          .toLowerCase()
-          .includes(filters.email.toLowerCase());
-
-      const matchesStatus =
-        !filters.status || application.status === filters.status;
-
-      const matchesJobId =
-        !filters.jobId ||
-        (application.jobId || "")
-          .toLowerCase()
-          .includes(filters.jobId.toLowerCase());
-
+      const matchesEmail = !filters.email || (application.applicantEmail || "").toLowerCase().includes(filters.email.toLowerCase());
+      const matchesStatus = !filters.status || application.status === filters.status;
+      const matchesJobId = !filters.jobId || (application.jobId || "").toLowerCase().includes(filters.jobId.toLowerCase());
       return matchesEmail && matchesStatus && matchesJobId;
     });
   }, [applications, filters]);
 
   return (
     <AdminLayout title="Administrare aplicări">
-      <div style={styles.pageHeader}>
-        <h2 style={styles.sectionTitle}>Lista aplicărilor</h2>
-        <p style={styles.sectionSubtitle}>
+      <div className="admin-page-header">
+        <h2 className="admin-page-header__title">Lista aplicărilor</h2>
+        <p className="admin-page-header__subtitle">
           Poți filtra, accepta, respinge sau șterge aplicările din platformă.
         </p>
       </div>
 
-      <div style={styles.filtersBox}>
-        <input
-          type="text"
-          name="email"
-          placeholder="Email aplicant"
-          value={filters.email}
-          onChange={handleChange}
-          style={styles.input}
-        />
-
-        <input
-          type="text"
-          name="jobId"
-          placeholder="Job ID"
-          value={filters.jobId}
-          onChange={handleChange}
-          style={styles.input}
-        />
-
-        <select
-          name="status"
-          value={filters.status}
-          onChange={handleChange}
-          style={styles.input}
-        >
+      <div className="admin-filters-box">
+        <input type="text" name="email" placeholder="Email aplicant" value={filters.email} onChange={handleChange} className="admin-input" />
+        <input type="text" name="jobId" placeholder="Job ID" value={filters.jobId} onChange={handleChange} className="admin-input" />
+        <select name="status" value={filters.status} onChange={handleChange} className="admin-input">
           <option value="">Toate statusurile</option>
           <option value="PENDING">PENDING</option>
           <option value="ACCEPTED">ACCEPTED</option>
           <option value="REJECTED">REJECTED</option>
         </select>
-
-        <button
-          type="button"
-          onClick={handleApplyFilters}
-          style={{ ...styles.button, ...styles.searchButton }}
-        >
-          Filtrează
-        </button>
-
-        <button
-          type="button"
-          onClick={handleResetFilters}
-          style={{ ...styles.button, ...styles.resetButton }}
-        >
-          Reset
-        </button>
+        <button type="button" onClick={handleApplyFilters} className="admin-btn admin-btn--primary">Filtrează</button>
+        <button type="button" onClick={handleResetFilters} className="admin-btn admin-btn--reset">Reset</button>
       </div>
 
-      {filterMessage && <p style={styles.successText}>{filterMessage}</p>}
+      {filterMessage && <p className="admin-text--success">{filterMessage}</p>}
       {loading && <p>Se încarcă aplicările...</p>}
-      {error && <p style={styles.errorText}>{error}</p>}
+      {error && <p className="admin-text--error">{error}</p>}
 
       {!loading && !error && filteredApplications.length === 0 && (
-        <div style={styles.emptyBox}>
-          Nu există aplicări pentru filtrele selectate.
-        </div>
+        <div className="admin-empty-box">Nu există aplicări pentru filtrele selectate.</div>
       )}
 
       {!loading && !error && filteredApplications.length > 0 && (
-        <div style={styles.tableWrapper}>
-          <table style={styles.table}>
+        <div className="admin-table-wrapper">
+          <table className="admin-table">
             <thead>
               <tr>
-                <th style={styles.th}>Nume</th>
-                <th style={styles.th}>Email</th>
-                <th style={styles.th}>Job ID</th>
-                <th style={styles.th}>Status</th>
-                <th style={styles.th}>Data aplicării</th>
-                <th style={styles.th}>Acțiuni</th>
+                <th>Nume</th>
+                <th>Email</th>
+                <th>Job ID</th>
+                <th>Status</th>
+                <th>Data aplicării</th>
+                <th>Acțiuni</th>
               </tr>
             </thead>
-
             <tbody>
               {filteredApplications.map((application) => (
-                <tr key={application.id} style={styles.tr}>
-                  <td style={styles.td}>
-                    {application.applicantFirstName} {application.applicantLastName}
+                <tr key={application.id}>
+                  <td data-label="Nume">{application.applicantFirstName} {application.applicantLastName}</td>
+                  <td data-label="Email">{application.applicantEmail}</td>
+                  <td data-label="Job ID">{application.jobId}</td>
+                  <td data-label="Status"><StatusBadge status={application.status} /></td>
+                  <td data-label="Data aplicării">
+                    {application.appliedAt ? new Date(application.appliedAt).toLocaleString("ro-RO") : "-"}
                   </td>
-                  <td style={styles.td}>{application.applicantEmail}</td>
-                  <td style={styles.td}>{application.jobId}</td>
-                  <td style={styles.td}>
-                    <StatusBadge status={application.status} />
-                  </td>
-                  <td style={styles.td}>
-                    {application.appliedAt
-                      ? new Date(application.appliedAt).toLocaleString("ro-RO")
-                      : "-"}
-                  </td>
-                  <td style={styles.td}>
-                    <div style={styles.actions}>
+                  <td data-label="Acțiuni" className="td--actions">
+                    <div className="admin-actions">
                       {application.status === "PENDING" && (
                         <>
-                          <button
-                            style={{ ...styles.actionButton, ...styles.acceptButton }}
-                            onClick={() => handleAccept(application.id)}
-                          >
-                            Acceptă
-                          </button>
-
-                          <button
-                            style={{ ...styles.actionButton, ...styles.rejectButton }}
-                            onClick={() => handleReject(application.id)}
-                          >
-                            Respinge
-                          </button>
+                          <button className="admin-action-btn admin-action-btn--accept" onClick={() => handleAccept(application.id)}>Acceptă</button>
+                          <button className="admin-action-btn admin-action-btn--reject" onClick={() => handleReject(application.id)}>Respinge</button>
                         </>
                       )}
-
-                      <button
-                        style={{ ...styles.actionButton, ...styles.deleteButton }}
-                        onClick={() => setApplicationToDelete(application)}
-                      >
-                        Șterge
-                      </button>
+                      <button className="admin-action-btn admin-action-btn--delete" onClick={() => setApplicationToDelete(application)}>Șterge</button>
                     </div>
                   </td>
                 </tr>
@@ -257,11 +171,7 @@ export default function AdminApplicationsPage() {
       <ConfirmModal
         open={!!applicationToDelete}
         title="Ștergere aplicare"
-        message={
-          applicationToDelete
-            ? `Ești sigur că vrei să ștergi aplicarea lui ${applicationToDelete.applicantFirstName} ${applicationToDelete.applicantLastName}?`
-            : "Ești sigur că vrei să ștergi această aplicare?"
-        }
+        message={applicationToDelete ? `Ești sigur că vrei să ștergi aplicarea lui ${applicationToDelete.applicantFirstName} ${applicationToDelete.applicantLastName}?` : "Ești sigur că vrei să ștergi această aplicare?"}
         confirmText="Șterge"
         cancelText="Renunță"
         onCancel={() => setApplicationToDelete(null)}
@@ -270,122 +180,3 @@ export default function AdminApplicationsPage() {
     </AdminLayout>
   );
 }
-
-const styles = {
-  pageHeader: {
-    marginBottom: "20px",
-  },
-  sectionTitle: {
-    margin: 0,
-    fontSize: "24px",
-    color: "#111827",
-  },
-  sectionSubtitle: {
-    marginTop: "6px",
-    color: "#6b7280",
-    fontSize: "14px",
-  },
-  filtersBox: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: "12px",
-    marginBottom: "20px",
-    backgroundColor: "#ffffff",
-    padding: "16px",
-    borderRadius: "12px",
-    border: "1px solid #e5e7eb",
-  },
-  input: {
-    padding: "12px 14px",
-    borderRadius: "8px",
-    border: "1px solid #d1d5db",
-    fontSize: "14px",
-    backgroundColor: "#ffffff",
-  },
-  button: {
-    padding: "12px 16px",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-  },
-  searchButton: {
-    backgroundColor: "#2563eb",
-    color: "#ffffff",
-  },
-  resetButton: {
-    backgroundColor: "#e5e7eb",
-    color: "#111827",
-  },
-  successText: {
-    color: "#166534",
-    fontWeight: "600",
-    marginBottom: "12px",
-  },
-  errorText: {
-    color: "#dc2626",
-    fontWeight: "600",
-    marginTop: "12px",
-  },
-  emptyBox: {
-    marginTop: "20px",
-    padding: "18px",
-    backgroundColor: "#ffffff",
-    borderRadius: "10px",
-    border: "1px solid #e5e7eb",
-    color: "#374151",
-  },
-  tableWrapper: {
-    overflowX: "auto",
-    backgroundColor: "#ffffff",
-    borderRadius: "12px",
-    border: "1px solid #e5e7eb",
-    marginTop: "10px",
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-  },
-  th: {
-    textAlign: "left",
-    padding: "14px",
-    borderBottom: "1px solid #e5e7eb",
-    backgroundColor: "#f9fafb",
-    fontSize: "14px",
-    color: "#374151",
-  },
-  tr: {
-    borderBottom: "1px solid #f3f4f6",
-  },
-  td: {
-    padding: "14px",
-    fontSize: "14px",
-    color: "#111827",
-    verticalAlign: "top",
-  },
-  actions: {
-    display: "flex",
-    gap: "8px",
-    flexWrap: "wrap",
-  },
-  actionButton: {
-    border: "none",
-    borderRadius: "8px",
-    padding: "8px 12px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "13px",
-  },
-  acceptButton: {
-    backgroundColor: "#dcfce7",
-    color: "#166534",
-  },
-  rejectButton: {
-    backgroundColor: "#fef3c7",
-    color: "#92400e",
-  },
-  deleteButton: {
-    backgroundColor: "#fee2e2",
-    color: "#b91c1c",
-  },
-};

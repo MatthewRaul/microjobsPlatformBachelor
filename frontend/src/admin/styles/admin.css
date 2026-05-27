@@ -1,0 +1,747 @@
+/* =========================================================
+   ADMIN LAYOUT
+   ========================================================= */
+
+.admin-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: #f5f7fb;
+}
+
+.admin-main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-content {
+  padding: 24px;
+}
+
+/* =========================================================
+   ADMIN SIDEBAR
+   ========================================================= */
+
+.admin-sidebar {
+  width: 240px;
+  min-height: 100vh;
+  background-color: #111827;
+  color: #ffffff;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.admin-sidebar__logo {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 32px;
+}
+
+.admin-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-sidebar__link {
+  color: #d1d5db;
+  text-decoration: none;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+
+.admin-sidebar__link--active {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+/* =========================================================
+   ADMIN TOPBAR
+   ========================================================= */
+
+.admin-topbar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-topbar__title {
+  margin: 0;
+  font-size: 24px;
+  color: #111827;
+}
+
+.admin-topbar__subtitle {
+  margin: 4px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.admin-topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-topbar__user-box {
+  background-color: #f3f4f6;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.admin-topbar__logout-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-weight: 700;
+  background-color: #dc2626;
+  color: #ffffff;
+}
+
+/* Hamburger — ascuns pe desktop */
+.admin-hamburger {
+  display: none;
+}
+
+/* =========================================================
+   SHARED PAGE STYLES
+   ========================================================= */
+
+.admin-page-header {
+  margin-bottom: 20px;
+}
+
+.admin-page-header__title {
+  margin: 0;
+  font-size: 24px;
+  color: #111827;
+}
+
+.admin-page-header__subtitle {
+  margin-top: 6px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+/* =========================================================
+   FILTERS BOX
+   ========================================================= */
+
+.admin-filters-box {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+  background-color: #ffffff;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.admin-input {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  background-color: #ffffff;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-btn {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.admin-btn--primary {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+.admin-btn--reset {
+  background-color: #e5e7eb;
+  color: #111827;
+}
+
+/* =========================================================
+   MESSAGES
+   ========================================================= */
+
+.admin-text--success {
+  color: #166534;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.admin-text--error {
+  color: #dc2626;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+/* =========================================================
+   TABLE — desktop
+   ========================================================= */
+
+.admin-empty-box {
+  margin-top: 20px;
+  padding: 18px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+.admin-table-wrapper {
+  overflow-x: auto;
+  background-color: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  margin-top: 10px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  font-size: 14px;
+  color: #374151;
+  white-space: nowrap;
+}
+
+.admin-table tr {
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.admin-table td {
+  padding: 14px;
+  font-size: 14px;
+  color: #111827;
+  vertical-align: top;
+}
+
+.admin-table td.td--id {
+  font-family: monospace;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* =========================================================
+   ACTION BUTTONS
+   ========================================================= */
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-action-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.admin-action-btn--accept   { background-color: #dcfce7; color: #166534; }
+.admin-action-btn--reject   { background-color: #fef3c7; color: #92400e; }
+.admin-action-btn--cancel   { background-color: #fef3c7; color: #92400e; }
+.admin-action-btn--complete { background-color: #dcfce7; color: #166534; }
+.admin-action-btn--update   { background-color: #dbeafe; color: #1d4ed8; }
+.admin-action-btn--delete   { background-color: #fee2e2; color: #b91c1c; }
+
+/* =========================================================
+   STATUS BADGE
+   ========================================================= */
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.status-badge--default    { background-color: #e5e7eb; color: #111827; }
+.status-badge--open       { background-color: #dcfce7; color: #166534; }
+.status-badge--filled     { background-color: #dbeafe; color: #1d4ed8; }
+.status-badge--completed  { background-color: #ede9fe; color: #6d28d9; }
+.status-badge--canceled   { background-color: #fee2e2; color: #b91c1c; }
+.status-badge--in_progress{ background-color: #fef3c7; color: #b45309; }
+.status-badge--pending    { background-color: #fef3c7; color: #b45309; }
+.status-badge--accepted   { background-color: #dcfce7; color: #166534; }
+.status-badge--rejected   { background-color: #fee2e2; color: #b91c1c; }
+.status-badge--admin      { background-color: #dbeafe; color: #1e40af; }
+.status-badge--user       { background-color: #e5e7eb; color: #374151; }
+
+/* =========================================================
+   CONFIRM MODAL
+   ========================================================= */
+
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.admin-modal {
+  width: 100%;
+  max-width: 420px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.admin-modal__title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  color: #111827;
+}
+
+.admin-modal__message {
+  margin: 0 0 20px;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.admin-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.admin-modal__btn {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-modal__btn--cancel  { background-color: #e5e7eb; color: #111827; }
+.admin-modal__btn--confirm { background-color: #dc2626; color: #ffffff; }
+
+/* =========================================================
+   SEARCH BAR
+   ========================================================= */
+
+.admin-search-form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.admin-search-input {
+  flex: 1;
+  min-width: 240px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  outline: none;
+  background-color: #ffffff;
+}
+
+/* =========================================================
+   REVIEWS PAGE
+   ========================================================= */
+
+.admin-reviews-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  align-items: flex-end;
+}
+
+.admin-reviews-filter-group label {
+  font-size: 13px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.admin-reviews-filter-group input,
+.admin-reviews-filter-group select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
+
+.admin-reviews-filter-group input {
+  width: 220px;
+}
+
+.admin-reviews-reset-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+}
+
+.admin-reviews-count {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.admin-review-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background-color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.admin-review-card__body { flex: 1; }
+
+.admin-review-card__users { margin-bottom: 6px; font-size: 14px; }
+.admin-review-card__arrow { color: #888; margin: 0 8px; }
+.admin-review-card__rating { font-size: 18px; margin-bottom: 6px; }
+.admin-review-card__rating-label { font-size: 14px; color: #666; margin-left: 6px; }
+.admin-review-card__message { color: #444; font-size: 14px; margin-bottom: 6px; }
+.admin-review-card__meta { font-size: 12px; color: #999; }
+
+.admin-review-card__delete-btn {
+  padding: 6px 12px;
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   RESPONSIVE — Tablet (≤ 1024px)
+   ========================================================= */
+
+@media (max-width: 1024px) {
+  .admin-sidebar {
+    width: 200px;
+    padding: 20px 12px;
+  }
+
+  .admin-sidebar__logo {
+    font-size: 18px;
+    margin-bottom: 24px;
+  }
+
+  .admin-content {
+    padding: 16px;
+  }
+
+  .admin-topbar {
+    padding: 16px 20px;
+  }
+
+  .admin-topbar__title {
+    font-size: 20px;
+  }
+
+  .admin-filters-box {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+
+/* =========================================================
+   RESPONSIVE — Mobile (≤ 768px)
+   Sidebar devine drawer, tabelele devin carduri
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+  /* --- Layout --- */
+  .admin-wrapper {
+    flex-direction: column;
+  }
+
+  /* --- Sidebar drawer --- */
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 260px;
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .admin-sidebar--open {
+    transform: translateX(0);
+  }
+
+  .admin-sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.45);
+    z-index: 199;
+  }
+
+  .admin-sidebar-overlay--visible {
+    display: block;
+  }
+
+  /* --- Topbar --- */
+  .admin-topbar {
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-wrap: nowrap;
+  }
+
+  .admin-topbar__title {
+    font-size: 17px;
+  }
+
+  .admin-topbar__subtitle {
+    display: none;
+  }
+
+  /* --- Hamburger --- */
+  .admin-hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+
+  .admin-hamburger__bar {
+    width: 22px;
+    height: 2px;
+    background-color: #111827;
+    border-radius: 2px;
+  }
+
+  /* --- Main --- */
+  .admin-main-area {
+    width: 100%;
+  }
+
+  .admin-content {
+    padding: 12px;
+  }
+
+  /* --- Page header --- */
+  .admin-page-header__title {
+    font-size: 20px;
+  }
+
+  /* --- Filters --- */
+  .admin-filters-box {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  /* --- TABLE → CARDURI pe mobile ---
+     Ascundem header-ul tabelului.
+     Fiecare <tr> devine un card.
+     Fiecare <td> afișează label-ul din data-label înainte de valoare.
+  */
+
+  .admin-table thead {
+    display: none;
+  }
+
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-table tr {
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    padding: 4px 0;
+    background-color: #ffffff;
+  }
+
+  .admin-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 14px;
+    flex-wrap: wrap;
+  }
+
+  .admin-table td:last-child {
+    border-bottom: none;
+  }
+
+  /* Label generat din data-label */
+  .admin-table td::before {
+    content: attr(data-label);
+    font-weight: 700;
+    color: #6b7280;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    flex-shrink: 0;
+    min-width: 90px;
+    padding-top: 2px;
+  }
+
+  /* Celula de actiuni — full width, fara label */
+  .admin-table td.td--actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-table td.td--actions::before {
+    content: none;
+  }
+
+  .admin-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .admin-action-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  /* Wrapper tabel pe mobile: fara border/radius extern, ca fiecare tr e card */
+  .admin-table-wrapper {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  /* --- Reviews filters --- */
+  .admin-reviews-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-reviews-filter-group {
+    width: 100%;
+  }
+
+  .admin-reviews-filter-group input,
+  .admin-reviews-filter-group select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .admin-reviews-reset-btn {
+    width: 100%;
+  }
+
+  /* --- Review card --- */
+  .admin-review-card {
+    flex-direction: column;
+  }
+
+  .admin-review-card__delete-btn {
+    align-self: flex-start;
+  }
+
+  /* --- Topbar right --- */
+  .admin-topbar__user-box {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .admin-topbar__logout-btn {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+}
+
+/* =========================================================
+   RESPONSIVE — Small mobile (≤ 480px)
+   ========================================================= */
+
+@media (max-width: 480px) {
+  .admin-content {
+    padding: 10px;
+  }
+
+  .admin-filters-box {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-btn {
+    width: 100%;
+  }
+
+  .admin-topbar__user-box {
+    display: none;
+  }
+
+  .admin-topbar__title {
+    font-size: 15px;
+  }
+
+  .admin-page-header__title {
+    font-size: 18px;
+  }
+
+  .admin-modal {
+    padding: 18px;
+  }
+
+  .admin-modal__title {
+    font-size: 18px;
+  }
+}
