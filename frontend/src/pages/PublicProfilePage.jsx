@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getPublicUserProfile, getPublicUserRating, getUserCv } from "../api/userApi";
 import "../styles/auth.css";
+import {useAuth} from "../context/AuthContext";
 
 export default function PublicProfilePage() {
   const { id } = useParams();
@@ -14,6 +15,7 @@ export default function PublicProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [cvLoading, setCvLoading] = useState(false);
+  const { isAuthenticated} = useAuth();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -142,7 +144,7 @@ export default function PublicProfilePage() {
       )}
 
       {/* CARD CV — MOV */}
-      {profile.hasCv && (
+      {isAuthenticated && profile.hasCv && (
         <div
           onClick={handleOpenCv}
           className="profile-card--primary profile-card--primary-link"

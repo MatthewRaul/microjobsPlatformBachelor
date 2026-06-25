@@ -16,7 +16,7 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
-    // Trimiterea e asincrona - nu blocheaza requestul HTTP
+    
     @Async
     public void sendEmail(String to, String subject, String htmlBody) {
         try {
@@ -24,7 +24,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(to);
             helper.setSubject(subject);
-            helper.setText(htmlBody, true); // true = HTML
+            helper.setText(htmlBody, true); 
             mailSender.send(message);
         } catch (Exception e) {
             System.err.println("Eroare la trimiterea emailului catre " + to + ": " + e.getMessage());

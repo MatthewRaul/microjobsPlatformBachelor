@@ -36,25 +36,33 @@ public class UserService {
     private final EmailService emailService;
 
     public UserService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       AuthenticationManager authenticationManager,
-                       JwtService jwtService,
-                        EmailService emailService) {
+            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            JwtService jwtService,
+            EmailService emailService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
-        this.emailService=emailService;
+        this.emailService = emailService;
+    }
+
+    private boolean isAuthenticated() {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
+        return a != null && a.isAuthenticated()
+                && !(a instanceof org.springframework.security.authentication.AnonymousAuthenticationToken);
     }
 
     private boolean isAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || authentication.getAuthorities() == null) return false;
+        if (authentication == null || authentication.getAuthorities() == null) {
+            return false;
+        }
         return authentication.getAuthorities().stream()
                 .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
     }
 
-    public User registerUser(User user) {
+    public UserResponse registerUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Exista deja un cont cu aceasta adresa de email");
         }
@@ -75,13 +83,23 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.setRole(Role.USER);
 
-        if (user.getBio() == null) user.setBio("");
-        if (user.getProfilePictureUrl() == null) user.setProfilePictureUrl("");
+        user.setAverageRating(0.0);
+        user.setReviewCount(0);
+        user.setCvBase64(null);
+        user.setCvFileName(null);
+
+        if (user.getBio() == null) {
+            user.setBio("");
+        }
+        if (user.getProfilePictureUrl() == null) {
+            user.setProfilePictureUrl("");
+        }
         user.setProfileCompleted(false);
         user.setHasCv(false);
 
         emailService.sendWelcomeEmail(user.getEmail(), user.getFirstName());
-        return userRepository.save(user);
+        User saved = userRepository.save(user);
+        return mapToUserResponse(saved);
     }
 
     public Optional<User> findByEmail(String email) {
@@ -124,21 +142,31 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizator negasit"));
 
-        if (request.getFirstName() != null) user.setFirstName(request.getFirstName());
-        if (request.getLastName() != null) user.setLastName(request.getLastName());
+        if (request.getFirstName() != null) {
+            user.setFirstName(request.getFirstName());
+        }
+        if (request.getLastName() != null) {
+            user.setLastName(request.getLastName());
+        }
 
         if (request.getPhoneNumber() != null) {
-            boolean phoneUsedAlready = userRepository.existsByPhoneNumber(request.getPhoneNumber()) &&
-                    !request.getPhoneNumber().equals(user.getPhoneNumber());
+            boolean phoneUsedAlready = userRepository.existsByPhoneNumber(request.getPhoneNumber())
+                    && !request.getPhoneNumber().equals(user.getPhoneNumber());
             if (phoneUsedAlready) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Exista deja un utilizator cu acest numar de telefon");
             }
             user.setPhoneNumber(request.getPhoneNumber());
         }
 
-        if (request.getBio() != null) user.setBio(request.getBio());
-        if (request.getProfilePictureUrl() != null) user.setProfilePictureUrl(request.getProfilePictureUrl());
-        if (request.getSkills() != null) user.setSkills(request.getSkills());
+        if (request.getBio() != null) {
+            user.setBio(request.getBio());
+        }
+        if (request.getProfilePictureUrl() != null) {
+            user.setProfilePictureUrl(request.getProfilePictureUrl());
+        }
+        if (request.getSkills() != null) {
+            user.setSkills(request.getSkills());
+        }
 
         if (request.getAge() != null) {
             if (request.getAge() < 16 || request.getAge() > 100) {
@@ -155,24 +183,24 @@ public class UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFound("Utilizatorul nu exista."));
 
+        boolean autentificat = isAuthenticated();
+
         return new PublicUserProfileResponse(
                 user.getId(),
                 user.getFirstName(),
                 user.getLastName(),
                 user.getBio(),
                 user.getProfilePictureUrl(),
-                user.getPhoneNumber(),
-                user.getEmail(),
+                autentificat ? user.getPhoneNumber() : null,
+                autentificat ? user.getEmail() : null,
                 user.getSkills(),
                 user.getHasCv()
-                
         );
     }
 
     // -------------------------
     // CV management
     // -------------------------
-
     public void uploadCv(String email, String base64, String fileName) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizator negasit"));
@@ -209,7 +237,6 @@ public class UserService {
     // -------------------------
     // Avatar management
     // -------------------------
-
     public void updateAvatar(String email, String dataUrl) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizator negasit"));
@@ -220,42 +247,31 @@ public class UserService {
     // =========================
     // Zona admin
     // =========================
-
     public List<UserResponse> getAllUsersForAdmin() {
-        if (!isAdmin()) throw new ForbiddenAction("Doar adminul poate vedea toti utilizatorii.");
+        if (!isAdmin()) {
+            throw new ForbiddenAction("Doar adminul poate vedea toti utilizatorii.");
+        }
         return userRepository.findAll().stream().map(this::mapToUserResponse).toList();
     }
 
-    public List<UserResponse> searchUsersForAdmin(String search) {
-        if (!isAdmin()) throw new ForbiddenAction("Doar adminul poate cauta utilizatori.");
-        List<User> users = userRepository.findAll();
-        if (search == null || search.trim().isBlank()) {
-            return users.stream().map(this::mapToUserResponse).toList();
-        }
-        String normalizedSearch = search.trim().toLowerCase();
-        return users.stream()
-                .filter(user ->
-                        containsIgnoreCase(user.getFirstName(), normalizedSearch) ||
-                        containsIgnoreCase(user.getLastName(), normalizedSearch) ||
-                        containsIgnoreCase(user.getEmail(), normalizedSearch) ||
-                        containsIgnoreCase(user.getPhoneNumber(), normalizedSearch) ||
-                        containsIgnoreCase(user.getRole() != null ? user.getRole().name() : null, normalizedSearch))
-                .map(this::mapToUserResponse)
-                .toList();
-    }
-
     public UserResponse getUserByIdForAdmin(String id) {
-        if (!isAdmin()) throw new ForbiddenAction("Doar adminul poate vedea acest utilizator.");
+        if (!isAdmin()) {
+            throw new ForbiddenAction("Doar adminul poate vedea acest utilizator.");
+        }
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFound("Utilizatorul nu exista."));
         return mapToUserResponse(user);
     }
 
     public UserResponse updateUserRoleAsAdmin(String id, String role) {
-        if (!isAdmin()) throw new ForbiddenAction("Doar adminul poate modifica rolul utilizatorilor.");
+        if (!isAdmin()) {
+            throw new ForbiddenAction("Doar adminul poate modifica rolul utilizatorilor.");
+        }
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFound("Utilizatorul nu exista."));
-        if (role == null || role.isBlank()) throw new BadRequest("Rolul este obligatoriu.");
+        if (role == null || role.isBlank()) {
+            throw new BadRequest("Rolul este obligatoriu.");
+        }
         String normalizedRole = role.trim().toUpperCase();
         try {
             user.setRole(Role.valueOf(normalizedRole));
@@ -267,7 +283,9 @@ public class UserService {
     }
 
     public void deleteUserAsAdmin(String id) {
-        if (!isAdmin()) throw new ForbiddenAction("Doar adminul poate sterge utilizatori.");
+        if (!isAdmin()) {
+            throw new ForbiddenAction("Doar adminul poate sterge utilizatori.");
+        }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String currentEmail = authentication.getName();
         User user = userRepository.findById(id)
@@ -281,7 +299,6 @@ public class UserService {
     // -------------------------
     // Helpers
     // -------------------------
-
     private UserResponse mapToUserResponse(User user) {
         UserResponse response = new UserResponse();
         response.setId(user.getId());
@@ -297,7 +314,4 @@ public class UserService {
         return response;
     }
 
-    private boolean containsIgnoreCase(String value, String search) {
-        return value != null && value.toLowerCase().contains(search);
-    }
 }

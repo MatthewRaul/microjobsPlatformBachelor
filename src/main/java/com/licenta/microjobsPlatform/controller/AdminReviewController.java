@@ -10,7 +10,6 @@ import com.licenta.microjobsPlatform.service.ReviewService;
 
 @RestController
 @RequestMapping("/api/admin/reviews")
-@CrossOrigin(origins = "*")
 public class AdminReviewController {
 
     private final ReviewService reviewService;

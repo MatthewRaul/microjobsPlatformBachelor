@@ -5,30 +5,8 @@ import "../styles/datepicker.css";
 
 registerLocale("ro", ro);
 
-/**
- * DatePickerInput — component reutilizabil
- *
- * Props:
- *   label    — textul labelului
- *   selected — Date | null
- *   onChange — callback(date)
- *   minDate  — Date opțional
- *   maxDate  — Date opțional
- *   showTime — true (default) = afiseaza si ora | false = doar data
- */
-export default function DatePickerInput({
-  label,
-  selected,
-  onChange,
-  minDate,
-  maxDate,
-  minTime,
-  maxTime,
-  filterTime,
-  showTime = true,
-}) {
+export default function DatePickerInput({label, selected, onChange, minDate, maxDate, minTime, maxTime, filterTime, showTime = true}) {
   const hasValue = !!selected;
-
   return (
     <div className="user-box" style={{ position: "relative" }}>
       <DatePicker
@@ -71,3 +49,6 @@ export default function DatePickerInput({
     </div>
   );
 }
+
+
+

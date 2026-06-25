@@ -6,8 +6,6 @@
 
 import axios from "axios";
 
-// Creăm o instanță Axios personalizată.
-// baseURL = adresa de bază a backend-ului tău Spring Boot.
 const api = axios.create({
   baseURL: "http://localhost:8080",
 });
@@ -26,5 +24,5 @@ api.interceptors.request.use(
     }
   );
 
-// Exportăm instanța ca să o putem folosi în alte fișiere.
+
 export default api;

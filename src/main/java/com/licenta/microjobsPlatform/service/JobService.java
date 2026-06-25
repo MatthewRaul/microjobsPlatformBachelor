@@ -110,7 +110,7 @@ public class JobService {
 
     public Job getJobById(String id) {
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> new RuntimeException("Job negasit"));
 
         if (job.getAcceptedWorkers() == null) {
             job.setAcceptedWorkers(0);
@@ -128,12 +128,12 @@ public class JobService {
 
     public Job cancelJob(String id, String userEmail) {
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> new RuntimeException("Job negasit"));
 
         boolean isOwner = job.getPostedBy().equals(userEmail);
 
         if (!isOwner && !isAdmin()) {
-            throw new RuntimeException("You are not allowed to cancel this job");
+            throw new RuntimeException("Nu ai permisiunea sa anulezi acest job.");
         }
 
         job.setStatus(JobStatus.CANCELED);
@@ -142,12 +142,12 @@ public class JobService {
 
     public Job completeJob(String id, String userEmail) {
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> new RuntimeException("Job negasit"));
 
         boolean isOwner = job.getPostedBy().equals(userEmail);
 
         if (!isOwner && !isAdmin()) {
-            throw new RuntimeException("You are not allowed to complete this job");
+            throw new RuntimeException("Nu ai permisiunea sa finalizezi acest job.");
         }
 
         job.setStatus(JobStatus.COMPLETED);
@@ -175,12 +175,12 @@ public class JobService {
 
     public Job updateJob(String id, UpdateJobRequest request, String userEmail) {
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> new RuntimeException("Job negasit"));
 
         boolean isOwner = job.getPostedBy().equals(userEmail);
 
         if (!isOwner && !isAdmin()) {
-            throw new RuntimeException("You are not allowed to edit this job");
+            throw new RuntimeException("Nu poti modifica acest job.");
         }
 
         if (job.getStatus() == JobStatus.CANCELED || job.getStatus() == JobStatus.COMPLETED) {
@@ -213,7 +213,7 @@ public class JobService {
         }
 
         if (salary == null || salary < 0) {
-            throw new BadRequest("Salariul trebuie sa fie minim 0 RON");
+            throw new BadRequest("Salariul trebuie sa fie minim 0 RON.");
         }
 
         if (neededWorkers == null || neededWorkers <= 0) {
@@ -252,12 +252,12 @@ public class JobService {
 
     public void deleteJob(String id, String userEmail) {
         Job job = jobRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> new RuntimeException("Job negasit"));
 
         boolean isOwner = job.getPostedBy().equals(userEmail);
 
         if (!isOwner && !isAdmin()) {
-            throw new RuntimeException("You are not allowed to delete this job");
+            throw new RuntimeException("Nu ai permisiunea sa stergi acest job.");
         }
 
         jobRepository.delete(job);
@@ -288,35 +288,24 @@ public class JobService {
         return job;
     }
 
-    public List<Job> getVisibleJobsFiltered(
-            LocalDateTime startDate,
-            LocalDateTime endDate,
-            String location,
-            Integer participants,
-            JobStatus status
-    ) {
-        String normalizedLocation = location != null ? location.trim() : null;
+    public List<Job> getVisibleJobsFiltered(LocalDateTime startDate, LocalDateTime endDate, String location, Integer participants, JobStatus status) {
+        String normalizedLocation = location != null ? location.trim().toLowerCase() : null;
         boolean hasStartDate = startDate != null;
         boolean hasEndDate = endDate != null;
         boolean hasLocation = normalizedLocation != null && !normalizedLocation.isBlank();
         boolean hasParticipants = participants != null;
         boolean hasStatus = status != null;
-
         if (hasStartDate && hasEndDate && endDate.isBefore(startDate)) {
             throw new BadRequest("Data de sfarsit trebuie sa fie dupa sau egala cu data de inceput.");
         }
-
         if (hasParticipants && participants < 1) {
             throw new BadRequest("Numarul de participanti trebuie sa fie cel putin 1.");
         }
-
         List<Job> jobs = jobRepository.findAll();
-
         for (Job job : jobs) {
             if (job.getAcceptedWorkers() == null) {
                 job.setAcceptedWorkers(0);
             }
-
             JobStatus oldStatus = job.getStatus();
             refreshStatusByTime(job);
 
@@ -324,33 +313,30 @@ public class JobService {
                 jobRepository.save(job);
             }
         }
-
         return jobs.stream()
                 .filter(job -> job.getStatus() == JobStatus.OPEN)
                 .filter(job -> {
                     if (hasStartDate && (job.getStartDate() == null || job.getStartDate().isBefore(startDate))) {
                         return false;
                     }
-
                     if (hasEndDate && (job.getEndDate() == null || job.getEndDate().isAfter(endDate))) {
                         return false;
                     }
-
-                    if (hasLocation && (job.getLocation() == null || !job.getLocation().equalsIgnoreCase(normalizedLocation))) {
-                        return false;
+                    if (hasLocation) {
+                        boolean matchesLocation = containsIgnoreCase(job.getLocation(), normalizedLocation)
+                                || containsIgnoreCase(job.getCounty(), normalizedLocation);
+                        if (!matchesLocation) {
+                            return false;
+                        }
                     }
-
                     if (hasParticipants && (job.getNeededWorkers() == null || job.getNeededWorkers() < participants)) {
                         return false;
                     }
-
                     if (hasStatus && job.getStatus() != status) {
                         return false;
                     }
-
                     return true;
-                })
-                .toList();
+                }).toList();
     }
 
     public List<Job> getAllJobsForAdmin() {
@@ -370,24 +356,6 @@ public class JobService {
         }
 
         return jobs;
-    }
-
-    public List<Job> searchJobsForAdmin(String search) {
-        List<Job> jobs = getAllJobsForAdmin();
-
-        if (search == null || search.trim().isBlank()) {
-            return jobs;
-        }
-
-        String normalizedSearch = search.trim().toLowerCase();
-
-        return jobs.stream()
-                .filter(job ->
-                        containsIgnoreCase(job.getTitle(), normalizedSearch)
-                                || containsIgnoreCase(job.getLocation(), normalizedSearch)
-                                || containsIgnoreCase(job.getCounty(), normalizedSearch)
-                                || containsIgnoreCase(job.getPostedBy(), normalizedSearch))
-                .toList();
     }
 
     public Job getJobByIdForAdmin(String id) {

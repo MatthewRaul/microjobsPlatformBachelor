@@ -40,12 +40,12 @@ public class JwtService {
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         return Jwts.builder()
-                .claims(extraClaims)//se baga inf extra
-                .subject(userDetails.getUsername())//se selecteaza userul
-                .issuedAt(new Date(System.currentTimeMillis()))//cand a fost creat
-                .expiration(new Date(System.currentTimeMillis() + jwtExpiration))//se alege data valabilitatii
-                .signWith(getSignInKey())//semnare token cu cheie secreta
-                .compact();//se transforma tot ce am pus mai sus intr un sir final JWT
+                .claims(extraClaims)
+                .subject(userDetails.getUsername())
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + jwtExpiration))
+                .signWith(getSignInKey())
+                .compact();
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {//verifica daca tokenul este bun pentru persoana care trebuie

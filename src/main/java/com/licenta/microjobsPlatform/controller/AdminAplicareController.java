@@ -27,13 +27,7 @@ public class AdminAplicareController {
     // Lista completa de aplicari pentru admin.
     // Daca exista search, aplicam cautarea.
     @GetMapping
-    public ResponseEntity<List<Aplicare>> getAllAplicariForAdmin(
-            @RequestParam(required = false) String search) {
-
-        if (search != null && !search.trim().isBlank()) {
-            return ResponseEntity.ok(aplicareService.searchAplicariForAdmin(search));
-        }
-
+    public ResponseEntity<List<Aplicare>> getAllAplicariForAdmin() {
         return ResponseEntity.ok(aplicareService.getAllAplicariForAdmin());
     }
 

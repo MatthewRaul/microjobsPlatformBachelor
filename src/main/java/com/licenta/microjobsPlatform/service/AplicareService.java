@@ -99,10 +99,10 @@ public class AplicareService {
         String applicantUserId = user != null ? user.getId() : null;
         Double applicantAverageRating = user != null ? user.getAverageRating() : 0.0;
         Integer applicantReviewCount = user != null ? user.getReviewCount() : 0;
-        String jobOwnerEmail= null;
-        Job job=jobRepository.findById(aplicare.getJobId()).orElse(null);
-        if(job!=null){
-            jobOwnerEmail=job.getPostedBy();
+        String jobOwnerEmail = null;
+        Job job = jobRepository.findById(aplicare.getJobId()).orElse(null);
+        if (job != null) {
+            jobOwnerEmail = job.getPostedBy();
         }
         return new AplicareResponse(
                 aplicare.getId(),
@@ -247,7 +247,6 @@ public class AplicareService {
         aplicare.setStatus(AplicareStatus.ACCEPTED);
         Aplicare savedAplicare = aplicareRepository.save(aplicare);
 
-        // Notifica aplicantul ca a fost acceptat
         User applicant = userRepository.findByEmail(aplicare.getApplicantEmail()).orElse(null);
         if (applicant != null) {
             emailService.sendApplicationAcceptedEmail(
@@ -263,7 +262,6 @@ public class AplicareService {
             job.setStatus(JobStatus.FILLED);
             jobRepository.save(job);
 
-            // Respinge automat aplicarile PENDING ramase si le notifica
             List<Aplicare> aplicari = aplicareRepository.findByJobId(job.getId());
             for (Aplicare a : aplicari) {
                 if (a.getStatus() == AplicareStatus.PENDING) {
@@ -341,10 +339,10 @@ public class AplicareService {
             jobRepository.save(job);
         }
 
-        User owner= userRepository.findByEmail(job.getPostedBy()).orElse(null);
-        if(owner!=null){
-            emailService.sendApplicationWithdrawnEmail(owner.getEmail(),owner.getFirstName(), aplicare.getApplicantFirstName(), 
-            aplicare.getApplicantLastName(), job.getTitle());
+        User owner = userRepository.findByEmail(job.getPostedBy()).orElse(null);
+        if (owner != null) {
+            emailService.sendApplicationWithdrawnEmail(owner.getEmail(), owner.getFirstName(), aplicare.getApplicantFirstName(),
+                    aplicare.getApplicantLastName(), job.getTitle());
         }
 
         aplicareRepository.delete(aplicare);
@@ -367,31 +365,6 @@ public class AplicareService {
         }
 
         return aplicareRepository.findAll();
-    }
-
-    public List<Aplicare> searchAplicariForAdmin(String search) {
-        if (!isAdmin()) {
-            throw new ForbiddenAction("Doar adminul poate cauta in aplicari.");
-        }
-
-        List<Aplicare> aplicari = aplicareRepository.findAll();
-
-        if (search == null || search.trim().isBlank()) {
-            return aplicari;
-        }
-
-        String normalizedSearch = search.trim().toLowerCase();
-
-        return aplicari.stream()
-                .filter(aplicare
-                        -> containsIgnoreCase(aplicare.getApplicantEmail(), normalizedSearch)
-                || containsIgnoreCase(aplicare.getApplicantFirstName(), normalizedSearch)
-                || containsIgnoreCase(aplicare.getApplicantLastName(), normalizedSearch)
-                || containsIgnoreCase(aplicare.getJobId(), normalizedSearch)
-                || containsIgnoreCase(
-                        aplicare.getStatus() != null ? aplicare.getStatus().name() : null,
-                        normalizedSearch))
-                .toList();
     }
 
     public Aplicare getAplicareByIdForAdmin(String aplicareId) {
@@ -427,10 +400,4 @@ public class AplicareService {
         aplicareRepository.delete(aplicare);
     }
 
-    // =========================
-    // Helper text
-    // =========================
-    private boolean containsIgnoreCase(String value, String search) {
-        return value != null && value.toLowerCase().contains(search);
-    }
 }

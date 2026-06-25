@@ -30,13 +30,7 @@ public class AdminJobController {
     // Lista completa de joburi pentru admin.
     // Daca exista query-ul "search", aplicam cautarea.
     @GetMapping
-    public ResponseEntity<List<Job>> getAllJobsForAdmin(
-            @RequestParam(required = false) String search) {
-
-        if (search != null && !search.trim().isBlank()) {
-            return ResponseEntity.ok(jobService.searchJobsForAdmin(search));
-        }
-
+    public ResponseEntity<List<Job>> getAllJobsForAdmin() {
         return ResponseEntity.ok(jobService.getAllJobsForAdmin());
     }
 

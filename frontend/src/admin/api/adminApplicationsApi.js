@@ -1,9 +1,7 @@
 import axios from "../../api/axios";
 
 export async function getAdminApplications(search = "") {
-  const response = await axios.get("/api/admin/aplicari", {
-    params: search ? { search } : {},
-  });
+  const response = await axios.get("/api/admin/aplicari");
   return response.data;
 }
 

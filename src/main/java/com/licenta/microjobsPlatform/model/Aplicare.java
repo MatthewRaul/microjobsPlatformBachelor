@@ -7,7 +7,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection="aplicari")
 public class Aplicare {
-    
     @Id
     private String id;
     private String jobId;
@@ -17,9 +16,6 @@ public class Aplicare {
     private AplicareStatus status;
     private LocalDateTime appliedAt;
     private String jobTitle;
-    private String cvFileId;
-    private String cvFileName;
-    private String message;
 
     public Aplicare(){
     }

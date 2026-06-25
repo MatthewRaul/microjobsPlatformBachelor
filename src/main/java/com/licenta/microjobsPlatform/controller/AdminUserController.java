@@ -29,13 +29,7 @@ public class AdminUserController {
     // Lista completa de useri pentru admin.
     // Daca exista search, aplicam cautarea.
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsersForAdmin(
-            @RequestParam(required = false) String search) {
-
-        if (search != null && !search.trim().isBlank()) {
-            return ResponseEntity.ok(userService.searchUsersForAdmin(search));
-        }
-
+    public ResponseEntity<List<UserResponse>> getAllUsersForAdmin() {
         return ResponseEntity.ok(userService.getAllUsersForAdmin());
     }
 

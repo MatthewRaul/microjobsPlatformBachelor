@@ -6,12 +6,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.licenta.microjobsPlatform.dto.CreateReviewRequest;
 import com.licenta.microjobsPlatform.dto.PublicUserRatingResponse;
 import com.licenta.microjobsPlatform.dto.ReviewResponse;
+import com.licenta.microjobsPlatform.exception.ForbiddenAction;
 import com.licenta.microjobsPlatform.model.Aplicare;
 import com.licenta.microjobsPlatform.model.AplicareStatus;
 import com.licenta.microjobsPlatform.model.Job;
@@ -44,29 +47,29 @@ public class ReviewService {
 
     public ReviewResponse createReview(CreateReviewRequest request, String currentUserEmail) {
         User reviewer = userRepository.findByEmail(currentUserEmail)
-                .orElseThrow(() -> new RuntimeException("Reviewer not found"));
+                .orElseThrow(() -> new RuntimeException("Reviewer negasit."));
 
         User reviewedUser = userRepository.findById(request.getReviewedUserId())
-                .orElseThrow(() -> new RuntimeException("Reviewed user not found"));
+                .orElseThrow(() -> new RuntimeException("User recenzat negasit."));
 
         validateOnlyNormalUsers(reviewer);
         validateOnlyNormalUsers(reviewedUser);
         validateRating(request.getRating());
 
         if (reviewer.getId().equals(reviewedUser.getId())) {
-            throw new RuntimeException("You cannot review yourself");
+            throw new RuntimeException("Nu te poti evalua singur.");
         }
 
         Job job = jobRepository.findById(request.getJobId())
-                .orElseThrow(() -> new RuntimeException("Job not found"));
+                .orElseThrow(() -> new RuntimeException("Job negasit."));
 
         if (job.getStatus() != JobStatus.COMPLETED) {
-            throw new RuntimeException("Reviews can be added only for completed jobs");
+            throw new RuntimeException("Review-urile pot fi adaugate doar la joburi finalizate.");
         }
 
         if (reviewRepository.existsByJobIdAndReviewerIdAndReviewedUserId(
                 request.getJobId(), reviewer.getId(), reviewedUser.getId())) {
-            throw new RuntimeException("You already reviewed this user for this job");
+            throw new RuntimeException("Ai evaluat deja acest user pentru acest job.");
         }
 
         validateParticipation(job, reviewer, reviewedUser);
@@ -84,7 +87,7 @@ public class ReviewService {
 
     public PublicUserRatingResponse getPublicUserRating(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User negasit."));
 
         Double averageRating = user.getAverageRating() == null ? 0.0 : user.getAverageRating();
         Integer reviewCount = user.getReviewCount() == null ? 0 : user.getReviewCount();
@@ -95,7 +98,7 @@ public class ReviewService {
 
     public List<ReviewResponse> getPublicReviewsForUser(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("User negasit."));
 
         return reviewRepository.findByReviewedUserIdOrderByCreatedAtDesc(userId)
                 .stream()
@@ -109,8 +112,10 @@ public class ReviewService {
     // =========================
     // Zona admin
     // =========================
-
     public List<ReviewResponse> getAllReviewsForAdmin() {
+        if (!isAdmin()) {
+            throw new ForbiddenAction("Doar adminul poate vedea recenziile");
+        }
         return reviewRepository.findAll()
                 .stream()
                 .map(review -> {
@@ -122,6 +127,9 @@ public class ReviewService {
     }
 
     public void deleteReviewAsAdmin(String reviewId) {
+        if (!isAdmin()) {
+            throw new ForbiddenAction("Doar adminul poate vedea recenziile");
+        }
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Recenzia nu exista."));
 
@@ -134,21 +142,31 @@ public class ReviewService {
     // =========================
     // Helpers private
     // =========================
+    private boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getAuthorities() == null) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
+    }
 
     private void validateOnlyNormalUsers(User user) {
         if (user.getRole() != Role.USER) {
-            throw new RuntimeException("Review functionality is available only for users with role USER");
+            throw new RuntimeException("Aceasta functionalitate de review este valabila doar pentru utilizatorii cu rol USER");
         }
     }
 
     private void validateRating(Integer rating) {
         if (rating == null || rating < 1 || rating > 5) {
-            throw new RuntimeException("Rating must be between 1 and 5");
+            throw new RuntimeException("Rating trebuie sa fie intre 1 si 5");
         }
     }
 
     private String normalizeMessage(String message) {
-        if (message == null || message.trim().isEmpty()) return null;
+        if (message == null || message.trim().isEmpty()) {
+            return null;
+        }
         return message.trim();
     }
 
@@ -156,10 +174,10 @@ public class ReviewService {
         Set<String> participantIds = getParticipantIdsForJob(job);
 
         if (!participantIds.contains(reviewer.getId())) {
-            throw new RuntimeException("You did not participate in this job");
+            throw new RuntimeException("Nu ai participat la acest job");
         }
         if (!participantIds.contains(reviewedUser.getId())) {
-            throw new RuntimeException("This user did not participate in this job");
+            throw new RuntimeException("Acest utlizator nu a participat la acest job");
         }
     }
 
@@ -169,7 +187,7 @@ public class ReviewService {
         String ownerEmail = normalizeEmail(job.getPostedBy());
         if (ownerEmail != null) {
             User owner = userRepository.findByEmail(ownerEmail)
-                    .orElseThrow(() -> new RuntimeException("Job owner not found"));
+                    .orElseThrow(() -> new RuntimeException("Angajator negasit"));
             participantIds.add(owner.getId());
         }
 
@@ -178,9 +196,11 @@ public class ReviewService {
 
         for (Aplicare aplicare : acceptedApplications) {
             String applicantEmail = normalizeEmail(aplicare.getApplicantEmail());
-            if (applicantEmail == null) continue;
+            if (applicantEmail == null) {
+                continue;
+            }
             User applicant = userRepository.findByEmail(applicantEmail)
-                    .orElseThrow(() -> new RuntimeException("Applicant not found: " + applicantEmail));
+                    .orElseThrow(() -> new RuntimeException("Aplicant negasit " + applicantEmail));
             participantIds.add(applicant.getId());
         }
 
@@ -188,13 +208,15 @@ public class ReviewService {
     }
 
     private String normalizeEmail(String email) {
-        if (email == null || email.trim().isEmpty()) return null;
+        if (email == null || email.trim().isEmpty()) {
+            return null;
+        }
         return email.trim().toLowerCase();
     }
 
     private void updateUserRating(String userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("Utilizator negasit"));
 
         List<Review> reviews = reviewRepository.findByReviewedUserId(userId);
         int count = reviews.size();

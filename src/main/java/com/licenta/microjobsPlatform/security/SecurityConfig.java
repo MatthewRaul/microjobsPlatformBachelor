@@ -28,75 +28,69 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
     private final CustomUserDetailsService customUserDetailsService;//serviciul care stie gasi userul dupa email
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(csrf-> csrf.disable())//Cross-Site Request Forgery - un site rau intentionat pacaleste browserul unui user deja autentificat sa trimita o cerere pe alt site in numele lui
-            //trebuie dezactivat pentru teste, in special in Postman
-            .exceptionHandling(exception->exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
-            .authorizeHttpRequests(auth->
-                                auth.requestMatchers("/api/users/register","/api/users/login").permitAll().
-                                    requestMatchers("/error").permitAll().
-                                    requestMatchers(HttpMethod.GET,"/api/jobs").permitAll().
-                                    requestMatchers(HttpMethod.GET,"/api/jobs/*").permitAll().
-                                    requestMatchers(HttpMethod.GET,"/api/users/profile/**").permitAll().
-                                    requestMatchers("/api/locations/**").permitAll().
-                                    requestMatchers("/api/admin/**").hasRole("ADMIN").
-                                    requestMatchers(HttpMethod.GET,"/api/users/*/rating").permitAll().
-                                    requestMatchers(HttpMethod.GET,"/api/users/*/reviews").permitAll().
-                                    requestMatchers(HttpMethod.GET,"/api/users/public/**").permitAll()
-                                    .anyRequest().authenticated()
-                                 )
-                                .sessionManagement(session->
-                                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                                //serverul nu tine minte sesiuni pentru useri
-                                //doar verifica tokenul de fiecare data
-                                ).authenticationProvider(authenticationProvider())
-                                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)//specifici ce provider de autentificare trebuie folosit
-                                .cors(cors->{});//autroizare pentru frontend
-            return http.build();//se termina configuratia si se transforma intr un obiect de tip
-            //SecurityFilterChain gata de folosit
+                .csrf(csrf -> csrf.disable())
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                .authorizeHttpRequests(auth
+                        -> auth.requestMatchers("/api/users/register", "/api/users/login").permitAll().
+                        requestMatchers("/error").permitAll().
+                        requestMatchers(HttpMethod.GET, "/api/jobs").permitAll().
+                        requestMatchers(HttpMethod.GET, "/api/jobs/*").permitAll().
+                        requestMatchers(HttpMethod.GET, "/api/users/profile/**").permitAll().
+                        requestMatchers("/api/locations/**").permitAll().
+                        requestMatchers(HttpMethod.GET, "/api/users/*/rating").permitAll().
+                        requestMatchers(HttpMethod.GET, "/api/users/*/reviews").permitAll().
+                        requestMatchers(HttpMethod.GET, "/api/users/public/**").permitAll().
+                        requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session
+                        -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                ).authenticationProvider(authenticationProvider())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .cors(cors -> {
+                });
+        return http.build();
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider provider= new DaoAuthenticationProvider(passwordEncoder());
-        //implementare standard folosita cand useri is luati dintr o sursa de date
-        //si parolele sunt verificate cu un encoder
-        provider.setUserDetailsService(customUserDetailsService);
-        //de unde se iau userii
+    public AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(customUserDetailsService);
+
+        provider.setPasswordEncoder(passwordEncoder());
+
         return provider;
-        //return provider configurat
+
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception{
-        //componenta apelata in login pentru a verifica email++parola
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+
         return config.getAuthenticationManager();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public CorsConfigurationSource corsConfigurationSource(){
-        CorsConfiguration configuration=new CorsConfiguration();
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of("http://localhost:5173"));
 
-        configuration.setAllowedMethods(List.of("GET","POST","PATCH","PUT","DELETE","OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
 
-         // Header-ele permise
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
 
-        // Dacă vrei să permiți și trimiterea de credențiale/cookies
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -105,5 +99,3 @@ public class SecurityConfig {
         return source;
     }
 }
-    
-
