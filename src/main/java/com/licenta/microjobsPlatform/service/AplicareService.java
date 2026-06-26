@@ -1,7 +1,9 @@
 package com.licenta.microjobsPlatform.service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
@@ -28,20 +30,20 @@ public class AplicareService {
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
     private final EmailService emailService;
+    private final JobService jobService;
 
     public AplicareService(AplicareRepository aplicareRepository,
             JobRepository jobRepository,
             UserRepository userRepository,
-            EmailService emailService) {
+            EmailService emailService,
+            JobService jobService) {
         this.aplicareRepository = aplicareRepository;
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
+        this.jobService = jobService;
     }
 
-    // =========================
-    // Helpers generale
-    // =========================
     private Authentication getAuthentication() {
         return SecurityContextHolder.getContext().getAuthentication();
     }
@@ -120,9 +122,6 @@ public class AplicareService {
         );
     }
 
-    // =========================
-    // Zona utilizator / owner
-    // =========================
     public Aplicare applyToJob(String jobId) {
         String applicantEmail = getCurrentUserEmail();
 
@@ -132,19 +131,7 @@ public class AplicareService {
             job.setAcceptedWorkers(0);
         }
 
-        LocalDateTime now = LocalDateTime.now();
-
-        if (job.getEndDate() != null && !job.getEndDate().isAfter(now)) {
-            job.setStatus(JobStatus.COMPLETED);
-            jobRepository.save(job);
-            throw new BadRequest("Jobul s-a incheiat.");
-        }
-
-        if (job.getStartDate() != null && !job.getStartDate().isAfter(now)) {
-            job.setStatus(JobStatus.IN_PROGRESS);
-            jobRepository.save(job);
-            throw new BadRequest("Jobul este in desfasurare.");
-        }
+        jobService.refreshStatusByTime(job);
 
         if (job.getStatus() == JobStatus.CANCELED
                 || job.getStatus() == JobStatus.COMPLETED
@@ -179,7 +166,6 @@ public class AplicareService {
 
         Aplicare savedAplicare = aplicareRepository.save(aplicare);
 
-        // Notifica ownerul jobului ca a primit o noua aplicare
         User owner = userRepository.findByEmail(job.getPostedBy()).orElse(null);
         if (owner != null) {
             emailService.sendNewApplicationNotificationEmail(
@@ -302,7 +288,6 @@ public class AplicareService {
         aplicare.setStatus(AplicareStatus.REJECTED);
         Aplicare savedAplicare = aplicareRepository.save(aplicare);
 
-        // Notifica aplicantul ca a fost respins
         User applicant = userRepository.findByEmail(aplicare.getApplicantEmail()).orElse(null);
         if (applicant != null) {
             emailService.sendApplicationRejectedEmail(
@@ -350,15 +335,22 @@ public class AplicareService {
 
     public List<AplicareResponse> getMyAplicari() {
         String email = getCurrentUserEmail();
+        List<Aplicare> aplicari = aplicareRepository.findByApplicantEmail(email);
+
+        Set<String> jobIdsDejaVerificate = new HashSet<>();
+        for (Aplicare aplicare : aplicari) {
+            String jobId = aplicare.getJobId();
+            if (jobId != null && jobIdsDejaVerificate.add(jobId)) {
+                jobRepository.findById(jobId).ifPresent(jobService::refreshStatusByTime);
+            }
+        }
+
         return aplicareRepository.findByApplicantEmail(email)
                 .stream()
                 .map(this::mapToAplicareResponse)
                 .collect(Collectors.toList());
     }
 
-    // =========================
-    // Zona admin
-    // =========================
     public List<Aplicare> getAllAplicariForAdmin() {
         if (!isAdmin()) {
             throw new ForbiddenAction("Doar adminul poate vedea toate aplicarile.");

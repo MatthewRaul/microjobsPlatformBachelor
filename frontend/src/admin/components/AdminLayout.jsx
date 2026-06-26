@@ -8,7 +8,6 @@ export default function AdminLayout({ title, children }) {
 
   return (
     <div className="admin-wrapper">
-      {/* Overlay pentru mobile */}
       <div
         className={`admin-sidebar-overlay${sidebarOpen ? " admin-sidebar-overlay--visible" : ""}`}
         onClick={() => setSidebarOpen(false)}

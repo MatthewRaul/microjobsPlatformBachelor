@@ -1,12 +1,13 @@
 package com.licenta.microjobsPlatform.dto;
 
 public class LocationSuggestionDto {
+
     private String location;
     private String county;
 
     public LocationSuggestionDto(String location, String county) {
-        this.location=location;
-        this.county=county;
+        this.location = location;
+        this.county = county;
     }
 
     public LocationSuggestionDto() {
@@ -29,5 +30,3 @@ public class LocationSuggestionDto {
     }
 
 }
-
-

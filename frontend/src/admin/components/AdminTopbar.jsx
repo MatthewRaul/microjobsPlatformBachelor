@@ -14,7 +14,6 @@ export default function AdminTopbar({ title, onMenuClick }) {
   return (
     <header className="admin-topbar">
       <div style={{ display: "flex", alignItems: "center" }}>
-        {/* Buton hamburger — vizibil doar pe mobile prin CSS */}
         <button className="admin-hamburger" onClick={onMenuClick} aria-label="Deschide meniul">
           <span className="admin-hamburger__bar" />
           <span className="admin-hamburger__bar" />

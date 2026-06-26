@@ -1,8 +1,3 @@
-/* ============================================================
-   datepicker.css — tema custom pentru react-datepicker
-   ============================================================ */
-
-/* --- Popup calendar --- */
 .react-datepicker {
   background-color: #1e1e1e !important;
   border: 1px solid rgba(255, 255, 255, 0.15) !important;
@@ -39,7 +34,6 @@
   line-height: 2rem !important;
 }
 
-/* --- Navigare sagetile --- */
 .react-datepicker__navigation-icon::before {
   border-color: rgba(255, 255, 255, 0.8) !important;
 }
@@ -47,7 +41,6 @@
   border-color: #ffffff !important;
 }
 
-/* --- Zile --- */
 .react-datepicker__day {
   color: rgba(255, 255, 255, 0.85) !important;
   width: 2rem !important;
@@ -80,7 +73,6 @@
   background-color: transparent !important;
 }
 
-/* --- Sectiunea de timp (coloana dreapta) --- */
 .react-datepicker__time-container {
   border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
   width: 80px !important;
@@ -106,7 +98,6 @@
   border-radius: 0 10px 0 0 !important;
 }
 
-/* Lista de ore — mereu vizibila, scrollabila */
 .react-datepicker__time-list {
   height: 198px !important;
   overflow-y: scroll !important;
@@ -144,12 +135,10 @@
   font-weight: 700 !important;
 }
 
-/* --- Triunghi pointer --- */
 .react-datepicker__triangle {
   display: none !important;
 }
 
-/* --- Input wrapper --- */
 .react-datepicker-wrapper {
   width: 100%;
   display: block;
@@ -158,7 +147,7 @@
   width: 100%;
   display: block;
 }
-/* ── Input DatePicker — galben ca celelalte inputuri ── */
+
 .react-datepicker__input-container input {
   background: var(--color-accent) !important;
   color: #1a1a1a !important;

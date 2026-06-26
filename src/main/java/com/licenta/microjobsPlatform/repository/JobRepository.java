@@ -1,6 +1,6 @@
 package com.licenta.microjobsPlatform.repository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -16,56 +16,46 @@ public interface JobRepository extends MongoRepository<Job, String> {
 
     List<Job> findByPostedBy(String postedBy);
 
-    // Returneaza joburile vizibile care incep de la aceasta data incolo.
     List<Job> findByStatusInAndStartDateGreaterThanEqual(
             List<JobStatus> statuses,
-            LocalDateTime startDate
+            Instant startDate
     );
 
-// Returneaza joburile vizibile care se termina pana la aceasta data.
     List<Job> findByStatusInAndEndDateLessThanEqual(
             List<JobStatus> statuses,
-            LocalDateTime endDate
+            Instant endDate
     );
 
-// Returneaza joburile vizibile dintr-o anumita locatie.
     List<Job> findByStatusInAndLocationIgnoreCase(
             List<JobStatus> statuses,
             String location
     );
 
-// Returneaza joburile vizibile care se incadreaza in intervalul dat.
     List<Job> findByStatusInAndStartDateGreaterThanEqualAndEndDateLessThanEqual(
             List<JobStatus> statuses,
-            LocalDateTime startDate,
-            LocalDateTime endDate
+            Instant startDate,
+            Instant endDate
     );
 
-// Returneaza joburile vizibile care incep de la data ceruta
-// si sunt din locatia ceruta.
     List<Job> findByStatusInAndStartDateGreaterThanEqualAndLocationIgnoreCase(
             List<JobStatus> statuses,
-            LocalDateTime startDate,
+            Instant startDate,
             String location
     );
 
-// Returneaza joburile vizibile care se termina pana la data ceruta
-// si sunt din locatia ceruta.
     List<Job> findByStatusInAndEndDateLessThanEqualAndLocationIgnoreCase(
             List<JobStatus> statuses,
-            LocalDateTime endDate,
+            Instant endDate,
             String location
     );
 
-// Returneaza joburile vizibile care respecta toate cele 3 filtre.
     List<Job> findByStatusInAndStartDateGreaterThanEqualAndEndDateLessThanEqualAndLocationIgnoreCase(
             List<JobStatus> statuses,
-            LocalDateTime startDate,
-            LocalDateTime endDate,
+            Instant startDate,
+            Instant endDate,
             String location
     );
 
-    // Returneaza joburile vizibile care cer cel putin numarul dat de participanti.
     List<Job> findByStatusInAndNeededWorkersGreaterThanEqual(
             List<JobStatus> statuses,
             Integer neededWorkers

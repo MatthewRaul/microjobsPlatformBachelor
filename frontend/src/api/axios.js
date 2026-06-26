@@ -1,9 +1,3 @@
-
-// Aici configurăm "baza" pentru toate request-urile către backend.
-// Ideea este simplă:
-// în loc să scriem de fiecare dată http://localhost:8080,
-// îl punem o singură dată aici.
-
 import axios from "axios";
 
 const api = axios.create({

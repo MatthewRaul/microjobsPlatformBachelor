@@ -79,7 +79,6 @@ export default function PublicProfilePage() {
   return (
     <section className="page" style={{ maxWidth: "640px" }}>
 
-      {/* CARD 1 — ALB — Info profil */}
       <div className="profile-card">
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "20px" }}>
           {profile.profilePictureUrl ? (
@@ -131,7 +130,6 @@ export default function PublicProfilePage() {
         </div>
       </div>
 
-      {/* CARD 2 — MOV — Skills */}
       {profile.skills && profile.skills.length > 0 && (
         <div className="profile-card--primary">
           <p className="section-label">Competente</p>
@@ -143,7 +141,6 @@ export default function PublicProfilePage() {
         </div>
       )}
 
-      {/* CARD CV — MOV */}
       {isAuthenticated && profile.hasCv && (
         <div
           onClick={handleOpenCv}
@@ -174,8 +171,7 @@ export default function PublicProfilePage() {
           </svg>
         </div>
       )}
-
-      {/* CARD 3 — VERDE — Reviews */}
+      
       <div className="profile-card--accent" onClick={handleRatingClick}
         style={{ cursor: profile.id ? "pointer" : "default" }}>
         <p className="section-label">Recenzii</p>

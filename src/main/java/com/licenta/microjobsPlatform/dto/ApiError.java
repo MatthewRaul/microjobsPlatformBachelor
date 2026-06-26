@@ -3,6 +3,7 @@ package com.licenta.microjobsPlatform.dto;
 import java.time.LocalDateTime;
 
 public class ApiError {
+
     private LocalDateTime timestamp;
     private int status;
     private String error;
@@ -57,5 +58,4 @@ public class ApiError {
         this.path = path;
     }
 
-    
 }

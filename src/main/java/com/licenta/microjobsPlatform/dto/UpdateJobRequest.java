@@ -1,14 +1,14 @@
 package com.licenta.microjobsPlatform.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public class UpdateJobRequest {
 
     private String title;
     private String description;
     private Integer neededWorkers;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+    private Instant startDate;
+    private Instant endDate;
     private Integer salary;
     private String location;
     private String county;
@@ -40,19 +40,19 @@ public class UpdateJobRequest {
         this.neededWorkers = neededWorkers;
     }
 
-    public LocalDateTime getStartDate() {
+    public Instant getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDateTime startDate) {
+    public void setStartDate(Instant startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDateTime getEndDate() {
+    public Instant getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDateTime endDate) {
+    public void setEndDate(Instant endDate) {
         this.endDate = endDate;
     }
 
@@ -79,6 +79,5 @@ public class UpdateJobRequest {
     public void setCounty(String county) {
         this.county = county;
     }
-
 
 }

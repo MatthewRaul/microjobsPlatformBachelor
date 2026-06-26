@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminLayout from "../components/AdminLayout";
-import StatusBadge from "../components/StatusBadge";
-import ConfirmModal from "../components/ConfirmModal";
+import StatusBadge from "../../components/StatusBadge";
+import ConfirmModal from "../../components/ConfirmModal";
 import {
   getAdminApplications,
   acceptAdminApplication,
@@ -22,6 +22,8 @@ export default function AdminApplicationsPage() {
   });
 
   const [applicationToDelete, setApplicationToDelete] = useState(null);
+  const [applicationToAccept, setApplicationToAccept] = useState(null);
+  const [applicationToReject, setApplicationToReject] = useState(null);
 
   useEffect(() => { loadApplications(); }, []);
 
@@ -56,9 +58,15 @@ export default function AdminApplicationsPage() {
     await loadApplications();
   }
 
-  async function handleAccept(id) {
+  function handleAccept(application) {
+    setApplicationToAccept(application);
+  }
+
+  async function confirmAccept() {
+    if (!applicationToAccept) return;
     try {
-      await acceptAdminApplication(id);
+      await acceptAdminApplication(applicationToAccept.id);
+      setApplicationToAccept(null);
       await loadApplications();
     } catch (err) {
       console.error(err);
@@ -66,9 +74,15 @@ export default function AdminApplicationsPage() {
     }
   }
 
-  async function handleReject(id) {
+  function handleReject(application) {
+    setApplicationToReject(application);
+  }
+
+  async function confirmReject() {
+    if (!applicationToReject) return;
     try {
-      await rejectAdminApplication(id);
+      await rejectAdminApplication(applicationToReject.id);
+      setApplicationToReject(null);
       await loadApplications();
     } catch (err) {
       console.error(err);
@@ -154,8 +168,8 @@ export default function AdminApplicationsPage() {
                     <div className="admin-actions">
                       {application.status === "PENDING" && (
                         <>
-                          <button className="admin-action-btn admin-action-btn--accept" onClick={() => handleAccept(application.id)}>Acceptă</button>
-                          <button className="admin-action-btn admin-action-btn--reject" onClick={() => handleReject(application.id)}>Respinge</button>
+                          <button className="admin-action-btn admin-action-btn--accept" onClick={() => handleAccept(application)}>Acceptă</button>
+                          <button className="admin-action-btn admin-action-btn--reject" onClick={() => handleReject(application)}>Respinge</button>
                         </>
                       )}
                       <button className="admin-action-btn admin-action-btn--delete" onClick={() => setApplicationToDelete(application)}>Șterge</button>
@@ -176,6 +190,26 @@ export default function AdminApplicationsPage() {
         cancelText="Renunță"
         onCancel={() => setApplicationToDelete(null)}
         onConfirm={handleDelete}
+        danger
+      />
+      <ConfirmModal
+        open={!!applicationToAccept}
+        title="Acceptare aplicare"
+        message={applicationToAccept ? `Ești sigur că vrei să accepți aplicarea lui ${applicationToAccept.applicantFirstName} ${applicationToAccept.applicantLastName}?` : "Ești sigur că vrei să accepți această aplicare?"}
+        confirmText="Acceptă"
+        cancelText="Renunță"
+        onCancel={() => setApplicationToAccept(null)}
+        onConfirm={confirmAccept}
+      />
+      <ConfirmModal
+        open={!!applicationToReject}
+        title="Respingere aplicare"
+        message={applicationToReject ? `Ești sigur că vrei să respingi aplicarea lui ${applicationToReject.applicantFirstName} ${applicationToReject.applicantLastName}?` : "Ești sigur că vrei să respingi această aplicare?"}
+        confirmText="Respinge"
+        cancelText="Renunță"
+        onCancel={() => setApplicationToReject(null)}
+        onConfirm={confirmReject}
+        danger
       />
     </AdminLayout>
   );

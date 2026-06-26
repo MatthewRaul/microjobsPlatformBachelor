@@ -44,7 +44,6 @@ export default function PublicUserReviewsPage() {
   return (
     <section className="page" style={{ maxWidth: "640px" }}>
 
-      {/* CARD VERDE — Sumar rating */}
       {ratingData && (
         <div className="profile-card--accent" style={{ marginBottom: "20px" }}>
           <p className="section-label">Rating general</p>
@@ -76,7 +75,6 @@ export default function PublicUserReviewsPage() {
         </div>
       )}
 
-      {/* CARDURI ALBE — Review-uri individuale */}
       {reviews.length === 0 ? (
         <div className="profile-card" style={{ textAlign: "center", color: "var(--color-text-muted)", fontSize: "15px" }}>
           Acest utilizator nu are încă recenzii.

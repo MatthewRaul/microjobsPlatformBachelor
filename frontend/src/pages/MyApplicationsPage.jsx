@@ -1,12 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../api/axios";
-
-const STATUS_LABEL = {
-  PENDING:  "În așteptare",
-  ACCEPTED: "Acceptat",
-  REJECTED: "Respins",
-};
+import StatusBadge from "../components/StatusBadge";
 
 const IconBriefcase = () => (
   <svg className="job-meta__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -63,7 +58,6 @@ export default function MyApplicationsPage() {
       ) : (
         applications.map((app) => {
           const jobId = app.jobId;
-          const statusKey = (app.status || "").toUpperCase();
           const appliedAt = app.appliedAt
             ? new Date(app.appliedAt).toLocaleString("ro-RO", { dateStyle: "medium", timeStyle: "short" })
             : null;
@@ -77,9 +71,7 @@ export default function MyApplicationsPage() {
             >
               <div className="job-title">{app.jobTitle || "Job"}</div>
 
-              <span className={`status-badge status-badge--${statusKey.toLowerCase()}`}>
-                {STATUS_LABEL[statusKey] || app.status}
-              </span>
+              <StatusBadge status={app.status} />
 
               <div className="job-meta">
                 {app.jobOwnerEmail && (

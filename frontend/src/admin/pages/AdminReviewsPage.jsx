@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminLayout from "../components/AdminLayout";
-import ConfirmModal from "../components/ConfirmModal";
+import ConfirmModal from "../../components/ConfirmModal";
 import { getAllReviews, deleteReviewAsAdmin } from "../api/adminReviewsApi";
 
 export default function AdminReviewsPage() {
@@ -167,6 +167,7 @@ export default function AdminReviewsPage() {
         cancelText="Renunță"
         onCancel={() => setReviewToDelete(null)}
         onConfirm={handleDelete}
+        danger
       />
     </AdminLayout>
   );

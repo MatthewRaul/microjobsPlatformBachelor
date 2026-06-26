@@ -3,13 +3,14 @@ package com.licenta.microjobsPlatform.dto;
 import com.licenta.microjobsPlatform.model.Role;
 
 public class LoginResponse {
+
     private String token;
     private String firstName;
     private String email;
     private Role role;
-    
-    public LoginResponse(){
-        
+
+    public LoginResponse() {
+
     }
 
     public LoginResponse(String token, String firstName, String email, Role role) {
@@ -35,8 +36,6 @@ public class LoginResponse {
         this.firstName = firstName;
     }
 
-    
-
     public String getEmail() {
         return email;
     }
@@ -52,6 +51,5 @@ public class LoginResponse {
     public void setRole(Role role) {
         this.role = role;
     }
-    
-    
+
 }

@@ -1,6 +1,3 @@
-/* src/styles/components.css */
-
-/* ── Welcome banner ── */
 .welcome-banner {
   background: #1d1d1d;
   border-radius: var(--radius-lg);
@@ -20,7 +17,6 @@
   text-align: center;
 }
 
-/* ── Card accent galben (owner job) ── */
 .card--accent {
   background: var(--color-accent) !important;
   cursor: pointer;
@@ -36,33 +32,6 @@
 .card--accent span { color: #1a1a1a !important; }
 .card--accent strong { color: #1a1a1a !important; }
 
-/* ── Card dark #3d3d3d (participanți acceptați) ── */
-.card--dark {
-  background: #3d3d3d !important;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.card--dark:hover {
-  transform: translateY(-2px);
-  box-shadow: none !important;
-}
-.card--dark .job-meta__item { color: rgba(255,255,255,0.88) !important; }
-.card--dark p { color: rgba(255,255,255,0.7) !important; }
-.card--dark span { color: rgba(255,255,255,0.88) !important; }
-.card--dark strong { color: #ffffff !important; }
-
-/* ── Card verde clickabil (owner card, participanți) ── */
-.card--green {
-  background: var(--color-green-dark) !important;
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.card--green:hover {
-  transform: translateY(-2px);
-  box-shadow: none !important;
-}
-
-/* ── Card alb cu bordură primary (participanți acceptați) ── */
 .card--white {
   background: #ffffff !important;
   border: 1px solid var(--color-primary-border) !important;
@@ -78,16 +47,6 @@
 .card--white .job-meta__item { color: var(--color-primary) !important; }
 .card--white .hint-text { color: var(--color-primary); }
 
-/* ── Card clickabil generic ── */
-.card--clickable {
-  cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.card--clickable:hover {
-  transform: translateY(-2px);
-}
-
-/* ── Empty state box verde ── */
 .empty-state-box {
   background: #1d1d1d;
   border-radius: var(--radius-lg);
@@ -107,7 +66,6 @@
   text-align: center;
 }
 
-/* ── Modal ── */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -156,42 +114,6 @@
   color: var(--color-text-light) !important;
 }
 
-/* ── Status badge ── */
-.status-badge {
-  display: inline-block;
-  padding: 3px 14px;
-  border-radius: var(--radius-pill);
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-.status-badge--open {
-  background: var(--color-status-open-bg);
-  color: var(--color-status-open-text);
-  border: 1px solid var(--color-status-open-border);
-}
-.status-badge--filled {
-  background: var(--color-status-filled-bg);
-  color: var(--color-status-filled-text);
-  border: 1px solid var(--color-status-filled-border);
-}
-.status-badge--in_progress {
-  background: var(--color-status-inprogress-bg);
-  color: var(--color-status-inprogress-text);
-  border: 1px solid var(--color-status-inprogress-border);
-}
-.status-badge--completed {
-  background: var(--color-status-completed-bg);
-  color: var(--color-status-completed-text);
-  border: 1px solid var(--color-status-completed-border);
-}
-.status-badge--canceled {
-  background: var(--color-status-canceled-bg);
-  color: var(--color-status-canceled-text);
-  border: 1px solid var(--color-status-canceled-border);
-}
-
-/* ── PublicProfilePage cards ── */
 .profile-card {
   background: #ffffff;
   border-radius: var(--radius-lg);
@@ -228,15 +150,6 @@
 .profile-card--accent p { color: #1a1a1a !important; }
 .profile-card--accent .star--inactive { color: rgba(0,0,0,0.2) !important; }
 
-.profile-card--green {
-  background: var(--color-green);
-  border-radius: var(--radius-lg);
-  padding: 20px 24px;
-  box-shadow: 0 4px 16px var(--color-green-shadow);
-  cursor: pointer;
-}
-
-/* ── Avatar inițiale ── */
 .avatar-initials {
   width: 72px;
   height: 72px;
@@ -251,7 +164,6 @@
   flex-shrink: 0;
 }
 
-/* ── Section label (DESPRE, COMPETENȚE etc.) ── */
 .section-label {
   font-size: 12px;
   font-weight: 600;
@@ -262,7 +174,6 @@
 }
 .section-label--dark { color: #aaaaaa; }
 
-/* ── Skill tag ── */
 .skill-tag {
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -273,7 +184,6 @@
   font-weight: 500;
 }
 
-/* ── Icon box pătrat (CV card) ── */
 .icon-box {
   width: 44px;
   height: 44px;
@@ -286,22 +196,18 @@
   flex-shrink: 0;
 }
 
-/* ── Stars ── */
 .star--active   { color: var(--color-star-active); font-size: 20px; }
 .star--inactive { color: var(--color-text-light-25); font-size: 20px; }
 
-/* ── Mesaje pe fundal colorat ── */
 .msg--success-on-dark { color: var(--color-success-light); font-weight: 600; margin-top: 12px; }
 .msg--error-on-dark   { color: var(--color-error-light);   font-weight: 600; margin-top: 12px; }
 
-/* ── Hint text (apasă pentru profil) ── */
 .hint-text {
   margin-top: 10px;
   font-size: 13px;
   opacity: 0.6;
 }
 
-/* ── Contact row (email, telefon în profile card) ── */
 .contact-row {
   display: flex;
   align-items: center;
@@ -310,47 +216,6 @@
   color: var(--color-text-medium);
 }
 
-/* ── Status badge — stări suplimentare (aplicări, roluri) ── */
-.status-badge--pending  { background: rgba(251,191,36,0.2);  color: #fde68a; border: 1px solid rgba(251,191,36,0.4); }
-.status-badge--accepted { background: rgba(52,211,153,0.2);  color: #a7f3d0; border: 1px solid rgba(52,211,153,0.4); }
-.status-badge--rejected { background: rgba(248,113,113,0.2); color: #fecaca; border: 1px solid rgba(248,113,113,0.4); }
-.status-badge--admin    { background: rgba(96,165,250,0.2);  color: #bfdbfe; border: 1px solid rgba(96,165,250,0.4); }
-.status-badge--user     { background: rgba(255,255,255,0.15); color: #ffffff; border: 1px solid rgba(255,255,255,0.4); }
-.status-badge--unknown  { background: rgba(229,231,235,0.3); color: #ffffff; border: 1px solid rgba(229,231,235,0.4); }
-
-/* ── Buton înapoi — pe fundal deschis (PublicProfilePage, PublicUserReviewsPage) ── */
-.btn-back {
-  background: none;
-  border: none;
-  color: #555555;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: inherit;
-}
-.btn-back:hover { color: var(--color-text-dark); }
-
-/* ── Buton înapoi — pe fundal colorat (ReviewPage, form-box) ── */
-.btn-back-light {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.7);
-  cursor: pointer;
-  font-size: 14px;
-  padding: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: inherit;
-}
-.btn-back-light:hover { color: var(--color-text-light); }
-
-/* ── Input error border ── */
-.input--error { border-color: var(--color-error-light) !important; }
-/* ── Navbar ── */
 .navbar {
   background-color: #1d1d1d;
   display: flex;
@@ -394,27 +259,6 @@
   color: #1a1a1a;
 }
 
-/* ── AcceptedWorkersSection ── */
-.worker-card {
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 16px;
-  margin-bottom: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-  background: #ffffff;
-}
-.worker-card__info { display: flex; flex-direction: column; gap: 4px; }
-.worker-card__name { font-weight: 700; font-size: 16px; color: var(--color-text-dark); }
-.worker-card__email { font-size: 14px; color: var(--color-text-muted); }
-.worker-card__rating { font-size: 14px; color: var(--color-text-medium); }
-.worker-card__review-count { margin-left: 4px; color: var(--color-text-muted); }
-.worker-card__actions { display: flex; gap: 10px; flex-wrap: wrap; }
-
-/* ── LocationAutocomplete ── */
 .location-autocomplete { position: relative; }
 .location-autocomplete__loading {
   font-size: 12px;

@@ -1,10 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-/* ============================================================
-   index.css — stiluri globale de baza
-   Design-ul specific paginilor e in auth.css
-   ============================================================ */
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -32,12 +27,10 @@ a {
   min-height: 100vh;
 }
 
-/* main-content — padding-top compensat pentru navbar fix (inaltime ~56px + 20px spatiu) */
 .main-content {
   padding: 80px 40px 40px;
 }
 
-/* Stil general pentru pagini */
 .page {
   max-width: 900px;
   margin: 0 auto;
@@ -53,7 +46,6 @@ a {
   line-height: 1.6;
 }
 
-/* Card simplu */
 .card {
   background: #3d3d3d;
   padding: 24px;
@@ -73,59 +65,10 @@ a {
   margin-bottom: 12px;
 }
 
-/* Mesaj eroare */
 .error-message {
   color: var(--color-error);
   font-weight: 600;
   margin-top: 8px;
-}
-
-/* Mesaj de succes */
-.success-message {
-  color: var(--color-success);
-  font-weight: 600;
-  margin-top: 8px;
-}
-
-.job-owner-menu {
-  position: relative;
-  display: inline-block;
-}
-
-.menu-button {
-  background: #f3f4f6;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 18px;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 110%;
-  right: 0;
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-  min-width: 140px;
-  display: flex;
-  flex-direction: column;
-  z-index: 10;
-}
-
-.dropdown-item {
-  background: none;
-  border: none;
-  text-align: left;
-  padding: 10px 12px;
-  cursor: pointer;
-  width: 100%;
-}
-
-.dropdown-item:hover {
-  background: #f5f5f5;
 }
 
 .status-box {

@@ -27,11 +27,6 @@ export const getJobById = async (jobId) => {
   return response.data;
 };
 
-export const cancelJob = async (jobId) => {
-  const response = await api.patch(`/api/jobs/${jobId}/cancel`);
-  return response.data;
-};
-
 export const completeJob = async (jobId) => {
   const response = await api.patch(`/api/jobs/${jobId}/complete`);
   return response.data;
@@ -72,7 +67,3 @@ export const withdrawApplication = async (applicationId) => {
   return response.data;
 };
 
-export const getOwnerIdForJob = async (jobId) => {
-  const response = await api.get(`/api/jobs/${jobId}/owner-id`);
-  return response.data;
-};

@@ -1,12 +1,13 @@
 package com.licenta.microjobsPlatform.dto;
 
 public class CreateReviewRequest {
+
     private String jobId;
     private String reviewedUserId;
     private Integer rating;
     private String message;
 
-    public CreateReviewRequest(){
+    public CreateReviewRequest() {
 
     }
 
@@ -49,5 +50,4 @@ public class CreateReviewRequest {
         this.message = message;
     }
 
-    
 }

@@ -50,7 +50,6 @@ function HomePage() {
         setAppliedJobIds([]);
       }
     } catch (err) {
-      console.log("EROARE HOME PAGE", err);
       setError("Nu am putut încărca joburile.");
     } finally {
       setLoadingJobs(false);
@@ -59,8 +58,8 @@ function HomePage() {
 
   useEffect(() => {
     const filters = {};
-    if (filterStartDate) filters.startDate = filterStartDate.toISOString().slice(0, 19);
-    if (filterEndDate) filters.endDate = filterEndDate.toISOString().slice(0, 19);
+    if (filterStartDate) filters.startDate = filterStartDate.toISOString();
+    if (filterEndDate) filters.endDate = filterEndDate.toISOString();
     if (debouncedLocation.trim()) filters.location = debouncedLocation.trim();
     if (filterParticipants) filters.participants = Number(filterParticipants);
     fetchJobs(Object.keys(filters).length > 0 ? filters : null);
@@ -113,7 +112,6 @@ function HomePage() {
       setSelectedJob(null);
       await fetchJobs();
     } catch (err) {
-      console.log("EROARE APPLY", err);
       setError("Nu s-a putut trimite aplicarea.");
     } finally {
       setIsApplying(false);
@@ -287,7 +285,6 @@ function HomePage() {
         Postează un job
       </button>
 
-      {/* ── Modal aplicare ── */}
       {showApplyModal && selectedJob && (
         <div style={{
           position: "fixed", inset: 0,
@@ -331,7 +328,6 @@ function HomePage() {
         </div>
       )}
 
-      {/* ── Modal ștergere job ── */}
       {deleteModalJobId && (
         <div style={{
           position: "fixed", inset: 0,

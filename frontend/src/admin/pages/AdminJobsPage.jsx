@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminLayout from "../components/AdminLayout";
-import StatusBadge from "../components/StatusBadge";
-import ConfirmModal from "../components/ConfirmModal";
+import StatusBadge from "../../components/StatusBadge";
+import ConfirmModal from "../../components/ConfirmModal";
 import {
   getAdminJobs,
   cancelAdminJob,
@@ -27,6 +27,8 @@ export default function AdminJobsPage() {
   });
 
   const [jobToDelete, setJobToDelete] = useState(null);
+  const [jobToCancel, setJobToCancel] = useState(null);
+  const [jobToComplete, setJobToComplete] = useState(null);
 
   useEffect(() => { loadJobs(); }, []);
 
@@ -61,9 +63,15 @@ export default function AdminJobsPage() {
     await loadJobs();
   }
 
-  async function handleCancel(jobId) {
+  function handleCancel(job) {
+    setJobToCancel(job);
+  }
+
+  async function confirmCancel() {
+    if (!jobToCancel) return;
     try {
-      await cancelAdminJob(jobId);
+      await cancelAdminJob(jobToCancel.id);
+      setJobToCancel(null);
       await loadJobs();
     } catch (err) {
       console.error(err);
@@ -71,9 +79,15 @@ export default function AdminJobsPage() {
     }
   }
 
-  async function handleComplete(jobId) {
+  function handleComplete(job) {
+    setJobToComplete(job);
+  }
+
+  async function confirmComplete() {
+    if (!jobToComplete) return;
     try {
-      await completeAdminJob(jobId);
+      await completeAdminJob(jobToComplete.id);
+      setJobToComplete(null);
       await loadJobs();
     } catch (err) {
       console.error(err);
@@ -179,8 +193,8 @@ export default function AdminJobsPage() {
                     <div className="admin-actions">
                       {job.status !== "CANCELED" && job.status !== "COMPLETED" && (
                         <>
-                          <button className="admin-action-btn admin-action-btn--cancel" onClick={() => handleCancel(job.id)}>Anulează</button>
-                          <button className="admin-action-btn admin-action-btn--complete" onClick={() => handleComplete(job.id)}>Finalizează</button>
+                          <button className="admin-action-btn admin-action-btn--cancel" onClick={() => handleCancel(job)}>Anulează</button>
+                          <button className="admin-action-btn admin-action-btn--complete" onClick={() => handleComplete(job)}>Finalizează</button>
                         </>
                       )}
                       <button className="admin-action-btn admin-action-btn--delete" onClick={() => setJobToDelete(job)}>Șterge</button>
@@ -201,6 +215,26 @@ export default function AdminJobsPage() {
         cancelText="Renunță"
         onCancel={() => setJobToDelete(null)}
         onConfirm={handleDelete}
+        danger
+      />
+      <ConfirmModal
+        open={!!jobToCancel}
+        title="Anulare job"
+        message={jobToCancel ? `Ești sigur că vrei să anulezi jobul "${jobToCancel.title}"?` : "Ești sigur că vrei să anulezi acest job?"}
+        confirmText="Anulează"
+        cancelText="Renunță"
+        onCancel={() => setJobToCancel(null)}
+        onConfirm={confirmCancel}
+        danger
+      />
+      <ConfirmModal
+        open={!!jobToComplete}
+        title="Finalizare job"
+        message={jobToComplete ? `Ești sigur că vrei să marchezi jobul "${jobToComplete.title}" ca finalizat?` : "Ești sigur că vrei să finalizezi acest job?"}
+        confirmText="Finalizează"
+        cancelText="Renunță"
+        onCancel={() => setJobToComplete(null)}
+        onConfirm={confirmComplete}
       />
     </AdminLayout>
   );

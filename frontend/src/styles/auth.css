@@ -1,8 +1,3 @@
-/* ============================================================
-   auth.css — stiluri globale pentru formulare
-   ============================================================ */
-
-/* --- Fundal pagina gri --- */
 .auth-page {
   min-height: 100vh;
   background-color: var(--color-bg-page);
@@ -13,7 +8,6 @@
   box-sizing: border-box;
 }
 
-/* --- Cutia mov neon --- */
 .form-box {
   background: var(--color-primary);
   border-radius: 12px;
@@ -24,7 +18,6 @@
   box-sizing: border-box;
 }
 
-/* Titlu in cutie */
 .form-box h1 {
   margin: 0 0 36px;
   text-align: center;
@@ -35,13 +28,11 @@
   text-shadow: 0 0 12px rgba(200, 150, 255, 0.8);
 }
 
-/* --- Grup input cu label flotant --- */
 .user-box {
   position: relative;
   margin-bottom: 32px;
 }
 
-/* Input negru ca butonul */
 .user-box input,
 .user-box textarea,
 .user-box select {
@@ -71,7 +62,6 @@
   box-shadow: none;
 }
 
-/* Label flotant */
 .user-box label {
   position: absolute;
   top: 10px;
@@ -82,7 +72,6 @@
   transition: 0.35s ease;
 }
 
-/* Ridica label-ul cand input-ul e focusat sau completat */
 .user-box input:focus ~ label,
 .user-box input:not(:placeholder-shown) ~ label,
 .user-box textarea:focus ~ label,
@@ -95,7 +84,6 @@
   color: #ffffff;
 }
 
-/* --- Buton principal (stil Uiverse press) --- */
 .primary-button {
   display: inline-block;
   width: 100%;
@@ -141,35 +129,6 @@
   transform: none;
 }
 
-/* --- Buton secundar (grupuri de butoane) --- */
-.btn-secondary {
-  display: inline-block;
-  padding: 8px 16px;
-  background-color: transparent;
-  color: #ecf0f1;
-  font-size: 14px;
-  font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
-}
-
-.btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: #ffffff;
-}
-
-.btn-secondary:active {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.btn-secondary:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* --- Mesaje feedback --- */
 .form-error {
   color: #fca5a5;
   font-size: 13px;
@@ -187,7 +146,6 @@
   text-align: center;
 }
 
-/* --- Link secundar --- */
 .form-footer {
   margin-top: 24px;
   text-align: center;
@@ -207,14 +165,12 @@
   text-decoration: underline;
 }
 
-/* --- Responsive --- */
 @media (max-width: 480px) {
   .form-box {
     padding: 36px 24px 28px;
   }
 }
 
-/* datetime-local are mereu valoare vizuala — label trebuie sa stea sus tot timpul */
 .user-box input[type="datetime-local"] ~ label,
 .user-box input[type="date"] ~ label,
 .user-box input[type="time"] ~ label {
@@ -223,7 +179,6 @@
   color: #ffffff;
 }
 
-/* --- Butoane owner job (Info, Edit, Delete) --- */
 .owner-actions {
   display: flex;
   gap: 10px;
@@ -254,7 +209,6 @@
   flex-shrink: 0;
 }
 
-/* Info si Edit — hover alb */
 .icon-btn--info:hover,
 .icon-btn--edit:hover {
   background-color: #ffffff;
@@ -262,7 +216,6 @@
   color: var(--color-primary);
 }
 
-/* Delete — hover rosu */
 .icon-btn--delete {
   border-color: rgba(255, 100, 100, 0.5);
   color: rgba(255, 180, 180, 1);
@@ -279,7 +232,6 @@
   transform: scale(0.97);
 }
 
-/* --- Tipografie carduri joburi --- */
 .job-title {
   font-size: 18px;
   font-weight: 700;
@@ -305,12 +257,6 @@
   line-height: 1.4;
 }
 
-.job-meta__label {
-  font-size: 15px;
-  flex-shrink: 0;
-}
-
-/* --- Tipografie inputuri (label flotant) --- */
 .user-box label {
   font-size: 15px;
   font-weight: 500;
@@ -324,7 +270,6 @@
   letter-spacing: 0.1px;
 }
 
-/* Placeholder color cand nu e flotant */
 .user-box input:focus ~ label,
 .user-box input:not(:placeholder-shown) ~ label {
   font-size: 11px;
@@ -332,10 +277,6 @@
   letter-spacing: 0.8px;
   text-transform: uppercase;
 }
-
-/* ============================================================
-   Card job — tipografie si layout
-   ============================================================ */
 
 .job-title {
   font-size: 18px;
@@ -369,10 +310,6 @@
   opacity: 0.75;
 }
 
-/* ============================================================
-   Input-uri — tipografie interna
-   ============================================================ */
-
 .user-box input,
 .user-box textarea,
 .user-box select {
@@ -381,22 +318,16 @@
   letter-spacing: 0.2px;
 }
 
-/* Placeholder vizibil (ex: datetime-local) */
 .user-box input[type="datetime-local"],
 .user-box input[type="date"],
 .user-box input[type="number"] {
   color: #1a1a1a;
 }
 
-/* Valori introduse */
 .user-box input:not(:placeholder-shown),
 .user-box textarea:not(:placeholder-shown) {
   font-weight: 500;
 }
-
-/* ============================================================
-   Status boxes — text mai clar
-   ============================================================ */
 
 .status-box {
   font-size: 13px;
@@ -421,7 +352,6 @@
   .job-meta__item { font-size: 13px; }
 }
 
-/* --- Buton upload avatar — mov cu hover alb --- */
 .icon-btn--avatar {
   display: inline-flex;
   align-items: center;
@@ -455,7 +385,6 @@
   transform: scale(0.97);
 }
 
-/* --- Buton review — mov cu hover alb --- */
 .icon-btn--review {
   display: inline-flex;
   align-items: center;
@@ -490,19 +419,12 @@
   transform: scale(0.97);
 }
 
-/* select — label mereu sus (nu are placeholder-shown) */
 .user-box select ~ label {
   top: -20px;
   font-size: 12px;
   color: #ffffff;
 }
 
-/* ============================================================
-   datetime-local, date, time — stilizare maxima posibila
-   (calendarul popup ramane al browserului, nu se poate stiliza)
-   ============================================================ */
-
-/* Iconita de calendar — colorata alb */
 .user-box input[type="datetime-local"]::-webkit-calendar-picker-indicator,
 .user-box input[type="date"]::-webkit-calendar-picker-indicator,
 .user-box input[type="time"]::-webkit-calendar-picker-indicator {
@@ -516,7 +438,6 @@
   filter: opacity(1);
 }
 
-/* Textul placeholder zz/ll/aaaa — alb translucid */
 .user-box input[type="datetime-local"]::-webkit-datetime-edit,
 .user-box input[type="date"]::-webkit-datetime-edit {
   color: #1a1a1a;
@@ -540,7 +461,6 @@
   border-radius: 3px;
 }
 
-/* Highlight pe campul selectat */
 .user-box input[type="datetime-local"]::-webkit-datetime-edit-month-field:focus,
 .user-box input[type="datetime-local"]::-webkit-datetime-edit-day-field:focus,
 .user-box input[type="datetime-local"]::-webkit-datetime-edit-year-field:focus,
@@ -551,7 +471,6 @@
   outline: none;
 }
 
-/* --- icon-btn pe fundal alb (card--white) --- */
 .card--white .icon-btn {
   color: #3d3d3d;
   border-color: rgba(61, 61, 61, 0.5);

@@ -26,13 +26,13 @@ public class AplicareController {
 
     @PatchMapping("/{aplicareId}/accept")
     public ResponseEntity<Aplicare> acceptAplicare(@PathVariable String aplicareId) {
-        System.out.println("AM INTRAT IN CONTROLLER ACCEPT: " + aplicareId);
+
         return ResponseEntity.ok(aplicareService.acceptAplicare(aplicareId));
     }
 
     @PatchMapping("/{aplicareId}/reject")
     public ResponseEntity<Aplicare> rejectAplicare(@PathVariable String aplicareId) {
-        System.out.println("AM INTRAT IN CONTROLLER REJECT: " + aplicareId);
+
         return ResponseEntity.ok(aplicareService.rejectAplicare(aplicareId));
     }
 

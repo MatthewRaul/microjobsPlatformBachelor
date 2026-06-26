@@ -4,7 +4,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,6 +31,7 @@ import com.licenta.microjobsPlatform.service.UserService;
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
+
     private final UserService userService;
     private final JwtService jwtService;
 
@@ -56,7 +56,7 @@ public class UserController {
             LoginResponse response = userService.loginUser(loginRequest);
             return ResponseEntity.ok(response);
         } catch (org.springframework.security.core.AuthenticationException e) {
-           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email sau parola incorecte.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Email sau parola incorecte.");
         }
     }
 
@@ -102,7 +102,6 @@ public class UserController {
         return ResponseEntity.ok(userService.updateProfile(email, request));
     }
 
-    // Upload CV ca fisier multipart - Spring il converteste la Base64 si il stocheaza in Mongo
     @PostMapping("/me/cv")
     public ResponseEntity<?> uploadCv(
             @RequestHeader("Authorization") String authHeader,
@@ -115,13 +114,11 @@ public class UserController {
             return ResponseEntity.badRequest().body("Fisierul este gol.");
         }
 
-        // Verificam ca e PDF
         String contentType = file.getContentType();
         if (contentType == null || !contentType.equals("application/pdf")) {
             return ResponseEntity.badRequest().body("Doar fisierele PDF sunt acceptate.");
         }
 
-        // Limita 5MB
         if (file.getSize() > 5 * 1024 * 1024) {
             return ResponseEntity.badRequest().body("Fisierul depaseste limita de 5MB.");
         }
@@ -138,7 +135,6 @@ public class UserController {
         }
     }
 
-    // Upload poza de profil
     @PostMapping("/me/avatar")
     public ResponseEntity<?> uploadAvatar(
             @RequestHeader("Authorization") String authHeader,
@@ -169,7 +165,6 @@ public class UserController {
         }
     }
 
-    // Sterge CV-ul propriu
     @DeleteMapping("/me/cv")
     public ResponseEntity<?> deleteCv(@RequestHeader("Authorization") String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -181,7 +176,6 @@ public class UserController {
         return ResponseEntity.ok(Map.of("message", "CV sters cu succes."));
     }
 
-    // Download CV al unui user (public - angajatorii pot vedea CV-ul aplicantilor)
     @GetMapping("/{userId}/cv")
     public ResponseEntity<?> getCv(@PathVariable String userId) {
         try {

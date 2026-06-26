@@ -1,43 +1,21 @@
-import axios from "../../api/axios";
+import api from "../../api/axios";
 
-export async function getAdminJobs(filters = {}) {
-  const params = {};
-
-  if (filters.location) {
-    params.location = filters.location;
-  }
-
-  if (filters.participants) {
-    params.participants = filters.participants;
-  }
-
-  if (filters.startDate) {
-    params.startDate = filters.startDate;
-  }
-
-  if (filters.endDate) {
-    params.endDate = filters.endDate;
-  }
-
-  if (filters.status) {
-    params.status = filters.status;
-  }
-
-  const response = await axios.get("/api/jobs", { params });
+export async function getAdminJobs() {
+  const response = await api.get("/api/admin/jobs");
   return response.data;
 }
 
 export async function cancelAdminJob(id) {
-  const response = await axios.patch(`/api/jobs/${id}/cancel`);
+  const response = await api.patch(`/api/admin/jobs/${id}/cancel`);
   return response.data;
 }
 
 export async function completeAdminJob(id) {
-  const response = await axios.patch(`/api/jobs/${id}/complete`);
+  const response = await api.patch(`/api/admin/jobs/${id}/complete`);
   return response.data;
 }
 
 export async function deleteAdminJob(id) {
-  const response = await axios.delete(`/api/jobs/${id}`);
+  const response = await api.delete(`/api/admin/jobs/${id}`);
   return response.data;
 }

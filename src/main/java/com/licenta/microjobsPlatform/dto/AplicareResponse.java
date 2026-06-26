@@ -22,10 +22,10 @@ public class AplicareResponse {
     private String jobTitle;
 
     public AplicareResponse(String id, String jobId, String applicantUserId,
-                            String applicantEmail, String applicantFirstName,
-                            String applicantLastName, Double applicantAverageRating,
-                            Integer applicantReviewCount, AplicareStatus status,
-                            LocalDateTime appliedAt, String jobTitle,String jobOwnerEmail) {
+            String applicantEmail, String applicantFirstName,
+            String applicantLastName, Double applicantAverageRating,
+            Integer applicantReviewCount, AplicareStatus status,
+            LocalDateTime appliedAt, String jobTitle, String jobOwnerEmail) {
         this.id = id;
         this.jobId = jobId;
         this.applicantUserId = applicantUserId;
@@ -37,7 +37,7 @@ public class AplicareResponse {
         this.status = status;
         this.appliedAt = appliedAt;
         this.jobTitle = jobTitle;
-        this.jobOwnerEmail=jobOwnerEmail;
+        this.jobOwnerEmail = jobOwnerEmail;
     }
 
     public String getId() {
@@ -91,6 +91,5 @@ public class AplicareResponse {
     public void setJobOwnerEmail(String jobOwnerEmail) {
         this.jobOwnerEmail = jobOwnerEmail;
     }
-
 
 }

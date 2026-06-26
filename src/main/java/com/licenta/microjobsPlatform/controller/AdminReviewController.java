@@ -3,7 +3,11 @@ package com.licenta.microjobsPlatform.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.licenta.microjobsPlatform.dto.ReviewResponse;
 import com.licenta.microjobsPlatform.service.ReviewService;
@@ -18,13 +22,11 @@ public class AdminReviewController {
         this.reviewService = reviewService;
     }
 
-    // Returneaza toate recenziile din sistem
     @GetMapping
     public ResponseEntity<List<ReviewResponse>> getAllReviews() {
         return ResponseEntity.ok(reviewService.getAllReviewsForAdmin());
     }
 
-    // Sterge o recenzie dupa ID
     @DeleteMapping("/{reviewId}")
     public ResponseEntity<?> deleteReview(@PathVariable String reviewId) {
         reviewService.deleteReviewAsAdmin(reviewId);

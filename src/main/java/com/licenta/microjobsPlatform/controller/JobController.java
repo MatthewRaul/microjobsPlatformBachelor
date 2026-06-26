@@ -1,9 +1,8 @@
 package com.licenta.microjobsPlatform.controller;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,7 +21,6 @@ import com.licenta.microjobsPlatform.dto.CreateJobRequest;
 import com.licenta.microjobsPlatform.dto.UpdateJobRequest;
 import com.licenta.microjobsPlatform.model.Aplicare;
 import com.licenta.microjobsPlatform.model.Job;
-import com.licenta.microjobsPlatform.model.JobStatus;
 import com.licenta.microjobsPlatform.service.AplicareService;
 import com.licenta.microjobsPlatform.service.JobService;
 
@@ -47,29 +45,19 @@ public class JobController {
 
     @GetMapping
     public ResponseEntity<List<Job>> getVisibleJobs(
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
-            @RequestParam(required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
+            @RequestParam(required = false) Instant startDate,
+            @RequestParam(required = false) Instant endDate,
             @RequestParam(required = false) String location,
-            @RequestParam(required = false) Integer participants,
-            @RequestParam(required = false) JobStatus status) {
+            @RequestParam(required = false) Integer participants) {
 
         return ResponseEntity.ok(
-                jobService.getVisibleJobsFiltered(startDate, endDate, location, participants, status)
+                jobService.getVisibleJobsFiltered(startDate, endDate, location, participants)
         );
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Job> getJobById(@PathVariable String id) {
         return ResponseEntity.ok(jobService.getJobById(id));
-    }
-
-    @PatchMapping("/{id}/cancel")
-    public ResponseEntity<Job> cancelJob(@PathVariable String id, Authentication authentication) {
-        String userEmail = authentication.getName();
-        Job canceledJob = jobService.cancelJob(id, userEmail);
-        return ResponseEntity.ok(canceledJob);
     }
 
     @PatchMapping("/{id}/complete")
@@ -93,7 +81,6 @@ public class JobController {
     @GetMapping("/me")
     public ResponseEntity<List<Job>> getMyJobs(Authentication authentication) {
         String email = authentication.getName();
-        System.out.println("Email din token" + email);
         return ResponseEntity.ok(jobService.getMyJobs(email));
     }
 
@@ -112,11 +99,6 @@ public class JobController {
         String userEmail = authentication.getName();
         jobService.deleteJob(id, userEmail);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/{id}/owner-id")
-    public ResponseEntity<String> getOwnerIdForJob(@PathVariable String id) {
-        return ResponseEntity.ok(jobService.getOwnerIdForJob(id));
     }
 
 }

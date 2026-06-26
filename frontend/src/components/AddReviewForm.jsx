@@ -48,8 +48,6 @@ export default function AddReviewForm({ jobId, reviewedUserId, onReviewCreated }
 
   return (
     <form onSubmit={handleSubmit}>
-
-      {/* Nota — select cu user-box */}
       <div className="user-box">
         <select
           value={rating}
@@ -64,8 +62,6 @@ export default function AddReviewForm({ jobId, reviewedUserId, onReviewCreated }
         </select>
         <label>Notă</label>
       </div>
-
-      {/* Mesaj — textarea cu user-box */}
       <div className="user-box">
         <textarea
           placeholder=" "

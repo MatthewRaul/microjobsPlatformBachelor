@@ -5,8 +5,9 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection="aplicari")
+@Document(collection = "aplicari")
 public class Aplicare {
+
     @Id
     private String id;
     private String jobId;
@@ -17,7 +18,7 @@ public class Aplicare {
     private LocalDateTime appliedAt;
     private String jobTitle;
 
-    public Aplicare(){
+    public Aplicare() {
     }
 
     public Aplicare(String id, String applicantEmail, String applicantFirstName, String applicantLastName, LocalDateTime appliedAt, String jobId, AplicareStatus status, String jobTitle) {
@@ -28,7 +29,7 @@ public class Aplicare {
         this.appliedAt = appliedAt;
         this.jobId = jobId;
         this.status = status;
-        this.jobTitle=jobTitle;
+        this.jobTitle = jobTitle;
     }
 
     public String getId() {
@@ -95,7 +96,4 @@ public class Aplicare {
         this.jobTitle = jobTitle;
     }
 
-
-
-    
 }

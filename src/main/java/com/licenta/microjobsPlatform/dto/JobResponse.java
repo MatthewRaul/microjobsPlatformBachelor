@@ -1,6 +1,8 @@
 package com.licenta.microjobsPlatform.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 public class JobResponse {
     private String id;
@@ -9,8 +11,13 @@ public class JobResponse {
     private Integer neededWorkers;
     private Integer acceptedWorkers;
     private String status;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+    private Instant startDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+    private Instant endDate;
+
     private Integer salary;
     private String location;
 
@@ -65,19 +72,19 @@ public class JobResponse {
         this.status = status;
     }
 
-    public LocalDateTime getStartDate() {
+    public Instant getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDateTime startDate) {
+    public void setStartDate(Instant startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDateTime getEndDate() {
+    public Instant getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDateTime endDate) {
+    public void setEndDate(Instant endDate) {
         this.endDate = endDate;
     }
 

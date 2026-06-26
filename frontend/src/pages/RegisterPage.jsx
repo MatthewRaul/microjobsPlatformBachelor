@@ -28,7 +28,7 @@ function RegisterPage() {
     if (!password) newErrors.password = "Parola este obligatorie.";
     else if (password.length < 6) newErrors.password = "Parola trebuie să aibă cel puțin 6 caractere.";
     if (!age.trim()) newErrors.age = "Vârsta este obligatorie.";
-    else if (isNaN(Number(age)) || Number(age) < 16 || Number(age) > 100) newErrors.age = "Vârsta trebuie să fie între 15 și 100 de ani.";
+    else if (isNaN(Number(age)) || Number(age) < 16 || Number(age) > 100) newErrors.age = "Vârsta trebuie să fie între 16 și 100 de ani.";
     if (!confirmPassword) newErrors.confirmPassword = "Confirmarea parolei este obligatorie.";
     else if (password && confirmPassword !== password) newErrors.confirmPassword = "Parolele nu coincid.";
     return newErrors;

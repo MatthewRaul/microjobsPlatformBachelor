@@ -5,6 +5,7 @@ import {
   getPublicUserRating, getUserCv, deleteCv, deleteAvatar,
 } from "../api/userApi";
 import { useAuth } from "../context/AuthContext";
+import ConfirmModal from "../components/ConfirmModal";
 
 const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e0e0e0'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%23bdbdbd'/%3E%3Cellipse cx='50' cy='85' rx='28' ry='20' fill='%23bdbdbd'/%3E%3C/svg%3E";
 
@@ -127,7 +128,6 @@ export default function ProfilePage() {
 
   const handleLogoutConfirm = () => { logout(); navigate("/login"); };
 
-  // ── Avatar ──────────────────────────────────────────────
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -160,8 +160,6 @@ export default function ProfilePage() {
     } catch { setError("Nu s-a putut șterge poza."); }
     finally { setAvatarRemoving(false); setIsActioning(false); }
   };
-
-  // ── CV ──────────────────────────────────────────────────
   const handleCvChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -175,7 +173,6 @@ export default function ProfilePage() {
     setCvUploading(true); setMessage(""); setError("");
     try {
       await uploadCv(cvFile);
-      // ── FIX: actualizeaza hasCv in state dupa upload reusit ──
       setFormData((prev) => ({ ...prev, hasCv: true }));
       setCvFile(null); setCvInputKey((k) => k + 1);
       setMessage("CV-ul a fost încărcat cu succes.");
@@ -205,7 +202,6 @@ export default function ProfilePage() {
     try {
       setIsActioning(true);
       await deleteCv();
-      // ── FIX: actualizeaza hasCv in state dupa stergere ──
       setFormData((prev) => ({ ...prev, hasCv: false }));
       setCvFile(null); setCvInputKey((k) => k + 1);
       setMessage("CV-ul a fost șters.");
@@ -233,7 +229,6 @@ export default function ProfilePage() {
         </div>
       )}
 
-      {/* ── Card alb — info + avatar ── */}
       <div style={{ background: "#fff", borderRadius: "12px", padding: "24px", marginBottom: "16px", boxShadow: "0 4px 16px rgba(0,0,0,0.08)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "20px" }}>
           {formData.profilePictureUrl ? (
@@ -300,7 +295,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* ── Card mov — editare profil ── */}
       <div className="form-box" style={{ marginBottom: "16px" }}>
         <h1 style={{ fontSize: "1.3rem" }}>Editează profilul</h1>
 
@@ -346,13 +340,11 @@ export default function ProfilePage() {
         </form>
       </div>
 
-      {/* ── Card mov — CV ── */}
       <div className="card" style={{ marginBottom: "16px" }}>
         <p style={{ fontSize: "12px", fontWeight: "600", color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "12px" }}>
           CV (PDF, max 5MB)
         </p>
 
-        {/* Butoane vizualizare + stergere — apar DOAR daca hasCv e true */}
         {formData.hasCv && (
           <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px", flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "rgba(255,255,255,0.85)", fontSize: "13px" }}>
@@ -382,7 +374,6 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* Upload — intotdeauna vizibil; arata fisierul ales ca text simplu (nu link) */}
         <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
           <input key={cvInputKey} ref={cvInputRef} type="file" accept="application/pdf"
             onChange={handleCvChange} style={{ display: "none" }} />
@@ -395,8 +386,6 @@ export default function ProfilePage() {
             </svg>
             {formData.hasCv ? "Înlocuiește CV" : "Alege fișier PDF"}
           </button>
-
-          {/* Numele fisierului ales — text simplu, nu clickabil */}
           {cvFile && (
             <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.75)", maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {cvFile.name}
@@ -411,7 +400,6 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* ── Card verde — recenzii ── */}
       {userId && (
         <div
           onClick={() => navigate(`/users/public/${userId}/reviews`, { state: { ownerEmail: formData.email, fromOwnProfile: true } })}
@@ -445,8 +433,6 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
-
-      {/* ── Logout ── */}
       <button onClick={() => setLogoutModal(true)} className="icon-btn icon-btn--delete" style={{ marginBottom: "32px" }}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
@@ -456,29 +442,28 @@ export default function ProfilePage() {
         Deconectare
       </button>
 
-      {/* ── Modals ── */}
       {saveModal && (
         <ConfirmModal title="Salvează modificările"
           message="Ești sigur că vrei să salvezi modificările?"
-          confirmLabel="Salvează" confirmStyle={{ background: "var(--color-primary)" }}
+          confirmText="Salvează"
           onConfirm={handleSaveConfirm} onCancel={() => setSaveModal(false)} isLoading={isActioning} />
       )}
       {logoutModal && (
         <ConfirmModal title="Deconectare"
           message="Ești sigur că vrei să te deconectezi?"
-          confirmLabel="Deconectează-mă" confirmStyle={{ background: "#d97706" }}
-          onConfirm={handleLogoutConfirm} onCancel={() => setLogoutModal(false)} isLoading={false} />
+          confirmText="Deconectează-mă"
+          onConfirm={handleLogoutConfirm} onCancel={() => setLogoutModal(false)} />
       )}
       {deleteAvatarModal && (
         <ConfirmModal title="Șterge poza de profil"
           message="Ești sigur că vrei să ștergi poza de profil?"
-          confirmLabel="Șterge poza" confirmStyle={{ background: "var(--color-error)" }}
+          confirmText="Șterge poza" danger
           onConfirm={handleDeleteAvatarConfirm} onCancel={() => setDeleteAvatarModal(false)} isLoading={isActioning} />
       )}
       {deleteCvModal && (
         <ConfirmModal title="Șterge CV"
           message="Ești sigur că vrei să ștergi CV-ul? Acțiunea este ireversibilă."
-          confirmLabel="Șterge CV" confirmStyle={{ background: "var(--color-error)" }}
+          confirmText="Șterge CV" danger
           onConfirm={handleDeleteCvConfirm} onCancel={() => setDeleteCvModal(false)} isLoading={isActioning} />
       )}
     </section>
@@ -505,21 +490,3 @@ function ReadOnlyField({ icon, label, value }) {
   );
 }
 
-function ConfirmModal({ title, message, confirmLabel, confirmStyle, onConfirm, onCancel, isLoading }) {
-  return (
-    <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }}>
-      <div role="dialog" aria-modal="true" style={{ backgroundColor: "white", padding: "28px 24px", borderRadius: "10px", minWidth: "300px", maxWidth: "420px", width: "90vw", textAlign: "center", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-        <h3 style={{ marginBottom: "10px", fontSize: "18px", color: "var(--color-text-dark)" }}>{title}</h3>
-        <p style={{ marginBottom: "24px", color: "var(--color-text-medium)", fontSize: "14px", lineHeight: "1.5" }}>{message}</p>
-        <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
-          <button onClick={onConfirm} disabled={isLoading} style={{ padding: "10px 24px", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "14px", ...confirmStyle }}>
-            {isLoading ? "Se procesează..." : confirmLabel}
-          </button>
-          <button onClick={onCancel} disabled={isLoading} style={{ padding: "10px 24px", background: "#f3f4f6", color: "#333", border: "1px solid #ddd", borderRadius: "6px", cursor: "pointer", fontWeight: "600", fontSize: "14px" }}>
-            Anulează
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}

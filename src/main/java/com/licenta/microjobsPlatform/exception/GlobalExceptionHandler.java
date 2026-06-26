@@ -14,29 +14,29 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
- 
+
     @ExceptionHandler(ResourceNotFound.class)
-    public ResponseEntity<ApiError> handleNotFound(ResourceNotFound ex,HttpServletRequest request){
-        ApiError error=new ApiError(
-            ex.getMessage(),
-            "Not found",
-            request.getRequestURI(),
-            HttpStatus.NOT_FOUND.value(),
-            LocalDateTime.now()
+    public ResponseEntity<ApiError> handleNotFound(ResourceNotFound ex, HttpServletRequest request) {
+        ApiError error = new ApiError(
+                ex.getMessage(),
+                "Not found",
+                request.getRequestURI(),
+                HttpStatus.NOT_FOUND.value(),
+                LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
     @ExceptionHandler(ForbiddenAction.class)
-    public ResponseEntity<ApiError> handleForbidden(ForbiddenAction ex,HttpServletRequest request){
-        ApiError error=new ApiError(
-            ex.getMessage(),
-            "Forbidden",
-            request.getRequestURI(),
-            HttpStatus.FORBIDDEN.value(),
-            LocalDateTime.now()
+    public ResponseEntity<ApiError> handleForbidden(ForbiddenAction ex, HttpServletRequest request) {
+        ApiError error = new ApiError(
+                ex.getMessage(),
+                "Forbidden",
+                request.getRequestURI(),
+                HttpStatus.FORBIDDEN.value(),
+                LocalDateTime.now()
         );
-    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
     }
 
     @ExceptionHandler(BadRequest.class)
@@ -67,14 +67,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleGeneric(Exception ex, HttpServletRequest request) {
         ApiError error = new ApiError(
                 ex.getMessage(),
-        "Internal Server Error",
+                "Internal Server Error",
                 request.getRequestURI(),
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 LocalDateTime.now()
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
-
-
 
 }

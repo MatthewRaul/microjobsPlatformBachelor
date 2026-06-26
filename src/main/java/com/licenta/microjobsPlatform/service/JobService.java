@@ -1,5 +1,6 @@
 package com.licenta.microjobsPlatform.service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -11,9 +12,12 @@ import com.licenta.microjobsPlatform.dto.CreateJobRequest;
 import com.licenta.microjobsPlatform.dto.UpdateJobRequest;
 import com.licenta.microjobsPlatform.exception.BadRequest;
 import com.licenta.microjobsPlatform.exception.ResourceNotFound;
+import com.licenta.microjobsPlatform.model.Aplicare;
+import com.licenta.microjobsPlatform.model.AplicareStatus;
 import com.licenta.microjobsPlatform.model.Job;
 import com.licenta.microjobsPlatform.model.JobStatus;
 import com.licenta.microjobsPlatform.model.User;
+import com.licenta.microjobsPlatform.repository.AplicareRepository;
 import com.licenta.microjobsPlatform.repository.JobRepository;
 import com.licenta.microjobsPlatform.repository.UserRepository;
 
@@ -22,10 +26,15 @@ public class JobService {
 
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
+    private final AplicareRepository aplicareRepository;
+    private final EmailService emailService;
 
-    public JobService(JobRepository jobRepository, UserRepository userRepository) {
+    public JobService(JobRepository jobRepository, UserRepository userRepository,
+            AplicareRepository aplicareRepository, EmailService emailService) {
         this.jobRepository = jobRepository;
         this.userRepository = userRepository;
+        this.aplicareRepository = aplicareRepository;
+        this.emailService = emailService;
     }
 
     private boolean isAdmin() {
@@ -82,30 +91,8 @@ public class JobService {
         job.setLocation(request.getLocation());
         job.setCounty(request.getCounty());
 
-        refreshStatusByTime(job);
-
-        return jobRepository.save(job);
-    }
-
-    public List<Job> getVisibleJobs() {
-        List<Job> jobs = jobRepository.findAll();
-
-        for (Job job : jobs) {
-            if (job.getAcceptedWorkers() == null) {
-                job.setAcceptedWorkers(0);
-            }
-
-            JobStatus oldStatus = job.getStatus();
-            refreshStatusByTime(job);
-
-            if (oldStatus != job.getStatus()) {
-                jobRepository.save(job);
-            }
-        }
-
-        return jobs.stream()
-                .filter(job -> job.getStatus() == JobStatus.OPEN)
-                .toList();
+        Job savedJob = jobRepository.save(job);
+        return refreshStatusByTime(savedJob);
     }
 
     public Job getJobById(String id) {
@@ -116,12 +103,7 @@ public class JobService {
             job.setAcceptedWorkers(0);
         }
 
-        JobStatus oldStatus = job.getStatus();
         refreshStatusByTime(job);
-
-        if (oldStatus != job.getStatus()) {
-            jobRepository.save(job);
-        }
 
         return job;
     }
@@ -137,7 +119,11 @@ public class JobService {
         }
 
         job.setStatus(JobStatus.CANCELED);
-        return jobRepository.save(job);
+        Job savedJob = jobRepository.save(job);
+
+        List<Aplicare> acceptedAplicari = aplicareRepository.findByJobIdAndStatus(id, AplicareStatus.ACCEPTED);
+
+        return savedJob;
     }
 
     public Job completeJob(String id, String userEmail) {
@@ -162,12 +148,7 @@ public class JobService {
                 job.setAcceptedWorkers(0);
             }
 
-            JobStatus oldStatus = job.getStatus();
             refreshStatusByTime(job);
-
-            if (oldStatus != job.getStatus()) {
-                jobRepository.save(job);
-            }
         }
 
         return jobs;
@@ -197,8 +178,8 @@ public class JobService {
         String county = request.getCounty() != null ? request.getCounty().trim() : "";
         Integer neededWorkers = request.getNeededWorkers();
         Integer salary = request.getSalary();
-        LocalDateTime startDate = request.getStartDate();
-        LocalDateTime endDate = request.getEndDate();
+        Instant startDate = request.getStartDate();
+        Instant endDate = request.getEndDate();
 
         if (title.isBlank()) {
             throw new BadRequest("Titlul este obligatoriu.");
@@ -260,17 +241,20 @@ public class JobService {
             throw new RuntimeException("Nu ai permisiunea sa stergi acest job.");
         }
 
+        aplicareRepository.deleteAll(aplicareRepository.findByJobId(id));
         jobRepository.delete(job);
     }
 
-    private Job refreshStatusByTime(Job job) {
-        LocalDateTime now = LocalDateTime.now();
+    public Job refreshStatusByTime(Job job) {
+        Instant now = Instant.now();
+        JobStatus statusBeforeRefresh = job.getStatus();
 
         if (job.getAcceptedWorkers() == null) {
             job.setAcceptedWorkers(0);
         }
 
-        if (job.getStatus() == JobStatus.CANCELED || job.getStatus() == JobStatus.COMPLETED) {
+        if (statusBeforeRefresh == JobStatus.CANCELED || statusBeforeRefresh == JobStatus.COMPLETED) {
+            rejectPendingAplicari(job);
             return job;
         }
 
@@ -285,16 +269,32 @@ public class JobService {
             job.setStatus(JobStatus.OPEN);
         }
 
+        boolean becameUnavailable = job.getStatus() == JobStatus.IN_PROGRESS || job.getStatus() == JobStatus.COMPLETED;
+        if (becameUnavailable) {
+            rejectPendingAplicari(job);
+        }
+
+        if (statusBeforeRefresh != job.getStatus()) {
+            jobRepository.save(job);
+        }
+
         return job;
     }
 
-    public List<Job> getVisibleJobsFiltered(LocalDateTime startDate, LocalDateTime endDate, String location, Integer participants, JobStatus status) {
+    private void rejectPendingAplicari(Job job) {
+        List<Aplicare> pendingAplicari = aplicareRepository.findByJobIdAndStatus(job.getId(), AplicareStatus.PENDING);
+        for (Aplicare aplicare : pendingAplicari) {
+            aplicare.setStatus(AplicareStatus.REJECTED);
+            aplicareRepository.save(aplicare);
+        }
+    }
+
+    public List<Job> getVisibleJobsFiltered(Instant startDate, Instant endDate, String location, Integer participants) {
         String normalizedLocation = location != null ? location.trim().toLowerCase() : null;
         boolean hasStartDate = startDate != null;
         boolean hasEndDate = endDate != null;
         boolean hasLocation = normalizedLocation != null && !normalizedLocation.isBlank();
         boolean hasParticipants = participants != null;
-        boolean hasStatus = status != null;
         if (hasStartDate && hasEndDate && endDate.isBefore(startDate)) {
             throw new BadRequest("Data de sfarsit trebuie sa fie dupa sau egala cu data de inceput.");
         }
@@ -306,12 +306,7 @@ public class JobService {
             if (job.getAcceptedWorkers() == null) {
                 job.setAcceptedWorkers(0);
             }
-            JobStatus oldStatus = job.getStatus();
             refreshStatusByTime(job);
-
-            if (oldStatus != job.getStatus()) {
-                jobRepository.save(job);
-            }
         }
         return jobs.stream()
                 .filter(job -> job.getStatus() == JobStatus.OPEN)
@@ -332,9 +327,6 @@ public class JobService {
                     if (hasParticipants && (job.getNeededWorkers() == null || job.getNeededWorkers() < participants)) {
                         return false;
                     }
-                    if (hasStatus && job.getStatus() != status) {
-                        return false;
-                    }
                     return true;
                 }).toList();
     }
@@ -347,12 +339,7 @@ public class JobService {
                 job.setAcceptedWorkers(0);
             }
 
-            JobStatus oldStatus = job.getStatus();
             refreshStatusByTime(job);
-
-            if (oldStatus != job.getStatus()) {
-                jobRepository.save(job);
-            }
         }
 
         return jobs;

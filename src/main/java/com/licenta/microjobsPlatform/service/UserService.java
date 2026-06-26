@@ -132,12 +132,6 @@ public class UserService {
         return new LoginResponse(token, user.getFirstName(), user.getEmail(), user.getRole());
     }
 
-    public UserResponse getUserProfileById(String id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizator negasit"));
-        return mapToUserResponse(user);
-    }
-
     public UserResponse updateProfile(String email, UpdateProfileRequest request) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizator negasit"));
@@ -198,9 +192,6 @@ public class UserService {
         );
     }
 
-    // -------------------------
-    // CV management
-    // -------------------------
     public void uploadCv(String email, String base64, String fileName) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizator negasit"));
@@ -234,9 +225,6 @@ public class UserService {
         return user.getCvFileName() != null ? user.getCvFileName() : "cv.pdf";
     }
 
-    // -------------------------
-    // Avatar management
-    // -------------------------
     public void updateAvatar(String email, String dataUrl) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Utilizator negasit"));
@@ -244,9 +232,6 @@ public class UserService {
         userRepository.save(user);
     }
 
-    // =========================
-    // Zona admin
-    // =========================
     public List<UserResponse> getAllUsersForAdmin() {
         if (!isAdmin()) {
             throw new ForbiddenAction("Doar adminul poate vedea toti utilizatorii.");
@@ -296,9 +281,6 @@ public class UserService {
         userRepository.delete(user);
     }
 
-    // -------------------------
-    // Helpers
-    // -------------------------
     private UserResponse mapToUserResponse(User user) {
         UserResponse response = new UserResponse();
         response.setId(user.getId());

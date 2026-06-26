@@ -1,16 +1,10 @@
-// AuthContext.jsx
-// Acesta este locul central unde ținem autentificarea aplicației.
-
 import { createContext, useContext, useEffect, useState } from "react";
 import api from "../api/axios";
 
 const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
-  // user = datele userului logat
   const [user, setUser] = useState(null);
-
-  // loading = cât timp verificăm dacă userul este logat
   const [loading, setLoading] = useState(true);
 
   const getToken = () => {

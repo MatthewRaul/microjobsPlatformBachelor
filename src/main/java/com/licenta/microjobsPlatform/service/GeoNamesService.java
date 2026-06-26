@@ -55,7 +55,7 @@ public class GeoNamesService {
                     }
 
                     results.add(new LocationSuggestionDto(location, county));
-                    }
+                }
             }
 
             return results;

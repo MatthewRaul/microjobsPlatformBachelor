@@ -1,11 +1,16 @@
 package com.licenta.microjobsPlatform.model;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 @Document(collection = "jobs")
 public class Job {
+
     @Id
     private String id;
 
@@ -14,23 +19,26 @@ public class Job {
     private String postedBy;
     private Integer neededWorkers;
     private Integer acceptedWorkers = 0;
-    private LocalDateTime startDate;
-    private LocalDateTime endDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+    private Instant startDate;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
+    private Instant endDate;
+
     private JobStatus status;
     private LocalDateTime createdAt;
     private Integer salary;
     private String location;
     private String county;
 
-    // Data la care jobul a fost marcat COMPLETED sau CANCELED
-    // Folosit pentru a-l ascunde din HomePage dupa sfarsitul zilei respective
     private LocalDateTime closedAt;
 
     public Job() {
     }
 
     public Job(String id, String title, String description, String postedBy, Integer neededWorkers,
-            LocalDateTime startDate, LocalDateTime endDate, JobStatus status,
+            Instant startDate, Instant endDate, JobStatus status,
             LocalDateTime createdAt, Integer salary, String location, String county) {
         this.id = id;
         this.title = title;
@@ -94,19 +102,19 @@ public class Job {
         this.acceptedWorkers = acceptedWorkers;
     }
 
-    public LocalDateTime getStartDate() {
+    public Instant getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(LocalDateTime startDate) {
+    public void setStartDate(Instant startDate) {
         this.startDate = startDate;
     }
 
-    public LocalDateTime getEndDate() {
+    public Instant getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(LocalDateTime endDate) {
+    public void setEndDate(Instant endDate) {
         this.endDate = endDate;
     }
 

@@ -16,7 +16,6 @@ public class EmailService {
         this.mailSender = mailSender;
     }
 
-    
     @Async
     public void sendEmail(String to, String subject, String htmlBody) {
         try {
@@ -24,14 +23,13 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(to);
             helper.setSubject(subject);
-            helper.setText(htmlBody, true); 
+            helper.setText(htmlBody, true);
             mailSender.send(message);
         } catch (Exception e) {
             System.err.println("Eroare la trimiterea emailului catre " + to + ": " + e.getMessage());
         }
     }
 
-    // === Template-uri email ===
     public void sendWelcomeEmail(String to, String firstName) {
         String subject = "Bun venit pe platforma JobY!";
         String body = """
@@ -74,22 +72,6 @@ public class EmailService {
                     <h2 style="color: #dc2626;">Salut, %s</h2>
                     <p>Din păcate, aplicarea ta la jobul <strong>"%s"</strong> a fost <strong>respinsă</strong>.</p>
                     <p>Nu te descuraja — mai sunt multe joburi disponibile pe platformă!</p>
-                    <p style="margin-top: 24px; color: #888; font-size: 13px;">
-                        Echipa JobY
-                    </p>
-                </div>
-                """.formatted(firstName, jobTitle);
-        sendEmail(to, subject, body);
-    }
-
-    public void sendJobCancelledEmail(String to, String firstName, String jobTitle) {
-        String subject = "Job anulat: " + jobTitle;
-        String body = """
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #dc2626;">Notificare anulare job</h2>
-                    <p>Salut, <strong>%s</strong>!</p>
-                    <p>Din păcate, jobul <strong>"%s"</strong> la care ai fost acceptat a fost <strong>anulat</strong> de angajator.</p>
-                    <p>Îți recomandăm să explorezi alte oportunități disponibile pe platformă.</p>
                     <p style="margin-top: 24px; color: #888; font-size: 13px;">
                         Echipa JobY
                     </p>

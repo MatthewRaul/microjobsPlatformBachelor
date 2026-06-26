@@ -6,7 +6,7 @@ export const searchLocations = async (query) => {
   });
 
   return response.data.map(item=> ({
-    location: item.location, //localitate
+    location: item.location,
     county:item.county
   }));
 };

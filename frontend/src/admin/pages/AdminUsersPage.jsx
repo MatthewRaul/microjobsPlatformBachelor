@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import AdminLayout from "../components/AdminLayout";
-import StatusBadge from "../components/StatusBadge";
-import ConfirmModal from "../components/ConfirmModal";
+import StatusBadge from "../../components/StatusBadge";
+import ConfirmModal from "../../components/ConfirmModal";
 import {
   getAdminUsers,
   updateAdminUserRole,
@@ -16,6 +16,7 @@ export default function AdminUsersPage() {
 
   const [filters, setFilters] = useState({ name: "", email: "", role: "" });
   const [userToDelete, setUserToDelete] = useState(null);
+  const [userRoleChange, setUserRoleChange] = useState(null);
   const [roleUpdates, setRoleUpdates] = useState({});
 
   useEffect(() => { loadUsers(); }, []);
@@ -54,9 +55,15 @@ export default function AdminUsersPage() {
     await loadUsers();
   }
 
-  async function handleRoleUpdate(userId) {
+  function handleRoleUpdate(user) {
+    setUserRoleChange(user);
+  }
+
+  async function confirmRoleUpdate() {
+    if (!userRoleChange) return;
     try {
-      await updateAdminUserRole(userId, roleUpdates[userId]);
+      await updateAdminUserRole(userRoleChange.id, roleUpdates[userRoleChange.id]);
+      setUserRoleChange(null);
       await loadUsers();
     } catch (err) {
       console.error(err);
@@ -147,7 +154,7 @@ export default function AdminUsersPage() {
                   </td>
                   <td data-label="Acțiuni" className="td--actions">
                     <div className="admin-actions">
-                      <button className="admin-action-btn admin-action-btn--update" onClick={() => handleRoleUpdate(user.id)}>Salvează rol</button>
+                      <button className="admin-action-btn admin-action-btn--update" onClick={() => handleRoleUpdate(user)}>Salvează rol</button>
                       <button className="admin-action-btn admin-action-btn--delete" onClick={() => setUserToDelete(user)}>Șterge</button>
                     </div>
                   </td>
@@ -166,6 +173,20 @@ export default function AdminUsersPage() {
         cancelText="Renunță"
         onCancel={() => setUserToDelete(null)}
         onConfirm={handleDeleteUser}
+        danger
+      />
+      <ConfirmModal
+        open={!!userRoleChange}
+        title="Schimbare rol"
+        message={
+          userRoleChange
+            ? `Ești sigur că vrei să schimbi rolul lui ${userRoleChange.firstName} ${userRoleChange.lastName} în ${roleUpdates[userRoleChange.id]}?`
+            : "Ești sigur că vrei să schimbi rolul acestui utilizator?"
+        }
+        confirmText="Salvează rol"
+        cancelText="Renunță"
+        onCancel={() => setUserRoleChange(null)}
+        onConfirm={confirmRoleUpdate}
       />
     </AdminLayout>
   );

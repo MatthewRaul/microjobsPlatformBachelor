@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.licenta.microjobsPlatform.dto.UpdateJobRequest;
@@ -27,20 +26,16 @@ public class AdminJobController {
         this.jobService = jobService;
     }
 
-    // Lista completa de joburi pentru admin.
-    // Daca exista query-ul "search", aplicam cautarea.
     @GetMapping
     public ResponseEntity<List<Job>> getAllJobsForAdmin() {
         return ResponseEntity.ok(jobService.getAllJobsForAdmin());
     }
 
-    // Detalii job pentru admin.
     @GetMapping("/{id}")
     public ResponseEntity<Job> getJobByIdForAdmin(@PathVariable String id) {
         return ResponseEntity.ok(jobService.getJobByIdForAdmin(id));
     }
 
-    // Editare job de catre admin.
     @PatchMapping("/{id}")
     public ResponseEntity<Job> updateJobAsAdmin(
             @PathVariable String id,
@@ -52,7 +47,6 @@ public class AdminJobController {
         return ResponseEntity.ok(updatedJob);
     }
 
-    // Anulare job de catre admin.
     @PatchMapping("/{id}/cancel")
     public ResponseEntity<Job> cancelJobAsAdmin(
             @PathVariable String id,
@@ -63,7 +57,6 @@ public class AdminJobController {
         return ResponseEntity.ok(canceledJob);
     }
 
-    // Finalizare job de catre admin.
     @PatchMapping("/{id}/complete")
     public ResponseEntity<Job> completeJobAsAdmin(
             @PathVariable String id,
@@ -74,7 +67,6 @@ public class AdminJobController {
         return ResponseEntity.ok(completedJob);
     }
 
-    // Stergere job de catre admin.
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteJobAsAdmin(
             @PathVariable String id,

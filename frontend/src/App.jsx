@@ -31,8 +31,6 @@ function App() {
   return (
     <div className="app-container">
       {!isAdminRoute && <Navbar />}
-
-      {/* paddingTop cat inaltimea navbar-ului fix (~56px) ca sa nu se ascunda continutul */}
       <main className="main-content" style={!isAdminRoute ? { paddingTop: "56px" } : {}}>
         <Routes>
           <Route path="/" element={<HomePage />} />

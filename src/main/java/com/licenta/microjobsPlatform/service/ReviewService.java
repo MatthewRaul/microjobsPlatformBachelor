@@ -109,9 +109,6 @@ public class ReviewService {
                 .collect(Collectors.toList());
     }
 
-    // =========================
-    // Zona admin
-    // =========================
     public List<ReviewResponse> getAllReviewsForAdmin() {
         if (!isAdmin()) {
             throw new ForbiddenAction("Doar adminul poate vedea recenziile");
@@ -133,15 +130,11 @@ public class ReviewService {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Recenzia nu exista."));
 
-        // Recalculam ratingul userului evaluat dupa stergere
         String reviewedUserId = review.getReviewedUserId();
         reviewRepository.delete(review);
         updateUserRating(reviewedUserId);
     }
 
-    // =========================
-    // Helpers private
-    // =========================
     private boolean isAdmin() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || authentication.getAuthorities() == null) {

@@ -13,141 +13,14 @@ import {
 } from "../api/jobApi";
 import { getPublicUserProfile, getPublicUserRating } from "../api/userApi";
 import { useAuth } from "../context/AuthContext";
+import StatusBadge from "../components/StatusBadge";
+import ConfirmModal from "../components/ConfirmModal";
+import {
+  IconDoc, IconLocation, IconUsers, IconMoney, IconClock,
+  IconEdit, IconCancel, IconCheck, IconTrash, IconStar,
+  IconUser, IconMail,
+} from "../components/Icons";
 
-// ── SVG icons ──────────────────────────────────────────────
-const IconDoc = () => (
-  <svg className="job-meta__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
-  </svg>
-);
-const IconLocation = () => (
-  <svg className="job-meta__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-  </svg>
-);
-const IconUsers = () => (
-  <svg className="job-meta__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-  </svg>
-);
-const IconMoney = () => (
-  <svg className="job-meta__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-  </svg>
-);
-const IconClock = () => (
-  <svg className="job-meta__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
-  </svg>
-);
-const IconEdit = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-  </svg>
-);
-const IconCancel = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
-  </svg>
-);
-const IconCheck = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="20 6 9 17 4 12"/>
-  </svg>
-);
-const IconTrash = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-    <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-  </svg>
-);
-const IconStar = () => (
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14, display: "inline", verticalAlign: "middle", marginRight: 3 }}>
-    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-  </svg>
-);
-const IconUser = () => (
-  <svg className="job-meta__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
-  </svg>
-);
-const IconMail = () => (
-  <svg className="job-meta__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
-  </svg>
-);
-
-// ── Status badge ────────────────────────────────────────────
-const STATUS_LABEL = {
-  OPEN: "Deschis", FILLED: "Locuri ocupate", IN_PROGRESS: "În desfășurare",
-  COMPLETED: "Finalizat", CANCELED: "Anulat",
-};
-
-function StatusBadge({ status }) {
-  const colors = {
-    OPEN:        { background: "rgba(255,255,255,0.15)", color: "#fff", border: "1px solid rgba(255,255,255,0.4)" },
-    FILLED:      { background: "rgba(251,191,36,0.2)",  color: "#fde68a", border: "1px solid rgba(251,191,36,0.4)" },
-    IN_PROGRESS: { background: "rgba(96,165,250,0.2)",  color: "#bfdbfe", border: "1px solid rgba(96,165,250,0.4)" },
-    COMPLETED:   { background: "rgba(52,211,153,0.2)",  color: "var(--color-success-light)", border: "1px solid rgba(52,211,153,0.4)" },
-    CANCELED:    { background: "rgba(248,113,113,0.2)", color: "#fecaca", border: "1px solid rgba(248,113,113,0.4)" },
-  };
-  const s = colors[status] || colors.OPEN;
-  return (
-    <span style={{
-      ...s,
-      display: "inline-block",
-      padding: "3px 14px",
-      borderRadius: "999px",
-      fontSize: "13px",
-      fontWeight: 600,
-      marginBottom: "16px",
-    }}>
-      {STATUS_LABEL[status] || status}
-    </span>
-  );
-}
-
-// ── Modal generic ───────────────────────────────────────────
-function ConfirmModal({ open, title, description, confirmText, onConfirm, onCancel, disabled, danger }) {
-  if (!open) return null;
-  return (
-    <div style={{
-      position: "fixed", inset: 0,
-      backgroundColor: "rgba(0,0,0,0.55)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      zIndex: 9999,
-    }}>
-      <div role="dialog" aria-modal="true" style={{
-        backgroundColor: "white", padding: "28px 24px",
-        borderRadius: "12px", minWidth: "300px", maxWidth: "420px",
-        boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-      }}>
-        <h3 style={{ marginBottom: 10, color: "var(--color-text-dark)" }}>{title}</h3>
-        <p style={{ color: "var(--color-text-medium)", marginBottom: 20, lineHeight: 1.5 }}>{description}</p>
-        <div className="modal-dialog__actions">
-          <button
-            className={`primary-button modal-dialog__btn-confirm${danger ? " modal-dialog__btn-danger" : ""}`}
-            onClick={onConfirm}
-            disabled={disabled}
-          >
-            {confirmText}
-          </button>
-          <button
-            className="primary-button modal-dialog__btn-cancel"
-            onClick={onCancel}
-            disabled={disabled}
-          >
-            Renunță
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Owner card ──────────────────────────────────────────────
 function OwnerCard({ ownerFirstName, ownerRating, ownerPublicProfilePath }) {
   const inner = (
     <div className="card card--accent" style={{ marginTop: 20 }}>
@@ -157,7 +30,7 @@ function OwnerCard({ ownerFirstName, ownerRating, ownerPublicProfilePath }) {
           <span>Postat de <strong>{ownerFirstName}</strong></span>
         </div>
         <div className="job-meta__item">
-          <IconStar />
+          <IconStar small />
           <span>
             {ownerRating?.averageRating != null
               ? Number(ownerRating.averageRating).toFixed(1)
@@ -182,7 +55,6 @@ function OwnerCard({ ownerFirstName, ownerRating, ownerPublicProfilePath }) {
   return inner;
 }
 
-// ════════════════════════════════════════════════════════════
 export default function JobDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -206,6 +78,10 @@ export default function JobDetailsPage() {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [pendingAppId, setPendingAppId] = useState(null);
   const [isActioning, setIsActioning] = useState(false);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [showDeleteJobModal, setShowDeleteJobModal] = useState(false);
+  const [isDeletingJob, setIsDeletingJob] = useState(false);
 
   const fetchJobDetails = async () => {
     try {
@@ -333,14 +209,27 @@ export default function JobDetailsPage() {
     } catch { setMessage("Nu s-a putut respinge aplicarea."); }
     finally { setIsActioning(false); }
   };
-  const handleCompleteJob = async () => {
-    try { await completeJob(id); await fetchJobDetails(); }
-    catch { setMessage("Nu s-a putut finaliza jobul."); }
+  const handleCompleteJob = () => setShowCompleteModal(true);
+  const confirmCompleteJob = async () => {
+    try {
+      setIsCompleting(true);
+      await completeJob(id);
+      setShowCompleteModal(false);
+      await fetchJobDetails();
+    } catch { setMessage("Nu s-a putut finaliza jobul."); }
+    finally { setIsCompleting(false); }
   };
-  const handleDeleteJob = async () => {
-    if (!window.confirm("Sigur vrei să ștergi acest job?")) return;
-    try { await deleteJob(id); navigate("/"); }
-    catch { setMessage("Nu s-a putut șterge jobul."); }
+  const handleDeleteJob = () => setShowDeleteJobModal(true);
+  const confirmDeleteJob = async () => {
+    try {
+      setIsDeletingJob(true);
+      await deleteJob(id);
+      navigate("/");
+    } catch {
+      setMessage("Nu s-a putut șterge jobul.");
+      setShowDeleteJobModal(false);
+      setIsDeletingJob(false);
+    }
   };
 
   if (loading) return <div className="page"><p>Se încarcă jobul...</p></div>;
@@ -353,8 +242,6 @@ export default function JobDetailsPage() {
 
   return (
     <div className="page">
-
-      {/* ── Card principal job ── */}
       <div className="card">
         <div className="job-title">{job.title}</div>
 
@@ -393,8 +280,7 @@ export default function JobDetailsPage() {
           )}
         </div>
 
-        {/* Acțiuni owner */}
-        {isOwner && (
+        {isOwner && !isClosed && (
           <div className="owner-actions" style={{ marginTop: 20 }}>
             <Link to={`/jobs/${id}/edit`} className="icon-btn icon-btn--edit">
               <IconEdit /> Editează
@@ -408,7 +294,6 @@ export default function JobDetailsPage() {
           </div>
         )}
 
-        {/* Acțiuni aplicant */}
         {!isOwner && (
           <div className="job-actions" style={{ marginTop: 20 }}>
             {hasApplied ? (
@@ -442,7 +327,6 @@ export default function JobDetailsPage() {
         )}
       </div>
 
-      {/* ── Card owner ── */}
       {!isOwner && (() => {
         const ownerUserId = ownerProfile?.id || null;
         const canReviewOwner = job.status === "COMPLETED" && isAcceptedParticipant && !!ownerUserId;
@@ -455,7 +339,7 @@ export default function JobDetailsPage() {
               <div className="job-meta__item"><IconUser /><span style={{ fontWeight: 600 }}>{ownerFirstName}</span></div>
               {job.postedBy && <div className="job-meta__item"><IconMail /><span>{job.postedBy}</span></div>}
               <div className="job-meta__item">
-                <IconStar />
+                <IconStar small />
                 <span>{ownerRating?.averageRating != null ? Number(ownerRating.averageRating).toFixed(1) : "0.0"}</span>
                 <span style={{ opacity: 0.65, fontSize: 13 }}>· {ownerRating?.reviewCount ?? 0} review-uri</span>
               </div>
@@ -463,7 +347,7 @@ export default function JobDetailsPage() {
             {canReviewOwner && (
               <div className="owner-actions" style={{ marginTop: 14 }}>
                 <Link to={`/jobs/${id}/review/${ownerUserId}`} className="icon-btn--review" onClick={(e) => e.stopPropagation()}>
-                  <IconStar /> Lasă review
+                  <IconStar small /> Lasă review
                 </Link>
               </div>
             )}
@@ -472,7 +356,6 @@ export default function JobDetailsPage() {
         );
       })()}
 
-      {/* ── Participanți acceptați ── */}
       {(isOwner || isAcceptedParticipant) && acceptedApplications.length > 0 && (
         <>
           <h2 style={{ marginTop: 32, marginBottom: 12, color: "#1f2937" }}>Participanți acceptați</h2>
@@ -492,7 +375,7 @@ export default function JobDetailsPage() {
                   <div className="job-meta__item"><IconUser /><span style={{ fontWeight: 600 }}>{name}</span></div>
                   {app.applicantEmail && <div className="job-meta__item"><IconMail /><span>{app.applicantEmail}</span></div>}
                   <div className="job-meta__item">
-                    <IconStar />
+                    <IconStar small />
                     <span>{app.applicantAverageRating != null ? Number(app.applicantAverageRating).toFixed(1) : "0.0"}</span>
                     <span style={{ opacity: 0.65, fontSize: 13 }}>· {app.applicantReviewCount || 0} review-uri</span>
                   </div>
@@ -500,7 +383,7 @@ export default function JobDetailsPage() {
                 {canReview && (
                   <div className="owner-actions" style={{ marginTop: 14 }}>
                     <Link to={`/jobs/${id}/review/${appUserId}`} className="icon-btn--review" onClick={(e) => e.stopPropagation()}>
-                      <IconStar /> Lasă review
+                      <IconStar small /> Lasă review
                     </Link>
                   </div>
                 )}
@@ -511,7 +394,6 @@ export default function JobDetailsPage() {
         </>
       )}
 
-      {/* ── Aplicanți în așteptare (owner) ── */}
       {isOwner && (
         <>
           <h2 style={{ marginTop: 32, marginBottom: 12, color: "#1f2937" }}>Aplicanți în așteptare</h2>
@@ -545,43 +427,61 @@ export default function JobDetailsPage() {
         </>
       )}
 
-      {/* ── Modals ── */}
       <ConfirmModal
         open={showApplyModal}
         title="Confirmare aplicare"
-        description="Sigur vrei să aplici la acest job?"
-        confirmText={isApplying ? "Se trimite..." : "Da, aplică"}
+        message="Sigur vrei să aplici la acest job?"
+        confirmText="Da, aplică"
         onConfirm={confirmApply}
         onCancel={() => setShowApplyModal(false)}
-        disabled={isApplying}
+        isLoading={isApplying}
       />
       <ConfirmModal
         open={showWithdrawModal}
         title="Retragere aplicare"
-        description="Sigur vrei să îți retragi aplicarea? Această acțiune nu poate fi anulată."
-        confirmText={isWithdrawing ? "Se retrage..." : "Da, retrage"}
+        message="Sigur vrei să îți retragi aplicarea? Această acțiune nu poate fi anulată."
+        confirmText="Da, retrage"
         onConfirm={confirmWithdraw}
         onCancel={() => setShowWithdrawModal(false)}
-        disabled={isWithdrawing}
+        isLoading={isWithdrawing}
         danger
       />
       <ConfirmModal
         open={showAcceptModal}
         title="Acceptă aplicare"
-        description="Sigur vrei să accepți această aplicare?"
-        confirmText={isActioning ? "Se procesează..." : "Da, acceptă"}
+        message="Sigur vrei să accepți această aplicare?"
+        confirmText="Da, acceptă"
         onConfirm={confirmAccept}
         onCancel={() => { setShowAcceptModal(false); setPendingAppId(null); }}
-        disabled={isActioning}
+        isLoading={isActioning}
       />
       <ConfirmModal
         open={showRejectModal}
         title="Respinge aplicare"
-        description="Sigur vrei să respingi această aplicare?"
-        confirmText={isActioning ? "Se procesează..." : "Da, respinge"}
+        message="Sigur vrei să respingi această aplicare?"
+        confirmText="Da, respinge"
         onConfirm={confirmReject}
         onCancel={() => { setShowRejectModal(false); setPendingAppId(null); }}
-        disabled={isActioning}
+        isLoading={isActioning}
+        danger
+      />
+      <ConfirmModal
+        open={showCompleteModal}
+        title="Finalizare job"
+        message="Sigur vrei să marchezi acest job ca finalizat? Acțiunea nu poate fi anulată."
+        confirmText="Da, finalizează"
+        onConfirm={confirmCompleteJob}
+        onCancel={() => setShowCompleteModal(false)}
+        isLoading={isCompleting}
+      />
+      <ConfirmModal
+        open={showDeleteJobModal}
+        title="Ștergere job"
+        message="Sigur vrei să ștergi acest job? Această acțiune nu poate fi anulată."
+        confirmText="Da, șterge"
+        onConfirm={confirmDeleteJob}
+        onCancel={() => setShowDeleteJobModal(false)}
+        isLoading={isDeletingJob}
         danger
       />
     </div>

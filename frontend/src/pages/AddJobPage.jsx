@@ -55,6 +55,11 @@ function AddJobPage() {
       return;
     }
 
+    if (startDate < new Date()) {
+      setError("Data de start nu poate fi în trecut.");
+      return;
+    }
+
     if (endDate < startDate) {
       setError("Data de finalizare trebuie să fie după data de start.");
       return;

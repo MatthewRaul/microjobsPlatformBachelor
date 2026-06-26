@@ -5,8 +5,9 @@ import java.time.LocalDateTime;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection="reviews")
+@Document(collection = "reviews")
 public class Review {
+
     @Id
     private String id;
 
@@ -17,7 +18,7 @@ public class Review {
     private String message;
     private LocalDateTime createdAt;
 
-    public Review(){
+    public Review() {
     }
 
     public Review(String id, String jobId, String reviewerId, String reviewedUserId, Integer rating, String message) {
@@ -27,10 +28,8 @@ public class Review {
         this.reviewedUserId = reviewedUserId;
         this.rating = rating;
         this.message = message;
-        this.createdAt=LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
     }
-
-    
 
     public Review(String id, String jobId, String reviewerId, String reviewedUserId, Integer rating) {
         this.id = id;
@@ -39,8 +38,6 @@ public class Review {
         this.reviewedUserId = reviewedUserId;
         this.rating = rating;
     }
-
-
 
     public String getId() {
         return id;
@@ -97,8 +94,5 @@ public class Review {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
-
-    
-    
 
 }
