@@ -103,7 +103,7 @@ Frontend-ul pornește implicit pe `http://localhost:5173` și comunică cu backe
 - Publicare, editare și ștergere joburi
 - Aplicare la joburi disponibile
 - Acceptare/respingere aplicări de către proprietarul jobului
-- Notificări automate pe email pentru evenimente importante (aplicare nouă, acceptare, respingere, anulare job)
+- Notificări automate pe email pentru evenimente importante (aplicare nouă, acceptare, respingere, înregistrare)
 - Autocomplete pentru localități din România (GeoNames)
 - Recenzii și rating între utilizatori
 - Panel de administrare (gestionare utilizatori, joburi, aplicări, recenzii)
