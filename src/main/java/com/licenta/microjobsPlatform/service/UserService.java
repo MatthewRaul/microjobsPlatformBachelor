@@ -25,6 +25,7 @@ import com.licenta.microjobsPlatform.model.Role;
 import com.licenta.microjobsPlatform.model.User;
 import com.licenta.microjobsPlatform.repository.UserRepository;
 import com.licenta.microjobsPlatform.security.JwtService;
+import com.mongodb.DuplicateKeyException;
 
 @Service
 public class UserService {
@@ -97,8 +98,14 @@ public class UserService {
         user.setProfileCompleted(false);
         user.setHasCv(false);
 
+        User saved;
+        try {
+            saved=userRepository.save(user);
+        } catch (DuplicateKeyException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,"Exista deja un cont cu aceasta adresa de email sau numar de telefon");
+        }
         emailService.sendWelcomeEmail(user.getEmail(), user.getFirstName());
-        User saved = userRepository.save(user);
+        
         return mapToUserResponse(saved);
     }
 

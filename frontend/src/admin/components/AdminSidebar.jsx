@@ -3,7 +3,7 @@ import "../styles/admin.css";
 
 export default function AdminSidebar({ open, onClose }) {
   return (
-    <aside className={`admin-sidebar${open ? " admin-sidebar--open" : ""}`}>
+    <aside className={"admin-sidebar" + (open ? " admin-sidebar--open" : "")}>
       <div className="admin-sidebar__logo">Admin Panel</div>
 
       <nav className="admin-sidebar__nav">

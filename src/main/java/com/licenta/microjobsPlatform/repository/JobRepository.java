@@ -15,7 +15,7 @@ public interface JobRepository extends MongoRepository<Job, String> {
     List<Job> findByStatusIn(List<JobStatus> statuses);
 
     List<Job> findByPostedBy(String postedBy);
-
+ 
     List<Job> findByStatusInAndStartDateGreaterThanEqual(
             List<JobStatus> statuses,
             Instant startDate
